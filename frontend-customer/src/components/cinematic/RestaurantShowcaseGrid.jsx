@@ -99,6 +99,10 @@ const RestaurantShowcaseGrid = ({ restaurants, loading, search, activeCategory, 
                                             alt={restaurant.name} 
                                             className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500"
                                             loading="lazy"
+                                            onError={(e) => {
+                                                e.currentTarget.onerror = null;
+                                                e.currentTarget.src = "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60";
+                                            }}
                                         />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
                                         

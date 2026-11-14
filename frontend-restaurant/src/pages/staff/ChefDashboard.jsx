@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { 
-    ChefHat, Timer, CheckCircle, AlertTriangle, 
-    Flame, AlertOctagon, Check, MessageSquare, 
+import {
+    ChefHat, Timer, CheckCircle, AlertTriangle,
+    Flame, AlertOctagon, Check, MessageSquare,
     Sliders, Star, Plus, Trash2, LayoutGrid, Columns,
     Search, Clock, ArrowRight, Utensils, Sparkles, Printer, Receipt
 } from 'lucide-react';
@@ -32,7 +32,7 @@ const CookingStopwatch = ({ createdAt, isOverdue, getTimerColorClass }) => {
 
 const ChefDashboard = () => {
     const { api, user, restaurant } = useAuth();
-    
+
     // Core State
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -41,7 +41,7 @@ const ChefDashboard = () => {
     const [selectedStation, setSelectedStation] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
     const [sortBy, setSortBy] = useState('priority'); // 'priority' | 'oldest' | 'newest'
-    
+
     // 86 List (Out of Stock Ingredients)
     const [outOfStock, setOutOfStock] = useState([]);
     const [newIngredient, setNewIngredient] = useState('');
@@ -60,7 +60,7 @@ const ChefDashboard = () => {
                 audioCtxRef.current = new Ctx();
             }
             const audioCtx = audioCtxRef.current;
-            if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+            if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => { });
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.type = 'sine';
@@ -72,9 +72,9 @@ const ChefDashboard = () => {
             gain.connect(audioCtx.destination);
             osc.start();
             osc.stop(audioCtx.currentTime + 0.4);
-        } catch (e) {}
+        } catch (e) { }
     };
-    
+
     // Priorities and item completion checklists (local ticket overrides)
     const [manualPriority, setManualPriority] = useState({}); // orderId -> boolean
     const [completedItems, setCompletedItems] = useState({}); // `${orderId}-${itemIdx}` -> boolean
@@ -97,7 +97,7 @@ const ChefDashboard = () => {
                 setOrders(prev => {
                     const fetchedMap = new Map(data.map(o => [o._id, o]));
                     const merged = [...data];
-                    
+
                     // Retain any active socket tickets that may not be in the current HTTP response yet
                     prev.forEach(p => {
                         if (p && p._id && !fetchedMap.has(p._id)) {
@@ -106,7 +106,7 @@ const ChefDashboard = () => {
                             }
                         }
                     });
-                    
+
                     return merged.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
                 });
             }
@@ -275,7 +275,7 @@ const ChefDashboard = () => {
                 setPrintModalKOT(res.data[0]);
                 return;
             }
-        } catch (e) {}
+        } catch (e) { }
 
         const kotNum = order.kotNumbers?.[0] || `KOT-${order._id.substring(order._id.length - 4).toUpperCase()}`;
         setPrintModalKOT({
@@ -316,7 +316,7 @@ const ChefDashboard = () => {
     // Station item classification helper
     const isItemInStation = (item, stationName) => {
         if (!stationName || stationName === 'All') return true;
-        
+
         const sName = stationName.toLowerCase();
         const itemName = (item.name || '').toLowerCase();
         const category = (item.category || item.product?.category || item.categoryName || '').toLowerCase();
@@ -329,25 +329,25 @@ const ChefDashboard = () => {
         const isMilkDessert = /milk\s*(cake|peda|sweet|pudding|halwa|barfi)|tres\s*leches|rabri|rasmalai|basundi|kheer/i.test(itemName);
         const isMilkDrink = /milk|milkshake|badam\s*milk|chocolate\s*milk|hot\s*milk|cold\s*milk|flavored\s*milk|turmeric\s*milk/i.test(itemName) && !isMilkDessert;
 
-        const isBeverage = 
+        const isBeverage =
             category.includes('beverage') || category.includes('drink') || category.includes('bar') || category.includes('juice') || category.includes('coffee') || category.includes('tea') || (category.includes('milk') && !isMilkDessert) ||
             isMilkDrink ||
             /coffee|shake|latte|tea|drink|juice|soda|beverage|water|mocktail|cocktail|beer|chai|espresso|cappuccino|mojito|smoothie|coke|pepsi|lassi|lemonade|wine|whiskey|vodka|rum|brew|boba|milk/i.test(itemName);
 
-        const isDessert = 
+        const isDessert =
             category.includes('dessert') || category.includes('sweet') || category.includes('bakery') || category.includes('cake') ||
             isMilkDessert ||
             /cake|brownie|ice cream|icecream|pie|sweet|dessert|halwa|jamun|pastry|waffle|pudding|kheer|cookie|chocolate|donut|tiramisu|sundae|custard|gulab|peda|rasgulla|barfi|mithai|kulfi/i.test(itemName);
 
-        const isPizzaOven = 
+        const isPizzaOven =
             category.includes('pizza') || category.includes('oven') || category.includes('italian') || category.includes('baked') ||
             /pizza|bread|calzone|pasta|baked|oven|garlic|lasagna|risotto|spaghetti|macaroni|panini/i.test(itemName);
 
-        const isColdSalad = 
+        const isColdSalad =
             category.includes('salad') || category.includes('cold') || category.includes('sushi') ||
             /salad|roll|sushi|wrap|tacos|taco|cold|ice|soup|starter|appetizer|raita|curd|dip|hummus|kimchi|slaw/i.test(itemName);
 
-        const isGrillFryer = 
+        const isGrillFryer =
             category.includes('grill') || category.includes('fry') || category.includes('main') || category.includes('chinese') || category.includes('indian') || category.includes('tandoor') || category.includes('bbq') ||
             /burger|steak|fry|fries|chicken|bbq|grill|tikka|kebab|paneer|main|rice|biryani|noodle|curry|dal|roti|naan|thali|dosa|sandwich|manchurian|momos|bhatura|samosa|crispy|wings|patty/i.test(itemName);
 
@@ -437,9 +437,9 @@ const ChefDashboard = () => {
         return 'bg-emerald-600 text-white border-emerald-400';
     };
 
-    const isKotOnlyKitchen = restaurant?.kitchenMode === 'KOT_ONLY' || 
-                             restaurant?.restaurantConfig?.orderKitchen?.kitchenMode === 'KOT_ONLY' || 
-                             restaurant?.restaurantConfig?.orderKitchen?.kdsEnabled === false;
+    const isKotOnlyKitchen = restaurant?.kitchenMode === 'KOT_ONLY' ||
+        restaurant?.restaurantConfig?.orderKitchen?.kitchenMode === 'KOT_ONLY' ||
+        restaurant?.restaurantConfig?.orderKitchen?.kdsEnabled === false;
 
     if (isKotOnlyKitchen) {
         return (
@@ -462,7 +462,7 @@ const ChefDashboard = () => {
 
     return (
         <div className="w-full max-w-[1700px] mx-auto font-sans space-y-4 sm:space-y-6 pb-24 text-slate-900 dark:text-slate-100 transition-colors">
-            
+
             {/* Sleek Kitchen Shift & Station Control Strip */}
             <div className="bg-slate-900 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 shadow-md border border-slate-800 shrink-0">
                 <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
@@ -484,11 +484,10 @@ const ChefDashboard = () => {
                     <button
                         type="button"
                         onClick={toggleAutoPrintKOT}
-                        className={`text-xs font-bold px-2.5 sm:px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition-all cursor-pointer border ${
-                            autoPrintKOTEnabled 
-                                ? 'bg-amber-500/15 text-amber-300 border-amber-500/40 hover:bg-amber-500/25' 
-                                : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-750'
-                        }`}
+                        className={`text-xs font-bold px-2.5 sm:px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition-all cursor-pointer border ${autoPrintKOTEnabled
+                            ? 'bg-amber-500/15 text-amber-300 border-amber-500/40 hover:bg-amber-500/25'
+                            : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-750'
+                            }`}
                         title="Click to toggle automatic thermal KOT printing on incoming orders"
                     >
                         <Printer size={13} className={autoPrintKOTEnabled ? 'text-amber-400' : 'text-slate-400'} />
@@ -501,7 +500,7 @@ const ChefDashboard = () => {
             {outOfStock.length > 0 && (
                 <div className="bg-gradient-to-r from-red-50 via-white to-red-50 dark:from-red-950 dark:via-slate-900 dark:to-red-950 border border-red-200 dark:border-red-500/40 rounded-2xl sm:rounded-3xl p-3 sm:p-5 flex flex-col md:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 shadow-xl dark:shadow-2xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-red-500/10 rounded-full blur-3xl pointer-events-none" />
-                    
+
                     <div className="flex items-start sm:items-center gap-3 z-10 min-w-0">
                         <div className="p-2 sm:p-3 bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 rounded-xl sm:rounded-2xl border border-red-200 dark:border-red-500/30 shrink-0">
                             <AlertOctagon className="animate-bounce" size={22} />
@@ -520,7 +519,7 @@ const ChefDashboard = () => {
                     </div>
 
                     <div className="flex items-center gap-3 z-10 w-full md:w-auto">
-                        <button 
+                        <button
                             onClick={() => setIsAlertModalOpen(true)}
                             className="w-full md:w-auto bg-red-600 hover:bg-red-500 text-white font-extrabold text-xs px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl shadow-lg shadow-red-600/30 transition-all flex items-center justify-center gap-2 active:scale-95 cursor-pointer"
                         >
@@ -532,7 +531,7 @@ const ChefDashboard = () => {
 
             {/* 2. Top KDS Kitchen Command Header */}
             <div className="bg-white dark:bg-slate-900/90 backdrop-blur-md p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl shadow-xl dark:shadow-2xl border border-slate-200 dark:border-slate-800 space-y-3.5 sm:space-y-6">
-                
+
                 {/* Header Title & Station Selector */}
                 <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3 sm:gap-6 pb-3.5 sm:pb-6 border-b border-slate-200 dark:border-slate-800">
                     <div className="flex items-center gap-3 sm:gap-4">
@@ -554,7 +553,7 @@ const ChefDashboard = () => {
                                 Real-time order routing, cooking timers, priority queueing, and station management.
                             </p>
                             <div className="mt-2.5 flex items-center gap-2 flex-wrap">
-                                <Link 
+                                <Link
                                     to="/chef/kot"
                                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-extrabold text-xs shadow-md shadow-orange-600/20 transition-all active:scale-95"
                                 >
@@ -565,11 +564,10 @@ const ChefDashboard = () => {
                                 <button
                                     type="button"
                                     onClick={toggleAutoPrintKOT}
-                                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-extrabold text-xs transition-all border cursor-pointer active:scale-95 ${
-                                        autoPrintKOTEnabled
-                                            ? 'bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-700'
-                                            : 'bg-slate-100 text-slate-500 border-slate-300 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'
-                                    }`}
+                                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-extrabold text-xs transition-all border cursor-pointer active:scale-95 ${autoPrintKOTEnabled
+                                        ? 'bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-700'
+                                        : 'bg-slate-100 text-slate-500 border-slate-300 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'
+                                        }`}
                                     title="Click to toggle automatic thermal printing of KOTs when new orders arrive"
                                 >
                                     <Printer size={13} className={autoPrintKOTEnabled ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'} />
@@ -587,11 +585,10 @@ const ChefDashboard = () => {
                                 <button
                                     key={st}
                                     onClick={() => setSelectedStation(st)}
-                                    className={`px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs font-extrabold transition-all border cursor-pointer shrink-0 whitespace-nowrap active:scale-95 ${
-                                        selectedStation === st
+                                    className={`px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs font-extrabold transition-all border cursor-pointer shrink-0 whitespace-nowrap active:scale-95 ${selectedStation === st
                                         ? 'bg-orange-500 text-white border-orange-400 shadow-md shadow-orange-500/25 scale-[1.02]'
                                         : 'bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'
-                                    }`}
+                                        }`}
                                 >
                                     {st}
                                 </button>
@@ -632,9 +629,8 @@ const ChefDashboard = () => {
                         </div>
                     </div>
 
-                    <div className={`p-2.5 sm:p-4 rounded-xl sm:rounded-2xl border flex items-center gap-2 sm:gap-3.5 min-w-0 transition-all ${
-                        overdueCount > 0 ? 'bg-red-50 dark:bg-red-950/40 border-red-300 dark:border-red-500/40 animate-pulse' : 'bg-slate-50 dark:bg-slate-950/70 border-slate-200 dark:border-slate-800/80'
-                    }`}>
+                    <div className={`p-2.5 sm:p-4 rounded-xl sm:rounded-2xl border flex items-center gap-2 sm:gap-3.5 min-w-0 transition-all ${overdueCount > 0 ? 'bg-red-50 dark:bg-red-950/40 border-red-300 dark:border-red-500/40 animate-pulse' : 'bg-slate-50 dark:bg-slate-950/70 border-slate-200 dark:border-slate-800/80'
+                        }`}>
                         <div className={`p-2 sm:p-3 rounded-lg sm:rounded-xl shrink-0 ${overdueCount > 0 ? 'bg-red-500 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'}`}>
                             <Flame size={18} className="sm:w-5 sm:h-5" />
                         </div>
@@ -647,7 +643,7 @@ const ChefDashboard = () => {
 
                 {/* Queue Filter Tabs & View Controls */}
                 <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 sm:gap-4 pt-1 sm:pt-2">
-                    
+
                     {/* Status Tabs (horizontal scroll on mobile) */}
                     <div className="flex items-center overflow-x-auto no-scrollbar bg-slate-100 dark:bg-slate-950/80 p-1 sm:p-1.5 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800/90 gap-1 w-full lg:w-auto -mx-0.5 px-0.5 touch-pan-x">
                         {[
@@ -660,17 +656,15 @@ const ChefDashboard = () => {
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`shrink-0 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer whitespace-nowrap active:scale-95 ${
-                                    activeTab === tab.id
+                                className={`shrink-0 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer whitespace-nowrap active:scale-95 ${activeTab === tab.id
                                     ? 'bg-gradient-to-r from-orange-600 to-amber-600 text-white shadow-md shadow-orange-600/20'
                                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-800/80'
-                                }`}
+                                    }`}
                             >
                                 <span>{tab.label}</span>
                                 {tab.count > 0 && (
-                                    <span className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
-                                        activeTab === tab.id ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-300'
-                                    }`}>
+                                    <span className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${activeTab === tab.id ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-300'
+                                        }`}>
                                         {tab.count}
                                     </span>
                                 )}
@@ -680,7 +674,7 @@ const ChefDashboard = () => {
 
                     {/* Controls: Search, Sort & View Mode Switcher */}
                     <div className="flex items-center gap-2 sm:gap-3 w-full lg:w-auto justify-between lg:justify-end">
-                        
+
                         {/* Search Input */}
                         <div className="relative flex-1 sm:w-64 lg:flex-none min-w-0">
                             <Search size={15} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -749,16 +743,14 @@ const ChefDashboard = () => {
                             const progressPercent = totalItemsCount > 0 ? Math.round((doneItemsCount / totalItemsCount) * 100) : 0;
 
                             return (
-                                <div 
-                                    key={order._id} 
-                                    className={`bg-white dark:bg-slate-900/90 rounded-2xl sm:rounded-3xl shadow-lg sm:shadow-xl dark:shadow-2xl flex flex-col overflow-hidden border-2 transition-all duration-300 ${
-                                        isPriority ? 'border-red-500 shadow-red-500/10' : 'border-slate-200 dark:border-slate-800/90'
-                                    }`}
+                                <div
+                                    key={order._id}
+                                    className={`bg-white dark:bg-slate-900/90 rounded-2xl sm:rounded-3xl shadow-lg sm:shadow-xl dark:shadow-2xl flex flex-col overflow-hidden border-2 transition-all duration-300 ${isPriority ? 'border-red-500 shadow-red-500/10' : 'border-slate-200 dark:border-slate-800/90'
+                                        }`}
                                 >
                                     {/* Ticket Top Header */}
-                                    <div className={`px-4 sm:px-5 py-3 sm:py-4 flex justify-between items-center ${
-                                        isPriority ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white' : 'bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-200 border-b border-slate-200 dark:border-slate-800'
-                                    }`}>
+                                    <div className={`px-4 sm:px-5 py-3 sm:py-4 flex justify-between items-center ${isPriority ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white' : 'bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-200 border-b border-slate-200 dark:border-slate-800'
+                                        }`}>
                                         <div className="space-y-1 min-w-0 pr-1.5 flex-1">
                                             <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
                                                 <span className="font-mono font-black text-base sm:text-lg text-slate-900 dark:text-white">#{order._id.substring(order._id.length - 5).toUpperCase()}</span>
@@ -767,11 +759,10 @@ const ChefDashboard = () => {
                                                         {order.kotNumbers.join(', ')}
                                                     </span>
                                                 )}
-                                                <button 
+                                                <button
                                                     onClick={() => togglePriority(order._id)}
-                                                    className={`p-1 sm:p-1.5 rounded-lg transition-colors cursor-pointer ${
-                                                        isStarred ? 'text-amber-500 dark:text-amber-300 bg-amber-100 dark:bg-white/20' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                                                    }`}
+                                                    className={`p-1 sm:p-1.5 rounded-lg transition-colors cursor-pointer ${isStarred ? 'text-amber-500 dark:text-amber-300 bg-amber-100 dark:bg-white/20' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                                                        }`}
                                                     title="Pin as VIP Priority"
                                                 >
                                                     <Star size={15} fill={isStarred ? "currentColor" : "none"} />
@@ -817,7 +808,7 @@ const ChefDashboard = () => {
 
                                     {/* Prep Checklist Progress Bar */}
                                     <div className="w-full bg-slate-100 dark:bg-slate-950 h-1.5">
-                                        <div 
+                                        <div
                                             className="bg-gradient-to-r from-orange-500 to-emerald-500 h-full transition-all duration-500"
                                             style={{ width: `${progressPercent}%` }}
                                         />
@@ -833,28 +824,26 @@ const ChefDashboard = () => {
                                         <div className="space-y-1 sm:space-y-1.5 max-h-48 overflow-y-auto custom-scrollbar pr-1">
                                             {order.orderItems?.map((item, idx) => {
                                                 const isItemDone = completedItems[`${order._id}-${idx}`];
-                                                
+
                                                 // Check for 86 ingredient stock out match
-                                                const hasIngredientAlert = outOfStock.some(ing => 
+                                                const hasIngredientAlert = outOfStock.some(ing =>
                                                     item.name.toLowerCase().includes(ing.toLowerCase())
                                                 );
 
                                                 return (
-                                                    <div 
-                                                        key={idx} 
+                                                    <div
+                                                        key={idx}
                                                         onClick={() => toggleItemDone(order._id, idx)}
-                                                        className={`p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-2.5 sm:gap-3 active:scale-[0.99] ${
-                                                            isItemDone 
-                                                            ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-500/40 text-emerald-800 dark:text-emerald-300' 
+                                                        className={`p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-2.5 sm:gap-3 active:scale-[0.99] ${isItemDone
+                                                            ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-500/40 text-emerald-800 dark:text-emerald-300'
                                                             : hasIngredientAlert
-                                                            ? 'bg-red-50 dark:bg-red-950/40 border-red-300 dark:border-red-500/50 text-red-700 dark:text-red-200 animate-pulse'
-                                                            : 'bg-slate-50 dark:bg-slate-950/60 border-slate-200 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700 text-slate-800 dark:text-slate-200'
-                                                        }`}
+                                                                ? 'bg-red-50 dark:bg-red-950/40 border-red-300 dark:border-red-500/50 text-red-700 dark:text-red-200 animate-pulse'
+                                                                : 'bg-slate-50 dark:bg-slate-950/60 border-slate-200 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700 text-slate-800 dark:text-slate-200'
+                                                            }`}
                                                     >
                                                         <div className="flex items-start gap-2 sm:gap-2.5 flex-1 min-w-0">
-                                                            <div className={`mt-0.5 w-4 h-4 rounded-md border flex items-center justify-center shrink-0 transition-colors ${
-                                                                isItemDone ? 'bg-emerald-500 border-emerald-400 text-white dark:text-slate-950' : 'border-slate-300 dark:border-slate-600'
-                                                            }`}>
+                                                            <div className={`mt-0.5 w-4 h-4 rounded-md border flex items-center justify-center shrink-0 transition-colors ${isItemDone ? 'bg-emerald-500 border-emerald-400 text-white dark:text-slate-950' : 'border-slate-300 dark:border-slate-600'
+                                                                }`}>
                                                                 {isItemDone && <Check size={11} strokeWidth={3} />}
                                                             </div>
                                                             <div className="min-w-0">
@@ -893,8 +882,8 @@ const ChefDashboard = () => {
                                     {/* Action Buttons Footer */}
                                     <div className="p-2 sm:p-2.5 border-t border-slate-200 dark:border-slate-800/80 bg-slate-50 dark:bg-slate-950/60 shrink-0 flex items-center justify-between gap-2">
                                         {(!order.status || order.status === 'Pending' || order.status === 'Accepted') && (
-                                            <button 
-                                                onClick={() => updateStatus(order._id, 'Preparing')} 
+                                            <button
+                                                onClick={() => updateStatus(order._id, 'Preparing')}
                                                 className="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-extrabold py-2.5 rounded-xl sm:rounded-2xl transition-all shadow-md shadow-orange-600/20 text-xs flex items-center justify-center gap-2 cursor-pointer active:scale-95"
                                             >
                                                 <ChefHat size={15} />
@@ -902,8 +891,8 @@ const ChefDashboard = () => {
                                             </button>
                                         )}
                                         {order.status === 'Preparing' && (
-                                            <button 
-                                                onClick={() => updateStatus(order._id, isSelfOrder(order) ? 'Ready for Pickup' : 'Ready')} 
+                                            <button
+                                                onClick={() => updateStatus(order._id, isSelfOrder(order) ? 'Ready for Pickup' : 'Ready')}
                                                 className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold py-2.5 rounded-xl sm:rounded-2xl transition-all shadow-md shadow-emerald-600/20 flex justify-center items-center gap-2 text-xs cursor-pointer active:scale-95"
                                             >
                                                 <Sparkles size={15} />
@@ -1001,7 +990,7 @@ const ChefDashboard = () => {
                                                             </span>
                                                         </div>
                                                     </div>
-                                                    
+
                                                     <div className="space-y-1 min-w-0 pr-1 flex-1">
                                                         {order.orderItems?.slice(0, 4).map((it, idx) => (
                                                             <p key={idx} className="text-xs text-slate-800 dark:text-slate-300 font-bold truncate">
@@ -1062,7 +1051,7 @@ const ChefDashboard = () => {
                             </div>
                             <button onClick={() => setNewTicketModalOrder(null)} className="text-slate-400 hover:text-white p-1 rounded-lg">✕</button>
                         </div>
-                        
+
                         <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2 text-xs">
                             <p className="font-bold text-slate-300">Type: <span className="text-amber-400 font-mono">{newTicketModalOrder.orderType}</span> {newTicketModalOrder.tableNumber ? `(Table ${newTicketModalOrder.tableNumber})` : ''}</p>
                             <div className="space-y-1.5 pt-2 border-t border-slate-800">
@@ -1075,7 +1064,7 @@ const ChefDashboard = () => {
                         </div>
 
                         <div className="flex gap-3 pt-2">
-                            <button 
+                            <button
                                 onClick={() => {
                                     updateStatus(newTicketModalOrder._id, 'Preparing');
                                     setNewTicketModalOrder(null);
@@ -1084,7 +1073,7 @@ const ChefDashboard = () => {
                             >
                                 <ChefHat size={16} /> Accept &amp; Start Preparing
                             </button>
-                            <button 
+                            <button
                                 onClick={() => setNewTicketModalOrder(null)}
                                 className="px-4 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-2xl text-xs cursor-pointer active:scale-95 transition-all"
                             >
@@ -1114,13 +1103,13 @@ const ChefDashboard = () => {
                                 ✕
                             </button>
                         </div>
-                        
+
                         <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 overflow-y-auto">
                             {/* Add Item form */}
                             <form onSubmit={handleAddIngredient} className="flex gap-2">
-                                <input 
-                                    type="text" 
-                                    placeholder="Enter ingredient name..." 
+                                <input
+                                    type="text"
+                                    placeholder="Enter ingredient name..."
                                     value={newIngredient}
                                     onChange={(e) => setNewIngredient(e.target.value)}
                                     className="flex-1 min-w-0 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl sm:rounded-2xl px-3.5 sm:px-4 py-2.5 sm:py-3 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-red-500"
@@ -1144,7 +1133,7 @@ const ChefDashboard = () => {
                                                 <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse shrink-0" />
                                                 <span className="font-extrabold text-slate-800 dark:text-slate-200 truncate">{ing}</span>
                                             </div>
-                                            <button 
+                                            <button
                                                 onClick={() => handleRemoveIngredient(ing)}
                                                 className="px-2.5 sm:px-3 py-1 sm:py-1.5 bg-slate-200 dark:bg-slate-800 hover:bg-red-500/20 text-slate-700 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 rounded-lg sm:rounded-xl transition-all font-bold text-[10px] sm:text-[11px] flex items-center gap-1 cursor-pointer shrink-0"
                                                 title="Mark Restored In-Stock"
@@ -1158,7 +1147,7 @@ const ChefDashboard = () => {
                         </div>
 
                         <div className="p-3.5 sm:p-6 bg-slate-50 dark:bg-slate-950/80 border-t border-slate-200 dark:border-slate-800 flex justify-end">
-                            <button 
+                            <button
                                 onClick={() => setIsAlertModalOpen(false)}
                                 className="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-white font-extrabold text-xs px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl transition-all cursor-pointer text-center"
                             >

@@ -14,6 +14,7 @@ import DishDetailModal from '../../components/DishDetailModal';
 import { getSavedLocation, saveUserLocation, detectUserLocation, requestBrowserGpsLocation, reverseGeocodeCoords, filterRestaurantsForLocation, EVENT_LOCATION_UPDATED } from '../../utils/locationHelper';
 import { useCart } from '../../context/CartContext';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
+import { getApiUrl } from '../../utils/axiosInstance';
 
 // ============================================================================
 // 1. REFERENCE DATA MATCHING SCREENSHOT EXACTLY
@@ -127,8 +128,8 @@ export default function Explore() {
 
           let rawImg = showcaseImg || null;
           if (rawImg && typeof rawImg === 'string') {
-            const apiBase = api?.defaults?.baseURL || '';
-            const origin = apiBase.startsWith('http') ? new URL(apiBase).origin : '';
+            const apiBase = getApiUrl() || api?.defaults?.baseURL || '';
+            const origin = apiBase.startsWith('http') ? new URL(apiBase).origin : 'https://f-hms.onrender.com';
             if (!rawImg.startsWith('http') && !rawImg.startsWith('data:')) {
               rawImg = origin + (rawImg.startsWith('/') ? '' : '/') + rawImg;
             }
@@ -196,8 +197,8 @@ export default function Explore() {
 
           let dishImg = d.image && typeof d.image === 'string' && !d.image.includes('undefined') && !d.image.includes('unsplash.com') ? d.image : null;
           if (dishImg && !dishImg.startsWith('http') && !dishImg.startsWith('data:')) {
-            const apiBase = api?.defaults?.baseURL || '';
-            const origin = apiBase.startsWith('http') ? new URL(apiBase).origin : '';
+            const apiBase = getApiUrl() || api?.defaults?.baseURL || '';
+            const origin = apiBase.startsWith('http') ? new URL(apiBase).origin : 'https://f-hms.onrender.com';
             dishImg = `${origin}${dishImg.startsWith('/') ? '' : '/'}${dishImg}`;
           }
 

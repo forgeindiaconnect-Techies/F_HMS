@@ -128572,30 +128572,91 @@ var getRestaurants = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+var escapeXmlForSvg = (unsafe) => {
+  return String(unsafe || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
+};
+var getRestaurantFallbackSvg = (name = "FoodNest", isLogo = false) => {
+  const cleanName = String(name || "FoodNest").trim();
+  const initials = (cleanName || "FN").split(" ").map((w) => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() || "FN";
+  if (isLogo) {
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="logoBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF5A1F"/>
+      <stop offset="100%" stop-color="#EA580C"/>
+    </linearGradient>
+  </defs>
+  <rect width="100%" height="100%" rx="36" fill="url(#logoBg)"/>
+  <circle cx="100" cy="100" r="72" fill="white" fill-opacity="0.12"/>
+  <text x="100" y="112" dominant-baseline="middle" text-anchor="middle" fill="#FFFFFF" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="64" font-weight="900" letter-spacing="1">${escapeXmlForSvg(initials)}</text>
+</svg>`;
+  }
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450">
+  <defs>
+    <linearGradient id="bannerBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E293B"/>
+      <stop offset="50%" stop-color="#0F172A"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF5A1F"/>
+      <stop offset="100%" stop-color="#F59E0B"/>
+    </linearGradient>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#bannerBg)"/>
+  <circle cx="400" cy="180" r="110" fill="url(#accentGrad)" fill-opacity="0.15"/>
+  <g transform="translate(376, 130) scale(2)" stroke="#FF5A1F" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M18 2v20M2 12h20M4.93 4.93l4.24 4.24M14.83 14.83l4.24 4.24"/>
+  </g>
+  <text x="400" y="275" dominant-baseline="middle" text-anchor="middle" fill="#FFFFFF" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="28" font-weight="800" letter-spacing="0.5">${escapeXmlForSvg(cleanName)}</text>
+  <text x="400" y="315" dominant-baseline="middle" text-anchor="middle" fill="#94A3B8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13" font-weight="700" letter-spacing="2">AUTHENTIC DINING &amp; KITCHEN</text>
+</svg>`;
+};
 var getRestaurantThumbnail = async (req, res) => {
+  const wantLogo = req.query.kind === "logo";
+  let restName = "FoodNest";
   try {
-    const rest = await Restaurant_default.findById(req.params.id).select("showcaseImages bannerImage image logo").lean();
-    if (!rest) return res.status(404).end();
-    const wantLogo = req.query.kind === "logo";
-    let raw = wantLogo ? rest.logo && !String(rest.logo).includes(".pdf") ? rest.logo : null : Array.isArray(rest.showcaseImages) && rest.showcaseImages[0] || rest.bannerImage || rest.image || (rest.logo && !String(rest.logo).includes(".pdf") ? rest.logo : null);
-    if (!raw) {
-      const verif = await RestaurantVerification_default.findOne({ restaurantId: rest._id }).select(wantLogo ? "documents.logo.filePath" : "documents.images.filePath documents.logo.filePath").lean();
-      raw = wantLogo ? verif?.documents?.logo?.filePath : verif?.documents?.images?.[0]?.filePath || verif?.documents?.logo?.filePath;
+    let raw = null;
+    if (req.params.id && req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+      const rest = await Restaurant_default.findById(req.params.id).select("+showcaseImages +bannerImage +image +logo name").lean();
+      if (rest) {
+        restName = rest.name || "FoodNest";
+        const candidate = wantLogo ? rest.logo && !String(rest.logo).includes(".pdf") ? rest.logo : null : Array.isArray(rest.showcaseImages) && rest.showcaseImages[0] || rest.bannerImage || rest.image || (rest.logo && !String(rest.logo).includes(".pdf") ? rest.logo : null);
+        if (candidate && typeof candidate === "string" && !candidate.includes("/thumbnail")) {
+          raw = candidate;
+        }
+        if (!raw) {
+          const verif = await RestaurantVerification_default.findOne({ restaurantId: rest._id }).select(wantLogo ? "documents.logo.filePath" : "documents.images.filePath documents.logo.filePath").lean();
+          const verifCandidate = wantLogo ? verif?.documents?.logo?.filePath : verif?.documents?.images?.[0]?.filePath || verif?.documents?.logo?.filePath;
+          if (verifCandidate && typeof verifCandidate === "string" && !verifCandidate.includes(".pdf") && !verifCandidate.includes("/thumbnail")) {
+            raw = verifCandidate;
+          }
+        }
+      }
     }
-    if (!raw || typeof raw !== "string" || raw.includes(".pdf")) {
-      return res.status(404).end();
+    if (raw && typeof raw === "string") {
+      if (raw.startsWith("data:")) {
+        const match = raw.match(/^data:([^;]+);base64,(.+)$/);
+        if (match) {
+          const buf = Buffer.from(match[2], "base64");
+          res.set("Content-Type", match[1] || "image/png");
+          res.set("Cache-Control", "public, max-age=86400");
+          return res.status(200).send(buf);
+        }
+      } else if (raw.startsWith("http://") || raw.startsWith("https://")) {
+        res.set("Cache-Control", "public, max-age=86400");
+        return res.redirect(raw);
+      }
     }
-    if (raw.startsWith("data:")) {
-      const match = raw.match(/^data:([^;]+);base64,(.+)$/);
-      if (!match) return res.status(404).end();
-      const buf = Buffer.from(match[2], "base64");
-      res.set("Content-Type", match[1] || "image/png");
-      res.set("Cache-Control", "public, max-age=86400");
-      return res.send(buf);
-    }
-    return res.redirect(raw);
+    const svg = getRestaurantFallbackSvg(restName, wantLogo);
+    res.set("Content-Type", "image/svg+xml");
+    res.set("Cache-Control", "public, max-age=86400");
+    return res.status(200).send(svg);
   } catch (error) {
-    return res.status(404).end();
+    const svg = getRestaurantFallbackSvg(restName, wantLogo);
+    res.set("Content-Type", "image/svg+xml");
+    res.set("Cache-Control", "public, max-age=86400");
+    return res.status(200).send(svg);
   }
 };
 var updateSubscription = async (req, res) => {
