@@ -1,15 +1,16 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { 
     LayoutGrid, BookOpen, ShoppingBag, 
     Calendar, Heart, MessageSquare, Settings, 
     Crown, Sparkles, Plus, Trash2, 
     ChevronRight, LogOut, Wallet, Star, ShieldAlert,
     MapPin, Phone, Lock, Clock, Gift, User,
-    Bike, Store, BellRing, Menu, X
+    Bike, Store, BellRing, Menu, X, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { getApiUrl } from '../../utils/axiosInstance';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import CustomerNavDrawer, { CUSTOMER_DASHBOARD_TABS } from '../../components/CustomerNavDrawer';
 import { useCart } from '../../context/CartContext';
 import { getItemImage } from '../../utils/imageHelper';
 import toast from 'react-hot-toast';
@@ -36,6 +37,7 @@ const CustomerDashboard = () => {
             return t || 'overview';
         } catch { return 'overview'; }
     });
+    const [isNavDrawerOpen, setIsNavDrawerOpen] = useState(false);
     const [orders, setOrders] = useState(() => {
         try {
             const cached = sessionStorage.getItem('restosys_cust_orders_cache');
@@ -543,88 +545,139 @@ const CustomerDashboard = () => {
         o.deliveryStatus !== 'Delivered'
     );
 
-    // Sidebar navigation tabs definitions
-    const tabsList = [
-        { id: 'overview', name: 'Overview', icon: <LayoutGrid size={18} /> },
-        { id: 'outlets', name: 'Nearby Outlets', icon: <Store size={18} /> },
-        { id: 'orders', name: 'Orders & Tracking', icon: <ShoppingBag size={18} /> },
-        { id: 'reservations', name: 'Reservations', icon: <Calendar size={18} /> },
-        { id: 'favorites', name: 'Favorite Items', icon: <Heart size={18} /> },
-        { id: 'loyalty', name: 'Loyalty & Rewards', icon: <Crown size={18} /> },
-        { id: 'wallet', name: 'Wallet', icon: <Wallet size={18} /> },
-        { id: 'offers', name: 'Offers & Coupons', icon: <Gift size={18} /> },
-        { id: 'feedback', name: 'Feedback & Inquiries', icon: <MessageSquare size={18} /> },
-        { id: 'reviews', name: 'My Reviews & Story', icon: <Star size={18} /> },
-        { id: 'profile', name: 'Profile & Settings', icon: <Settings size={18} /> }
-    ];
+    const location = useLocation();
+    const navigate = useNavigate();
+    const activeTabRef = useRef(null);
+    const contentScrollRef = useRef(null);
+
+    // Listen to custom tab change events and URL parameter changes
+    useEffect(() => {
+        const handleTabEvent = (e) => {
+            if (e.detail?.tab && e.detail.tab !== activeTab) {
+                setActiveTab(e.detail.tab);
+            }
+        };
+        window.addEventListener('customer-tab-change', handleTabEvent);
+        return () => window.removeEventListener('customer-tab-change', handleTabEvent);
+    }, [activeTab]);
+
+    useEffect(() => {
+        const urlTab = new URLSearchParams(location.search).get('tab');
+        if (urlTab && urlTab !== activeTab) {
+            setActiveTab(urlTab);
+        }
+    }, [location.search, activeTab]);
+
+    useEffect(() => {
+        if (activeTabRef.current) {
+            activeTabRef.current.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+        }
+        if (contentScrollRef.current) {
+            contentScrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }, [activeTab]);
+
+    const activeTabObj = CUSTOMER_DASHBOARD_TABS.find(t => t.id === activeTab) || CUSTOMER_DASHBOARD_TABS[0];
+    const ActiveTabIcon = activeTabObj?.icon || LayoutGrid;
 
     return (
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-6 space-y-4 sm:space-y-6 animate-in fade-in duration-300 text-slate-800">
-            {/* Sticky Top Dashboard Navigation Bar (Pinned at the very top of the page, does not scroll away) */}
-            <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-md rounded-2xl px-2.5 py-2.5 border border-slate-200/90 shadow-md">
-                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-                    {tabsList.map(tab => {
-                        const isActive = activeTab === tab.id;
-                        return (
-                            <button
-                                key={tab.id}
-                                type="button"
-                                onClick={() => setActiveTab(tab.id)}
-                                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap shrink-0 transition-all cursor-pointer ${
-                                    isActive
-                                        ? 'bg-[#FF5A1F] text-white shadow-xs shadow-[#FF5A1F]/25'
-                                        : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-                                }`}
-                            >
-                                <span className={isActive ? 'text-white' : 'text-slate-400'}>
-                                    {tab.icon}
-                                </span>
-                                <span>{tab.name}</span>
-                            </button>
-                        );
-                    })}
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-2 sm:pt-4 pb-0 h-[calc(100vh-140px)] md:h-[calc(100vh-80px)] flex flex-col overflow-hidden animate-in fade-in duration-300 text-slate-800">
+            {/* Slide-out Navigation Drawer for Dashboard Sections */}
+            <CustomerNavDrawer
+                isOpen={isNavDrawerOpen}
+                onClose={() => setIsNavDrawerOpen(false)}
+                activeTab={activeTab}
+                onSelectTab={(tabId) => {
+                    setActiveTab(tabId);
+                    navigate(`/profile?tab=${tabId}`, { replace: true });
+                }}
+            />
+
+            {/* Fixed Top Dashboard Navigation Bar */}
+            <div className="shrink-0 mb-3 z-30">
+                <div className="bg-white/95 backdrop-blur-md rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 border border-slate-200/90 shadow-xs flex items-center gap-3">
+                    {/* Left: Hamburger Button + Current Active Section */}
+                    <div className="flex items-center gap-2.5 min-w-0">
+                        <button
+                            type="button"
+                            onClick={() => setIsNavDrawerOpen(true)}
+                            className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-black text-slate-800 hover:text-[#FF5A1F] bg-slate-100 hover:bg-orange-50 active:bg-orange-100 border border-slate-200 hover:border-orange-200 transition-all cursor-pointer shrink-0 shadow-2xs"
+                            title="Open Dashboard Navigation Menu"
+                            aria-label="Open Navigation Menu"
+                        >
+                            <Menu size={18} className="text-slate-800" />
+                            <span className="font-bold">Menu</span>
+                        </button>
+
+                        <div className="h-6 w-px bg-slate-200 shrink-0" />
+
+                        {/* Current Active Section Name & Icon */}
+                        {activeTabObj && (
+                            <div className="flex items-center gap-2 min-w-0">
+                                <div className="w-7 h-7 rounded-lg bg-orange-50 text-[#FF5A1F] border border-orange-200/60 flex items-center justify-center shrink-0">
+                                    <ActiveTabIcon size={15} />
+                                </div>
+                                <div className="min-w-0 text-left">
+                                    <span className="text-xs sm:text-sm font-black text-slate-900 truncate block leading-tight">
+                                        {activeTabObj.name}
+                                    </span>
+                                    <span className="text-[10px] text-slate-400 font-medium truncate hidden sm:block">
+                                        {activeTabObj.desc}
+                                    </span>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 
-            {/* Header Welcome banner with Landing Page Warm Organic Gradient Canvas */}
-            <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-r from-white via-[#FCF9F5] to-[#F8F5EE] p-4 sm:p-7 border border-slate-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col md:flex-row justify-between items-center gap-4 sm:gap-6">
-                {/* Soft ambient blur glow */}
-                <div className="absolute top-0 left-0 w-64 h-64 bg-gradient-to-br from-emerald-100/30 via-orange-100/20 to-transparent rounded-full blur-2xl pointer-events-none" />
+            {/* Independent Scrollable Content Container Below Navigation */}
+            <div 
+                ref={contentScrollRef}
+                className="flex-1 overflow-y-auto pr-1 pb-16 space-y-4 sm:space-y-6"
+            >
 
-                <div className="flex flex-row items-center gap-3.5 sm:gap-5 text-left relative z-10 w-full sm:w-auto">
-                    <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-tr from-[#FF5A1F] to-orange-400 rounded-xl sm:rounded-2xl flex items-center justify-center text-white shadow-md shadow-[#FF5A1F]/25 shrink-0">
-                        <span className="text-xl sm:text-2xl font-black font-sans uppercase">
-                            {user?.name?.charAt(0) || 'C'}
-                        </span>
-                    </div>
-                    <div className="min-w-0">
-                        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white border border-orange-200/80 text-[#FF5A1F] text-[10px] font-bold shadow-xs mb-0.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#FF5A1F]" />
-                            <span>Customer Portal</span>
+            {/* Header Welcome banner with Landing Page Warm Organic Gradient Canvas - ONLY displayed on Overview */}
+            {activeTab === 'overview' && (
+                <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-r from-white via-[#FCF9F5] to-[#F8F5EE] p-4 sm:p-7 border border-slate-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col md:flex-row justify-between items-center gap-4 sm:gap-6">
+                    {/* Soft ambient blur glow */}
+                    <div className="absolute top-0 left-0 w-64 h-64 bg-gradient-to-br from-emerald-100/30 via-orange-100/20 to-transparent rounded-full blur-2xl pointer-events-none" />
+
+                    <div className="flex flex-row items-center gap-3.5 sm:gap-5 text-left relative z-10 w-full sm:w-auto">
+                        <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-tr from-[#FF5A1F] to-orange-400 rounded-xl sm:rounded-2xl flex items-center justify-center text-white shadow-md shadow-[#FF5A1F]/25 shrink-0">
+                            <span className="text-xl sm:text-2xl font-black font-sans uppercase">
+                                {user?.name?.charAt(0) || 'C'}
+                            </span>
                         </div>
-                        <h1 className="text-lg sm:text-2xl font-black text-slate-900 tracking-tight truncate">
-                            Welcome back, {user?.name || 'Foodie'}!
-                        </h1>
-                        <p className="text-[11px] sm:text-xs text-slate-500 font-medium truncate">Track your orders, view loyalty scores, and reserve tables.</p>
+                        <div className="min-w-0">
+                            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white border border-orange-200/80 text-[#FF5A1F] text-[10px] font-bold shadow-xs mb-0.5">
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#FF5A1F]" />
+                                <span>Customer Portal</span>
+                            </div>
+                            <h1 className="text-lg sm:text-2xl font-black text-slate-900 tracking-tight truncate">
+                                Welcome back, {user?.name || 'Foodie'}!
+                            </h1>
+                            <p className="text-[11px] sm:text-xs text-slate-500 font-medium truncate">Track your orders, view loyalty scores, and reserve tables.</p>
+                        </div>
+                    </div>
+
+                    <div className="flex gap-2 w-full sm:w-auto relative z-10">
+                        <button 
+                            onClick={logout}
+                            className="flex-1 sm:flex-initial px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-red-50 hover:text-red-600 hover:border-red-200 text-slate-700 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                        >
+                            <LogOut size={14} /> Log Out
+                        </button>
+                        <Link 
+                            to="/menu"
+                            className="flex-1 sm:flex-initial px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl bg-[#FF5A1F] hover:bg-[#e04f1a] text-white font-bold shadow-sm shadow-[#FF5A1F]/30 hover:shadow-md transition-all flex items-center justify-center gap-1 text-xs cursor-pointer"
+                        >
+                            <span>Order Now</span>
+                            <ChevronRight size={14} />
+                        </Link>
                     </div>
                 </div>
-
-                <div className="flex gap-2 w-full sm:w-auto relative z-10">
-                    <button 
-                        onClick={logout}
-                        className="flex-1 sm:flex-initial px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-red-50 hover:text-red-600 hover:border-red-200 text-slate-700 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
-                    >
-                        <LogOut size={14} /> Log Out
-                    </button>
-                    <Link 
-                        to="/menu"
-                        className="flex-1 sm:flex-initial px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl bg-[#FF5A1F] hover:bg-[#e04f1a] text-white font-bold shadow-sm shadow-[#FF5A1F]/30 hover:shadow-md transition-all flex items-center justify-center gap-1 text-xs cursor-pointer"
-                    >
-                        <span>Order Now</span>
-                        <ChevronRight size={14} />
-                    </Link>
-                </div>
-            </div>
+            )}
 
             {/* Portal Layout Container */}
             <div className="w-full">
@@ -2106,6 +2159,7 @@ const CustomerDashboard = () => {
 
                 </div>
 
+            </div>
             </div>
 
             {/* Beautiful Custom Add Funds Modal */}

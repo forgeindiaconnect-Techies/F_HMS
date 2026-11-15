@@ -1,10 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, UtensilsCrossed, Heart, CalendarDays, ShoppingBag, MapPin, ChevronDown, Clock, ChevronRight, Navigation } from 'lucide-react';
+import { 
+    ArrowLeft, User, UtensilsCrossed, Heart, CalendarDays, 
+    ShoppingBag, MapPin, ChevronDown, Clock, ChevronRight, 
+    Navigation, Menu, Bell 
+} from 'lucide-react';
 import { useCustomerAuth } from '../context/CustomerAuthContext';
 import { useCart } from '../context/CartContext';
 import CartDrawer from '../components/CartDrawer';
 import WishlistDrawer from '../components/WishlistDrawer';
+import { CUSTOMER_DASHBOARD_TABS } from '../components/CustomerNavDrawer';
 import LocationPickerModal from '../components/LocationPickerModal';
 import { getSavedLocation, EVENT_LOCATION_UPDATED } from '../utils/locationHelper';
 
@@ -21,6 +26,16 @@ const CustomerLayout = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const isLandingPage = location.pathname === '/' || location.pathname === '/explore';
+
+    // Current section title for top header breadcrumb
+    const currentTab = new URLSearchParams(location.search).get('tab') || 'overview';
+    const activeSectionTitle = location.pathname.startsWith('/profile') || location.pathname.startsWith('/dashboard')
+        ? (CUSTOMER_DASHBOARD_TABS.find(t => t.id === currentTab)?.name || 'Dashboard')
+        : location.pathname.startsWith('/menu')
+            ? 'Food Menu'
+            : location.pathname.startsWith('/reservations')
+                ? 'Table Reservations'
+                : null;
 
     useEffect(() => {
         if (!user || !api) {
@@ -96,20 +111,21 @@ const CustomerLayout = () => {
 
             {!isLandingPage && (
                 <header className="bg-white/95 backdrop-blur-md border-b border-slate-100 sticky top-0 z-40 shadow-[0_2px_12px_rgba(0,0,0,0.03)]">
-                    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-[76px] flex items-center justify-between gap-2 sm:gap-4">
+                    <div className="max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8 h-14 sm:h-[76px] flex items-center justify-between gap-1.5 sm:gap-4">
                         <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 min-w-0">
-                            {/* Back Icon Button (Only Icon, No Text) */}
+                            {/* Back Button */}
                             <button
                                 type="button"
                                 onClick={() => window.history.back()}
-                                className="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 transition-colors shrink-0 flex items-center justify-center border border-slate-200 shadow-xs cursor-pointer"
+                                className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 transition-colors shrink-0 flex items-center justify-center border border-slate-200 shadow-xs cursor-pointer"
                                 aria-label="Go Back"
                                 title="Go Back"
                             >
                                 <ArrowLeft size={16} className="text-slate-700 stroke-[2.2]" />
                             </button>
+
                             <Link to="/" className="flex items-center gap-1.5 sm:gap-2 shrink-0 group">
-                                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-[#FF5A1F] text-white flex items-center justify-center shadow-md shadow-[#FF5A1F]/25 group-hover:scale-105 transition-transform shrink-0">
+                                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#FF5A1F] text-white flex items-center justify-center shadow-md shadow-[#FF5A1F]/25 group-hover:scale-105 transition-transform shrink-0">
                                     <UtensilsCrossed size={17} className="stroke-[2.2]" />
                                 </div>
                                 <span className="text-base sm:text-[22px] font-black tracking-tight text-slate-900 leading-none">
@@ -117,7 +133,17 @@ const CustomerLayout = () => {
                                 </span>
                             </Link>
 
-                            {/* Location Detect & Change Pill - Visible on md+ screens so profile/login stays 100% visible on mobile */}
+                            {/* Active Page / Section Breadcrumb Title (Desktop/Tablet) */}
+                            {activeSectionTitle && (
+                                <div className="hidden md:flex items-center gap-1.5 min-w-0 text-left">
+                                    <span className="text-slate-300">/</span>
+                                    <span className="text-xs sm:text-sm font-bold text-slate-800 truncate max-w-[140px]">
+                                        {activeSectionTitle}
+                                    </span>
+                                </div>
+                            )}
+
+                            {/* Location Detect & Change Pill - Visible on md+ screens */}
                             <button
                                 type="button"
                                 onClick={() => setIsLocationPickerOpen(true)}
@@ -138,9 +164,9 @@ const CustomerLayout = () => {
                             <Link to="/explore#how-it-works" className="text-slate-600 hover:text-[#FF5A1F] transition-colors py-1.5">About Us</Link>
                         </nav>
 
-                        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0 ml-auto pr-0.5">
+                        <div className="flex items-center gap-1 sm:gap-2 shrink-0 ml-auto pr-1 sm:pr-2">
                             {/* Top Navbar Live Order Tracking Button */}
-                            {user && (
+                            {user && activeOrders.length > 0 && (
                                 <div className="relative" ref={trackRef}>
                                     <button
                                         type="button"
@@ -154,27 +180,16 @@ const CustomerLayout = () => {
                                                 navigate('/profile?tab=orders');
                                             }
                                         }}
-                                        className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-full text-xs font-extrabold transition-all cursor-pointer shrink-0 border ${activeOrders.length > 0
-                                            ? 'bg-orange-50 hover:bg-orange-100 text-[#FF5A1F] border-orange-200 shadow-xs'
-                                            : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
-                                            }`}
+                                        className="inline-flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-extrabold transition-all cursor-pointer shrink-0 border bg-orange-50 hover:bg-orange-100 text-[#FF5A1F] border-orange-200 shadow-xs"
                                         title="Track Live Order"
                                     >
-                                        {activeOrders.length > 0 ? (
-                                            <span className="relative flex h-2 w-2 shrink-0">
-                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FF5A1F] opacity-75"></span>
-                                                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#FF5A1F]"></span>
-                                            </span>
-                                        ) : (
-                                            <Navigation size={13} className="shrink-0" />
-                                        )}
-                                        <span className="hidden sm:inline">
-                                            {activeOrders.length > 0 ? `Track Live (${activeOrders.length})` : 'Track Order'}
+                                        <span className="relative flex h-2 w-2 shrink-0">
+                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FF5A1F] opacity-75"></span>
+                                            <span className="relative inline-flex rounded-full h-2 w-2 bg-[#FF5A1F]"></span>
                                         </span>
-                                        <span className="sm:hidden">
-                                            {activeOrders.length > 0 ? `Track (${activeOrders.length})` : 'Track'}
-                                        </span>
-                                        {activeOrders.length > 1 && <ChevronDown size={12} />}
+                                        <span className="hidden xs:inline">Track</span>
+                                        <span>({activeOrders.length})</span>
+                                        {activeOrders.length > 1 && <ChevronDown size={11} />}
                                     </button>
 
                                     {showTrackDropdown && activeOrders.length > 1 && (
@@ -223,12 +238,12 @@ const CustomerLayout = () => {
                                 <button
                                     type="button"
                                     onClick={() => setIsWishlistOpen(true)}
-                                    className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-600 hover:text-[#FF5A1F] transition-colors cursor-pointer shrink-0"
+                                    className="relative w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-600 hover:text-[#FF5A1F] transition-colors cursor-pointer shrink-0"
                                     title="Wishlist"
                                 >
-                                    <Heart size={18} />
+                                    <Heart size={17} />
                                     {wishlist && wishlist.length > 0 && (
-                                        <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center shadow-xs">
+                                        <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center shadow-xs">
                                             {wishlist.length}
                                         </span>
                                     )}
@@ -236,14 +251,33 @@ const CustomerLayout = () => {
                                 <button
                                     type="button"
                                     onClick={() => setIsCartOpen(true)}
-                                    className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-600 hover:text-[#FF5A1F] transition-colors cursor-pointer shrink-0"
+                                    className="relative w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-600 hover:text-[#FF5A1F] transition-colors cursor-pointer shrink-0"
                                     title="Cart"
                                 >
-                                    <ShoppingBag size={18} />
+                                    <ShoppingBag size={17} />
                                     {cartCount > 0 && (
-                                        <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#FF5A1F] text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-xs">
+                                        <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-[#FF5A1F] text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-xs">
                                             {cartCount}
                                         </span>
+                                    )}
+                                </button>
+                                {/* Notification Bell Icon */}
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        if (location.pathname === '/profile') {
+                                            window.dispatchEvent(new CustomEvent('customer-tab-change', { detail: { tab: 'orders' } }));
+                                        } else {
+                                            navigate('/profile?tab=orders');
+                                        }
+                                    }}
+                                    className="relative w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-600 hover:text-[#FF5A1F] transition-colors cursor-pointer shrink-0"
+                                    title="Notifications & Order Updates"
+                                    aria-label="Notifications"
+                                >
+                                    <Bell size={17} />
+                                    {activeOrders.length > 0 && (
+                                        <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white" />
                                     )}
                                 </button>
                             </div>
@@ -251,8 +285,8 @@ const CustomerLayout = () => {
                             {/* Profile Avatar or User Icon - Guaranteed 100% Visible on Mobile View */}
                             {user ? (
                                 <Link
-                                    to="/profile"
-                                    className="w-8 h-8 rounded-full bg-[#FF5A1F] text-white flex items-center justify-center text-xs font-black shadow-xs ring-2 ring-orange-200 shrink-0 hover:opacity-95 transition-all"
+                                    to="/profile?tab=profile"
+                                    className="w-8 h-8 rounded-full bg-[#FF5A1F] text-white flex items-center justify-center text-xs font-black shadow-xs ring-2 ring-orange-200 shrink-0 hover:opacity-95 transition-all ml-0.5"
                                     title={'Profile: ' + (user.name || 'User')}
                                     aria-label="Profile"
                                 >
@@ -261,12 +295,12 @@ const CustomerLayout = () => {
                             ) : (
                                 <Link
                                     to="/customer/login"
-                                    className="w-8 h-8 sm:w-auto sm:px-3 sm:py-1.5 rounded-full sm:rounded-xl bg-orange-50 hover:bg-orange-100 text-[#FF5A1F] border border-orange-200 flex items-center justify-center transition-colors shrink-0 shadow-xs"
+                                    className="w-8 h-8 sm:w-auto sm:px-2.5 sm:py-1.5 rounded-full sm:rounded-xl bg-orange-50 hover:bg-orange-100 text-[#FF5A1F] border border-orange-200 flex items-center justify-center transition-colors shrink-0 shadow-xs ml-0.5"
                                     title="Sign In / Profile"
                                     aria-label="Sign In / Profile"
                                 >
-                                    <User size={16} className="shrink-0" />
-                                    <span className="hidden sm:inline text-xs font-bold ml-1.5">Login</span>
+                                    <User size={15} className="shrink-0" />
+                                    <span className="hidden sm:inline text-xs font-bold ml-1">Login</span>
                                 </Link>
                             )}
                         </div>
