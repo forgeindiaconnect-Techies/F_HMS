@@ -13,7 +13,8 @@ const WaiterCompleted = () => {
         try {
             setLoading(true);
             const res = await api.get('/orders');
-            const doneOrders = res.data.filter(o => ['Served', 'Completed', 'Delivered', 'Picked Up', 'Paid'].includes(o.status));
+            const rawOrders = Array.isArray(res.data) ? res.data : (Array.isArray(res.data?.orders) ? res.data.orders : []);
+            const doneOrders = rawOrders.filter(o => ['Served', 'Completed', 'Delivered', 'Picked Up', 'Paid'].includes(o?.status));
             setCompleted(doneOrders);
         } catch (error) {
             console.error('Failed to fetch completed orders', error);

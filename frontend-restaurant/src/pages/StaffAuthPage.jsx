@@ -143,6 +143,7 @@ const StaffAuthPage = () => {
         fetchPlans();
     }, [searchParams, setValue]);
 
+    const [dietaryType, setDietaryType] = useState('Veg & Non-Veg');
     const selectedPlan = watch('plan') || 'Free Trial';
     const isYearly = watch('billingCycle') === 'yearly';
     const isTrialSelected = selectedPlan === 'Free Trial' || selectedPlan.toLowerCase().includes('trial') || selectedPlan.toLowerCase().includes('free');
@@ -210,6 +211,8 @@ const StaffAuthPage = () => {
         formData.append('roleName', 'RestaurantAdmin');
         formData.append('loginType', 'staff');
         formData.append('restaurantName', data.restaurantName);
+        formData.append('dietaryType', dietaryType || 'Veg & Non-Veg');
+        formData.append('cuisineType', dietaryType || 'Veg & Non-Veg');
         formData.append('plan', effectivePlan);
         formData.append('isTrial', isTrialSelected ? 'true' : 'false');
         formData.append('trialPlanName', '7-Day Free Trial');
@@ -733,6 +736,37 @@ const StaffAuthPage = () => {
                         className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#FF5A1F] focus:bg-white focus:ring-4 focus:ring-orange-100 transition-all"
                     />
                     {errors.phoneNumber && <p className="text-xs text-red-500 mt-1 pl-1">{errors.phoneNumber.message}</p>}
+                </div>
+
+                {/* Restaurant Dietary / Food Type */}
+                <div className="space-y-1.5 text-left">
+                    <label className="text-xs font-bold text-slate-700 block">
+                        Dietary Category / Cuisine Type <span className="text-[#FF5A1F]">*</span>
+                    </label>
+                    <div className="grid grid-cols-3 gap-2">
+                        {[
+                            { id: 'Pure Veg', label: 'Pure Veg', icon: '🟢', desc: '100% Vegetarian' },
+                            { id: 'Non-Veg', label: 'Non-Veg', icon: '🔴', desc: 'Non-Veg Specialty' },
+                            { id: 'Veg & Non-Veg', label: 'Both', icon: '🟡', desc: 'Veg & Non-Veg' }
+                        ].map((item) => (
+                            <button
+                                key={item.id}
+                                type="button"
+                                onClick={() => setDietaryType(item.id)}
+                                className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                                    dietaryType === item.id
+                                        ? 'border-[#FF5A1F] bg-orange-50/70 text-slate-900 ring-2 ring-orange-500/15 shadow-xs'
+                                        : 'border-slate-200 bg-slate-50 hover:bg-white text-slate-600'
+                                }`}
+                            >
+                                <div className="flex items-center gap-1.5">
+                                    <span className="text-xs">{item.icon}</span>
+                                    <span className="text-xs font-bold">{item.label}</span>
+                                </div>
+                                <p className="text-[10px] text-slate-400 mt-0.5 truncate">{item.desc}</p>
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
                 {/* Password */}

@@ -68,7 +68,7 @@ const WaiterDashboard = () => {
 
     const handleClockInNow = async () => {
         try {
-            await api.post('/staff/attendance', { status: 'Present' }).catch(() => {});
+            await api.post('/staff/clock-in', { status: 'Present' }).catch(() => {});
             setIsClockedIn(true);
             const userName = user?.name || 'Floor Staff';
             const userStorageKey = `staff_shift_clock_${userName.replace(/\s+/g, '_')}`;

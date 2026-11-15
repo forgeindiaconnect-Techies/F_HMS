@@ -559,7 +559,33 @@ const CustomerDashboard = () => {
     ];
 
     return (
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-4 sm:space-y-6 animate-in fade-in duration-300 text-slate-800">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-6 space-y-4 sm:space-y-6 animate-in fade-in duration-300 text-slate-800">
+            {/* Sticky Top Dashboard Navigation Bar (Pinned at the very top of the page, does not scroll away) */}
+            <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-md rounded-2xl px-2.5 py-2.5 border border-slate-200/90 shadow-md">
+                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                    {tabsList.map(tab => {
+                        const isActive = activeTab === tab.id;
+                        return (
+                            <button
+                                key={tab.id}
+                                type="button"
+                                onClick={() => setActiveTab(tab.id)}
+                                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap shrink-0 transition-all cursor-pointer ${
+                                    isActive
+                                        ? 'bg-[#FF5A1F] text-white shadow-xs shadow-[#FF5A1F]/25'
+                                        : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                                }`}
+                            >
+                                <span className={isActive ? 'text-white' : 'text-slate-400'}>
+                                    {tab.icon}
+                                </span>
+                                <span>{tab.name}</span>
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+
             {/* Header Welcome banner with Landing Page Warm Organic Gradient Canvas */}
             <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-r from-white via-[#FCF9F5] to-[#F8F5EE] p-4 sm:p-7 border border-slate-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col md:flex-row justify-between items-center gap-4 sm:gap-6">
                 {/* Soft ambient blur glow */}
@@ -597,32 +623,6 @@ const CustomerDashboard = () => {
                         <span>Order Now</span>
                         <ChevronRight size={14} />
                     </Link>
-                </div>
-            </div>
-
-            {/* Sticky Top Dashboard Navigation Bar (stays fixed at top while scrolling content) */}
-            <div className="sticky top-14 sm:top-[68px] z-30 bg-white/95 backdrop-blur-md rounded-2xl px-2.5 py-2 border border-slate-200/90 shadow-sm">
-                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-                    {tabsList.map(tab => {
-                        const isActive = activeTab === tab.id;
-                        return (
-                            <button
-                                key={tab.id}
-                                type="button"
-                                onClick={() => setActiveTab(tab.id)}
-                                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap shrink-0 transition-all cursor-pointer ${
-                                    isActive
-                                        ? 'bg-[#FF5A1F] text-white shadow-xs shadow-[#FF5A1F]/25'
-                                        : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-                                }`}
-                            >
-                                <span className={isActive ? 'text-white' : 'text-slate-400'}>
-                                    {tab.icon}
-                                </span>
-                                <span>{tab.name}</span>
-                            </button>
-                        );
-                    })}
                 </div>
             </div>
 

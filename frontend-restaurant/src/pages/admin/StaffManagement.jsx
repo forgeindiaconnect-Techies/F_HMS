@@ -23,11 +23,47 @@ import {
     MoreVertical, ShieldCheck, MapPin, X, Trash2, Edit2, 
     CheckCircle2, AlertCircle, DollarSign, FileText, Printer, 
     CreditCard, ArrowRight, UserCheck, Users, ChevronRight, History,
-    CalendarDays, FileSpreadsheet, Check, Ban, Settings2, Sliders, Eye, RefreshCw, Download
+    CalendarDays, FileSpreadsheet, Check, Ban, Settings2, Sliders, Eye, EyeOff, RefreshCw, Download
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import ConfirmModal from '../../components/ConfirmModal';
 import { useAuth } from '../../context/AuthContext';
+
+const formatTimeHHMM = (val) => {
+    if (!val) return '';
+    if (typeof val === 'string') {
+        const trimmed = val.trim();
+        if (/^\d{2}:\d{2}$/.test(trimmed)) return trimmed;
+        if (/^\d{1}:\d{2}$/.test(trimmed)) return '0' + trimmed;
+        if (/^\d{2}:\d{2}:\d{2}/.test(trimmed)) return trimmed.slice(0, 5);
+    }
+    try {
+        const d = new Date(val);
+        if (isNaN(d.getTime())) return '';
+        const hh = String(d.getHours()).padStart(2, '0');
+        const mm = String(d.getMinutes()).padStart(2, '0');
+        return `${hh}:${mm}`;
+    } catch {
+        return '';
+    }
+};
+
+const toIsoSafe = (dateStr, timeStr) => {
+    if (!timeStr) return null;
+    if (timeStr.includes('T') || timeStr.includes('Z')) {
+        const d = new Date(timeStr);
+        return isNaN(d.getTime()) ? null : d.toISOString();
+    }
+    const cleanTime = timeStr.trim();
+    const parts = cleanTime.split(':');
+    if (parts.length >= 2) {
+        const hh = parts[0].padStart(2, '0');
+        const mm = parts[1].padStart(2, '0');
+        const d = new Date(`${dateStr}T${hh}:${mm}:00`);
+        return isNaN(d.getTime()) ? null : d.toISOString();
+    }
+    return null;
+};
 
 const ATTENDANCE_STATUSES = ['Present', 'Absent', 'Leave', 'Half-day', 'Holiday'];
 
@@ -115,6 +151,7 @@ const StaffManagement = () => {
     const [branchFilter, setBranchFilter] = useState('All');
     const [isStaffModalOpen, setIsStaffModalOpen] = useState(false);
     const [editingStaffId, setEditingStaffId] = useState(null);
+    const [showStaffPassword, setShowStaffPassword] = useState(false);
     const [staffForm, setStaffForm] = useState({
         employeeId: '',
         name: '',
@@ -287,8 +324,8 @@ const StaffManagement = () => {
                 if (existing) {
                     const rawIn = existing.checkIn || existing.checkInTime;
                     const rawOut = existing.checkOut || existing.checkOutTime;
-                    const cIn = rawIn ? new Date(rawIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : '';
-                    const cOut = rawOut ? new Date(rawOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : '';
+                    const cIn = formatTimeHHMM(rawIn);
+                    const cOut = formatTimeHHMM(rawOut);
                     const computedOt = (cIn && cOut) ? calculateOvertimeHours(cIn, cOut, shiftHrs) : 0;
                     const autoOt = (existing.overtimeHours !== undefined && existing.overtimeHours !== null && Number(existing.overtimeHours) > 0)
                         ? Number(existing.overtimeHours)
@@ -338,14 +375,8 @@ const StaffManagement = () => {
                 .map(emp => {
                     const data = attendanceMap[emp._id] || { status: 'Present' };
                     // Build ISO datetime from attendanceDate and time strings
-                    let checkInISO = null;
-                    let checkOutISO = null;
-                    if (data.checkInTime) {
-                        checkInISO = new Date(`${attendanceDate}T${data.checkInTime}:00`).toISOString();
-                    }
-                    if (data.checkOutTime) {
-                        checkOutISO = new Date(`${attendanceDate}T${data.checkOutTime}:00`).toISOString();
-                    }
+                    const checkInISO = toIsoSafe(attendanceDate, data.checkInTime);
+                    const checkOutISO = toIsoSafe(attendanceDate, data.checkOutTime);
 
                     return {
                         employeeId: emp._id,
@@ -445,8 +476,8 @@ const StaffManagement = () => {
         setCorrectionTarget(record);
         setCorrectionForm({
             status: record.status,
-            checkInTime: record.checkInTime ? new Date(record.checkInTime).toTimeString().slice(0, 5) : '09:00',
-            checkOutTime: record.checkOutTime ? new Date(record.checkOutTime).toTimeString().slice(0, 5) : '18:00',
+            checkInTime: formatTimeHHMM(record.checkIn || record.checkInTime) || '09:00',
+            checkOutTime: formatTimeHHMM(record.checkOut || record.checkOutTime) || '18:00',
             lateMinutes: record.lateMinutes || 0,
             overtimeHours: record.overtimeHours || 0,
             reason: ''
@@ -463,8 +494,8 @@ const StaffManagement = () => {
 
         try {
             const dateStr = correctionTarget.dateString || new Date(correctionTarget.date).toISOString().split('T')[0];
-            const checkInISO = correctionForm.checkInTime ? new Date(`${dateStr}T${correctionForm.checkInTime}:00`).toISOString() : null;
-            const checkOutISO = correctionForm.checkOutTime ? new Date(`${dateStr}T${correctionForm.checkOutTime}:00`).toISOString() : null;
+            const checkInISO = toIsoSafe(dateStr, correctionForm.checkInTime);
+            const checkOutISO = toIsoSafe(dateStr, correctionForm.checkOutTime);
 
             await api.put(`/staff/attendance/${correctionTarget._id}/correct`, {
                 status: correctionForm.status,
@@ -1239,8 +1270,8 @@ const StaffManagement = () => {
                                         const savedRecord = attendanceRecords.find(r => (r.employee?._id || r.employee) === emp._id);
                                         const current = attendanceMap[emp._id] || (savedRecord ? {
                                             status: savedRecord.status,
-                                            checkInTime: savedRecord.checkIn ? new Date(savedRecord.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : '',
-                                            checkOutTime: savedRecord.checkOut ? new Date(savedRecord.checkOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : '',
+                                            checkInTime: formatTimeHHMM(savedRecord.checkIn || savedRecord.checkInTime),
+                                            checkOutTime: formatTimeHHMM(savedRecord.checkOut || savedRecord.checkOutTime),
                                             overtimeHours: savedRecord.overtimeHours || 0,
                                             isSaved: true
                                         } : { status: 'Not Marked', checkInTime: '', checkOutTime: '', overtimeHours: 0, isSaved: false });
@@ -1926,13 +1957,25 @@ const StaffManagement = () => {
                             {!editingStaffId && (
                                 <div>
                                     <label className="block text-xs font-bold uppercase text-slate-500 mb-1">Password *</label>
-                                    <input 
-                                        type="password"
-                                        required
-                                        value={staffForm.password}
-                                        onChange={(e) => setStaffForm({ ...staffForm, password: e.target.value })}
-                                        className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm"
-                                    />
+                                    <div className="relative">
+                                        <input 
+                                            type={showStaffPassword ? "text" : "password"}
+                                            required
+                                            value={staffForm.password}
+                                            onChange={(e) => setStaffForm({ ...staffForm, password: e.target.value })}
+                                            placeholder="Enter login password"
+                                            className="w-full pl-3 pr-10 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowStaffPassword(prev => !prev)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer p-0.5"
+                                            title={showStaffPassword ? "Hide password" : "Show password"}
+                                            aria-label="Toggle password visibility"
+                                        >
+                                            {showStaffPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                        </button>
+                                    </div>
                                 </div>
                             )}
 

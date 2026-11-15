@@ -17,7 +17,7 @@ const RestaurantDetails = () => {
     const [customerCoords, setCustomerCoords] = useState(() => getSavedCoordinates());
     const [customerLocation, setCustomerLocation] = useState(() => getSavedLocation() || '');
     const [detectingGps, setDetectingGps] = useState(false);
-    
+
     const [restaurant, setRestaurant] = useState(() => {
         try {
             const cached = sessionStorage.getItem(`restosys_rest_${id}`);
@@ -60,7 +60,7 @@ const RestaurantDetails = () => {
         setBookingLoading(true);
         setTimeout(() => {
             setBookingLoading(false);
-            
+
             let formattedTime = bookingTime;
             if (bookingTime === '17:00') formattedTime = '5:00 PM';
             else if (bookingTime === '17:30') formattedTime = '5:30 PM';
@@ -76,7 +76,7 @@ const RestaurantDetails = () => {
             try {
                 const d = new Date(bookingDate);
                 formattedDate = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-            } catch (err) {}
+            } catch (err) { }
 
             const newRes = {
                 date: formattedDate,
@@ -100,7 +100,7 @@ const RestaurantDetails = () => {
             try {
                 // Fetch restaurant profile, branches, and menu in parallel
                 const [restRes, branchRes, menuRes] = await Promise.all([
-                    api.get(`/restaurants/${id}`).catch(() => 
+                    api.get(`/restaurants/${id}`).catch(() =>
                         api.get('/restaurants').then(res => ({
                             data: Array.isArray(res.data) ? res.data.find(r => String(r._id) === String(id)) : null
                         })).catch(() => ({ data: null }))
@@ -148,7 +148,7 @@ const RestaurantDetails = () => {
                     sessionStorage.setItem(`restosys_rest_${id}`, JSON.stringify(fetchedRest));
                     sessionStorage.setItem(`restosys_branches_${id}`, JSON.stringify(branchList));
                     sessionStorage.setItem(`restosys_menu_${id}`, JSON.stringify(restaurantMenu));
-                } catch {}
+                } catch { }
             } catch (error) {
                 console.error("Failed to load restaurant details", error);
                 setRestaurant(null);
@@ -221,7 +221,7 @@ const RestaurantDetails = () => {
     };
 
     if (loading) return <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-slate-950"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div></div>;
-    
+
     if (!restaurant) {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 dark:bg-slate-950 px-4 text-center">
@@ -232,7 +232,7 @@ const RestaurantDetails = () => {
                 <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mb-8">
                     This restaurant is currently hidden, inactive, or not accepting online orders at this time. Please check back later or explore other nearby restaurants.
                 </p>
-                <Link 
+                <Link
                     to="/explore"
                     className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-2xl shadow-lg shadow-red-600/20 transition-all text-sm"
                 >
@@ -249,8 +249,8 @@ const RestaurantDetails = () => {
             {/* Header Images / Clean Store Banner */}
             <div className="h-32 sm:h-52 md:h-64 w-full bg-gradient-to-r from-stone-900 via-neutral-900 to-orange-950 overflow-hidden relative flex items-center justify-center">
                 {(() => {
-                    const hasDedicatedBanner = (restaurant.bannerImage && restaurant.bannerImage !== restaurant.logo) || 
-                                               (restaurant.image && restaurant.image !== restaurant.logo);
+                    const hasDedicatedBanner = (restaurant.bannerImage && restaurant.bannerImage !== restaurant.logo) ||
+                        (restaurant.image && restaurant.image !== restaurant.logo);
                     const rawBanner = hasDedicatedBanner ? (restaurant.bannerImage || restaurant.image) : null;
                     if (rawBanner && typeof rawBanner === 'string') {
                         const apiBase = getApiUrl();
@@ -259,8 +259,8 @@ const RestaurantDetails = () => {
                             ? rawBanner
                             : `${origin}${rawBanner.startsWith('/') ? '' : '/'}${rawBanner}`;
                         return (
-                            <img 
-                                src={bannerSrc} 
+                            <img
+                                src={bannerSrc}
                                 alt={restaurant.name}
                                 onError={(e) => { e.target.style.display = 'none'; }}
                                 className="w-full h-full object-cover opacity-75"
@@ -292,11 +292,11 @@ const RestaurantDetails = () => {
                                     : `${origin}${restaurant.logo.startsWith('/') ? '' : '/'}${restaurant.logo}`;
                                 return (
                                     <div className="w-13 h-13 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl overflow-hidden border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-800 shrink-0 shadow-sm flex items-center justify-center">
-                                        <img 
-                                            src={logoSrc} 
-                                            alt={restaurant.name} 
+                                        <img
+                                            src={logoSrc}
+                                            alt={restaurant.name}
                                             onError={(e) => { e.target.parentElement.style.display = 'none'; }}
-                                            className="w-full h-full object-cover" 
+                                            className="w-full h-full object-cover"
                                         />
                                     </div>
                                 );
@@ -311,11 +311,11 @@ const RestaurantDetails = () => {
                                 </p>
                                 <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 pt-0.5 text-[11px] sm:text-xs text-slate-600 dark:text-slate-300">
                                     <span className="inline-flex items-center gap-1 font-semibold text-[#FF5A1F] truncate">
-                                        <MapPin size={11} className="shrink-0" /> 
+                                        <MapPin size={11} className="shrink-0" />
                                         <span className="truncate">{restaurant.address || restaurant.city || 'Verified Outlet'}</span>
                                     </span>
                                     <span className="inline-flex items-center gap-1 font-medium text-slate-400 shrink-0">
-                                        <Clock size={11} className="shrink-0" /> 
+                                        <Clock size={11} className="shrink-0" />
                                         <span>Open Now</span>
                                     </span>
                                 </div>
@@ -344,7 +344,7 @@ const RestaurantDetails = () => {
                                         : `${origin}${imgUrl.startsWith('/') ? '' : '/'}${imgUrl}`;
                                     return (
                                         <div key={i} className="relative w-20 h-14 sm:w-24 sm:h-16 shrink-0 rounded-lg overflow-hidden border border-gray-200 dark:border-slate-800 shadow-2xs">
-                                            <img src={src} alt={`Showcase ${i+1}`} onError={(e) => { e.currentTarget.parentElement.style.display = 'none'; }} className="w-full h-full object-cover hover:scale-105 transition-transform" />
+                                            <img src={src} alt={`Showcase ${i + 1}`} onError={(e) => { e.currentTarget.parentElement.style.display = 'none'; }} className="w-full h-full object-cover hover:scale-105 transition-transform" />
                                         </div>
                                     );
                                 })}
@@ -370,35 +370,13 @@ const RestaurantDetails = () => {
                             </div>
                         </div>
 
-                        {/* Customer GPS Distance Status Pill / Action */}
-                        {distanceKm !== null ? (
-                            <div className="flex items-center gap-2">
-                                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${
-                                    isWithinRadius
-                                        ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800'
-                                        : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800'
-                                }`}>
-                                    <MapPin size={13} />
-                                    <span>{distanceKm} km from your GPS location</span>
-                                    <span className="opacity-60">•</span>
-                                    <span>{isWithinRadius ? 'Within Radius' : 'Outside Radius'}</span>
-                                </span>
-                            </div>
-                        ) : (
-                            <button
-                                type="button"
-                                onClick={handleDetectGps}
-                                disabled={detectingGps}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-orange-50 hover:bg-orange-100 text-[#FF5A1F] text-xs font-bold transition-colors cursor-pointer border border-orange-200/80 self-start sm:self-auto"
-                            >
-                                {detectingGps ? (
-                                    <span className="animate-spin inline-block w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full" />
-                                ) : (
-                                    <Navigation size={13} />
-                                )}
-                                <span>Detect Distance with GPS</span>
-                            </button>
-                        )}
+                        {/* Customer Delivery Radius Pill */}
+                        <div className="flex items-center gap-2">
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800">
+                                <Truck size={13} />
+                                <span>Home Delivery: Within {deliveryRadius} km</span>
+                            </span>
+                        </div>
                     </div>
 
                     {/* Delivery Availability Status Notice */}
@@ -411,20 +389,20 @@ const RestaurantDetails = () => {
                         ) : isWithinRadius === true ? (
                             <div className="flex items-center gap-2 text-xs text-emerald-700 dark:text-emerald-300 font-semibold bg-emerald-50 dark:bg-emerald-950/30 p-2.5 rounded-xl border border-emerald-100 dark:border-emerald-900/40">
                                 <CheckCircle size={15} className="shrink-0 text-emerald-600 dark:text-emerald-400" />
-                                <span>🟢 Home Delivery is available for your location ({distanceKm} km is within the {deliveryRadius} km fixed radius).</span>
+                                <span>🟢 Home Delivery is available for your location (Within the {deliveryRadius} km fixed delivery radius).</span>
                             </div>
                         ) : isWithinRadius === false ? (
                             <div className="flex items-start gap-2 text-xs text-amber-800 dark:text-amber-300 font-medium bg-amber-50 dark:bg-amber-950/30 p-2.5 rounded-xl border border-amber-200 dark:border-amber-900/40">
                                 <AlertCircle size={15} className="shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
                                 <div>
-                                    <span className="font-bold block">Outside Delivery Radius ({distanceKm} km away)</span>
+                                    <span className="font-bold block">Outside Delivery Radius (Limit: {deliveryRadius} km)</span>
                                     <span>This outlet's fixed delivery limit is {deliveryRadius} km. Home Delivery is unavailable for your address, but Self-Pickup and Dine-In orders are available!</span>
                                 </div>
                             </div>
                         ) : (
                             <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 font-medium bg-slate-50 dark:bg-slate-800/40 p-2.5 rounded-xl border border-slate-200/60 dark:border-slate-800">
                                 <Info size={15} className="shrink-0 text-slate-400" />
-                                <span>Home delivery is served within {deliveryRadius} km. Click "Detect Distance with GPS" to verify your exact location.</span>
+                                <span>Home delivery is served within {deliveryRadius} km of this outlet.</span>
                             </div>
                         )}
                     </div>
@@ -434,7 +412,7 @@ const RestaurantDetails = () => {
                 <div className="mt-3 sm:mt-4 bg-white dark:bg-slate-900 p-3 sm:p-4 rounded-xl sm:rounded-2xl shadow-xs border border-gray-100 dark:border-slate-800 text-left">
                     <div className="flex items-center justify-between mb-2.5">
                         <h3 className="font-bold text-gray-900 dark:text-white text-xs sm:text-sm flex items-center gap-1.5">
-                            <MapPin size={15} className="text-[#FF5A1F]" /> 
+                            <MapPin size={15} className="text-[#FF5A1F]" />
                             <span>Select Pickup Branch</span>
                         </h3>
                         {branches.length > 0 && (
@@ -448,11 +426,10 @@ const RestaurantDetails = () => {
                             <button
                                 key={branch._id}
                                 onClick={() => setSelectedBranch(branch._id)}
-                                className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl font-bold text-xs border transition-all cursor-pointer ${
-                                    selectedBranch === branch._id 
-                                    ? 'border-[#FF5A1F] bg-orange-50/70 dark:bg-orange-950/40 text-[#FF5A1F] shadow-2xs' 
-                                    : 'border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-gray-700 dark:text-slate-300 hover:border-orange-200 hover:bg-orange-50/30'
-                                }`}
+                                className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl font-bold text-xs border transition-all cursor-pointer ${selectedBranch === branch._id
+                                        ? 'border-[#FF5A1F] bg-orange-50/70 dark:bg-orange-950/40 text-[#FF5A1F] shadow-2xs'
+                                        : 'border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-gray-700 dark:text-slate-300 hover:border-orange-200 hover:bg-orange-50/30'
+                                    }`}
                             >
                                 <span>{branch.name}</span>
                                 {branch.address && (
@@ -472,9 +449,9 @@ const RestaurantDetails = () => {
                 {categories.length > 0 && (
                     <div className="md:hidden mt-5 sm:mt-6 flex gap-2 overflow-x-auto py-2 -mx-1 px-1 scrollbar-none items-center">
                         {categories.map(cat => (
-                            <a 
-                                href={`#category-${cat}`} 
-                                key={cat} 
+                            <a
+                                href={`#category-${cat}`}
+                                key={cat}
                                 className="px-4 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl text-xs font-bold text-gray-700 dark:text-slate-300 hover:text-[#FF5A1F] hover:border-[#FF5A1F] transition-all whitespace-nowrap shadow-2xs shrink-0"
                             >
                                 {cat}
@@ -534,52 +511,51 @@ const RestaurantDetails = () => {
                                     {menu.filter(item => item.category === category).map(item => {
                                         const isFav = wishlist?.some(w => (w._id || w.id) === (item._id || item.id));
                                         return (
-                                        <div 
-                                             key={item._id} 
-                                             onClick={() => setSelectedDish({ ...item, restaurantName: restaurant?.name })}
-                                             className="p-4 sm:p-6 flex gap-4 sm:gap-6 hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors group rounded-2xl cursor-pointer"
-                                         >
-                                             <div className="flex-1">
-                                                 <div className="flex items-start justify-between gap-2 mb-1">
-                                                     <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">{item.name}</h3>
-                                                     <button
-                                                         type="button"
-                                                         onClick={(e) => {
-                                                             e.stopPropagation();
-                                                             toggleWishlist(item);
-                                                             toast.success(isFav ? `${item.name} removed from wishlist` : `${item.name} added to wishlist!`);
-                                                         }}
-                                                         className={`p-1.5 rounded-full border transition-all cursor-pointer shrink-0 ${
-                                                             isFav
-                                                                 ? 'bg-rose-50 border-rose-200 text-rose-600 dark:bg-rose-950/40 dark:border-rose-800'
-                                                                 : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-400 hover:text-rose-500 hover:border-rose-200'
-                                                         }`}
-                                                         title={isFav ? 'Remove from Wishlist' : 'Add to Wishlist'}
-                                                         aria-label="Toggle Wishlist"
-                                                     >
-                                                         <Heart size={15} className={isFav ? 'fill-rose-500 text-rose-500' : ''} />
-                                                     </button>
-                                                 </div>
-                                                 <div className="font-extrabold text-red-600 dark:text-red-400 mb-1.5">₹{item.price}</div>
-                                                 <p className="text-gray-500 dark:text-slate-400 text-xs sm:text-sm leading-relaxed line-clamp-2">{item.description}</p>
-                                                 <button 
-                                                     type="button"
-                                                     onClick={(e) => { e.stopPropagation(); setSelectedDish({ ...item, restaurantName: restaurant?.name }); }}
-                                                     className="mt-3 px-4 py-1.5 bg-orange-600 hover:bg-orange-700 text-white font-extrabold text-xs rounded-xl shadow-sm transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
-                                                 >
-                                                     <Plus size={14} /> Add
-                                                 </button>
-                                             </div>
-                                             {item.image && item.image.trim() !== '' && !item.image.includes('unsplash.com') && !item.image.includes('placeholder') && (
-                                                 <div className="w-24 h-24 sm:w-32 sm:h-32 shrink-0 relative overflow-hidden rounded-xl bg-gray-100 dark:bg-slate-800">
-                                                     <img 
-                                                         src={item.image} 
-                                                         alt={item.name} 
-                                                         className="w-full h-full object-cover rounded-xl shadow-sm group-hover:scale-105 transition-transform duration-300" 
-                                                     />
-                                                 </div>
-                                             )}
-                                         </div>
+                                            <div
+                                                key={item._id}
+                                                onClick={() => setSelectedDish({ ...item, restaurantName: restaurant?.name })}
+                                                className="p-4 sm:p-6 flex gap-4 sm:gap-6 hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors group rounded-2xl cursor-pointer"
+                                            >
+                                                <div className="flex-1">
+                                                    <div className="flex items-start justify-between gap-2 mb-1">
+                                                        <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">{item.name}</h3>
+                                                        <button
+                                                            type="button"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                toggleWishlist(item);
+                                                                toast.success(isFav ? `${item.name} removed from wishlist` : `${item.name} added to wishlist!`);
+                                                            }}
+                                                            className={`p-1.5 rounded-full border transition-all cursor-pointer shrink-0 ${isFav
+                                                                    ? 'bg-rose-50 border-rose-200 text-rose-600 dark:bg-rose-950/40 dark:border-rose-800'
+                                                                    : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-400 hover:text-rose-500 hover:border-rose-200'
+                                                                }`}
+                                                            title={isFav ? 'Remove from Wishlist' : 'Add to Wishlist'}
+                                                            aria-label="Toggle Wishlist"
+                                                        >
+                                                            <Heart size={15} className={isFav ? 'fill-rose-500 text-rose-500' : ''} />
+                                                        </button>
+                                                    </div>
+                                                    <div className="font-extrabold text-red-600 dark:text-red-400 mb-1.5">₹{item.price}</div>
+                                                    <p className="text-gray-500 dark:text-slate-400 text-xs sm:text-sm leading-relaxed line-clamp-2">{item.description}</p>
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => { e.stopPropagation(); setSelectedDish({ ...item, restaurantName: restaurant?.name }); }}
+                                                        className="mt-3 px-4 py-1.5 bg-orange-600 hover:bg-orange-700 text-white font-extrabold text-xs rounded-xl shadow-sm transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
+                                                    >
+                                                        <Plus size={14} /> Add
+                                                    </button>
+                                                </div>
+                                                {item.image && item.image.trim() !== '' && !item.image.includes('unsplash.com') && !item.image.includes('placeholder') && (
+                                                    <div className="w-24 h-24 sm:w-32 sm:h-32 shrink-0 relative overflow-hidden rounded-xl bg-gray-100 dark:bg-slate-800">
+                                                        <img
+                                                            src={item.image}
+                                                            alt={item.name}
+                                                            className="w-full h-full object-cover rounded-xl shadow-sm group-hover:scale-105 transition-transform duration-300"
+                                                        />
+                                                    </div>
+                                                )}
+                                            </div>
                                         );
                                     })}
                                 </div>
@@ -602,13 +578,13 @@ const RestaurantDetails = () => {
                                     <h4 className="font-bold text-gray-900 dark:text-white mb-1">Table Confirmed!</h4>
                                     <p className="text-xs text-gray-500 dark:text-slate-400 mb-6">Your table has been reserved successfully.</p>
                                     <div className="flex flex-col gap-3">
-                                        <Link 
+                                        <Link
                                             to="/profile/reservations"
                                             className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center gap-1"
                                         >
                                             View Details
                                         </Link>
-                                        <button 
+                                        <button
                                             onClick={() => setBookingSuccess(false)}
                                             className="text-xs text-gray-500 dark:text-slate-400 hover:text-red-500 font-bold transition-colors"
                                         >
@@ -620,8 +596,8 @@ const RestaurantDetails = () => {
                                 <form onSubmit={handleBookTable} className="space-y-4 min-w-0 pr-1.5 flex-1">
                                     <div>
                                         <label className="block text-xs font-bold text-gray-400 dark:text-slate-500 uppercase mb-1">Date</label>
-                                        <input 
-                                            type="date" 
+                                        <input
+                                            type="date"
                                             value={bookingDate}
                                             onChange={(e) => setBookingDate(e.target.value)}
                                             className="w-full px-3 py-2 border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-gray-900 dark:text-white rounded-xl outline-none focus:border-red-500 text-sm"
@@ -630,7 +606,7 @@ const RestaurantDetails = () => {
                                     </div>
                                     <div>
                                         <label className="block text-xs font-bold text-gray-400 dark:text-slate-500 uppercase mb-1">Time</label>
-                                        <select 
+                                        <select
                                             value={bookingTime}
                                             onChange={(e) => setBookingTime(e.target.value)}
                                             className="w-full px-3 py-2 border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-gray-900 dark:text-white rounded-xl outline-none focus:border-red-500 text-sm"
@@ -650,7 +626,7 @@ const RestaurantDetails = () => {
                                     </div>
                                     <div>
                                         <label className="block text-xs font-bold text-gray-400 dark:text-slate-500 uppercase mb-1">Guests</label>
-                                        <select 
+                                        <select
                                             value={bookingGuests}
                                             onChange={(e) => setBookingGuests(e.target.value)}
                                             className="w-full px-3 py-2 border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-gray-900 dark:text-white rounded-xl outline-none focus:border-red-500 text-sm"
@@ -667,7 +643,7 @@ const RestaurantDetails = () => {
                                     </div>
                                     <div>
                                         <label className="block text-xs font-bold text-gray-400 dark:text-slate-500 uppercase mb-1">Seating Area</label>
-                                        <select 
+                                        <select
                                             value={bookingSeating}
                                             onChange={(e) => setBookingSeating(e.target.value)}
                                             className="w-full px-3 py-2 border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-gray-900 dark:text-white rounded-xl outline-none focus:border-red-500 text-sm"
@@ -677,8 +653,8 @@ const RestaurantDetails = () => {
                                             <option value="bar">Bar Lounge</option>
                                         </select>
                                     </div>
-                                    <button 
-                                        type="submit" 
+                                    <button
+                                        type="submit"
                                         disabled={bookingLoading}
                                         className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl transition-all shadow-md active:scale-95 disabled:opacity-75"
                                     >
@@ -707,14 +683,13 @@ const RestaurantDetails = () => {
                                 <p className="font-bold text-xl text-gray-900 dark:text-white">₹{cartTotal.toFixed(2)}</p>
                             </div>
                         </div>
-                        <button 
+                        <button
                             onClick={handleCheckout}
                             disabled={branches.length > 0 && !selectedBranch}
-                            className={`px-8 py-3.5 font-bold rounded-xl transition-all shadow-lg flex items-center gap-2 ${
-                                (branches.length === 0 || selectedBranch)
-                                ? 'bg-red-600 hover:bg-red-700 text-white shadow-red-600/30' 
-                                : 'bg-gray-300 dark:bg-slate-800 text-gray-500 dark:text-slate-500 cursor-not-allowed'
-                            }`}
+                            className={`px-8 py-3.5 font-bold rounded-xl transition-all shadow-lg flex items-center gap-2 ${(branches.length === 0 || selectedBranch)
+                                    ? 'bg-red-600 hover:bg-red-700 text-white shadow-red-600/30'
+                                    : 'bg-gray-300 dark:bg-slate-800 text-gray-500 dark:text-slate-500 cursor-not-allowed'
+                                }`}
                         >
                             Continue to Checkout
                         </button>

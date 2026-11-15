@@ -1189,7 +1189,7 @@ export default function Explore() {
                       {/* Delivery Radius Badge on Showcase Card */}
                       <div className="absolute top-2.5 right-2.5 bg-black/65 backdrop-blur-xs text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-xs border border-white/20">
                         <Truck size={10} className="text-[#FF5A1F]" />
-                        <span>Radius: {deliveryRadius} km</span>
+                        <span>Delivery within {deliveryRadius} km</span>
                       </div>
 
                       {rest.image && (
@@ -1241,26 +1241,15 @@ export default function Explore() {
                         </span>
                       </div>
 
-                      {/* Location Delivery Radius & Customer Distance Status */}
+                      {/* Location Delivery Radius Status */}
                       <div className="pt-1.5 flex items-center justify-between text-[11px]">
                         <div className="flex items-center gap-1 text-slate-600 font-medium truncate">
                           <Truck size={12} className="text-[#FF5A1F] shrink-0" />
-                          <span>Radius: <strong className="text-slate-800">{deliveryRadius} km</strong></span>
+                          <span>Home Delivery: <strong className="text-slate-800">Available within {deliveryRadius} km</strong></span>
                         </div>
-                        {distanceKm !== null ? (
-                          <span className={`shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-1 ${
-                            isWithinRadius 
-                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/70' 
-                              : 'bg-amber-50 text-amber-700 border border-amber-200/70'
-                          }`}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${isWithinRadius ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-                            <span>{distanceKm} km {isWithinRadius ? '• In Radius' : '• Outside'}</span>
-                          </span>
-                        ) : (
-                          <span className="shrink-0 text-[10px] font-semibold text-slate-500 bg-slate-50 border border-slate-200/60 px-1.5 py-0.5 rounded">
-                            Fixed {deliveryRadius} km
-                          </span>
-                        )}
+                        <span className="shrink-0 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/70 px-2 py-0.5 rounded-full">
+                          Radius: {deliveryRadius} km
+                        </span>
                       </div>
                     </div>
                   </div>

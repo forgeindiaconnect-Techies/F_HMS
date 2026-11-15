@@ -422,9 +422,9 @@ const ExpenseSummaryAdmin = () => {
     }, [summary, filteredExpenses]);
 
     return (
-        <div className="p-4 sm:p-8 max-w-[1600px] mx-auto space-y-6 font-sans">
-            {/* Header - Static Sticky on Scroll */}
-            <div className="sticky top-0 z-20 bg-gray-50/95 dark:bg-slate-900/95 backdrop-blur-md py-3 -mt-3 mb-4 flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4 border-b border-slate-200/50 dark:border-slate-800/50">
+        <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto space-y-6 font-sans">
+            {/* Header */}
+            <div className="py-2 mb-4 flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4 border-b border-slate-200/50 dark:border-slate-800/50">
                 <div className="min-w-0">
                     <div className="flex items-center gap-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mb-1">
                         <Receipt size={14} /> Financial Operations & Expenses
@@ -614,8 +614,8 @@ const ExpenseSummaryAdmin = () => {
             {/* TAB 1: ALL EXPENSES & INVOICES */}
             {(activeTab === 'expenses' || activeTab === 'bills' || activeTab === 'pending') && (
                 <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700/60 shadow-xs overflow-hidden">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
+                    <div className="overflow-x-auto custom-scrollbar">
+                        <table className="w-full min-w-[980px] text-left text-sm text-slate-600 dark:text-slate-300">
                             <thead className="bg-slate-50/80 dark:bg-slate-900/50 text-xs uppercase font-bold text-slate-400 border-b border-slate-100 dark:border-slate-700/60">
                                 <tr>
                                     <th className="py-4 px-6">Expense Title & Ref</th>

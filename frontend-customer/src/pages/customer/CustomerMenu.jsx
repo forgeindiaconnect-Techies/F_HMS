@@ -68,7 +68,13 @@ const CustomerMenu = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Customer Name & Service selection
-    const [customerName, setCustomerName] = useState(() => localStorage.getItem('restosys_guest_name') || '');
+    const [customerName, setCustomerName] = useState(() => {
+        try {
+            const saved = localStorage.getItem('restosys_guest_name');
+            if (saved && saved.trim()) return saved.trim();
+        } catch {}
+        return tableNumber ? `Guest (Table ${tableNumber})` : 'Guest Customer';
+    });
     const [customerPhone, setCustomerPhone] = useState(() => localStorage.getItem('restosys_guest_phone') || '');
 
     // Service Type: 'Waiter Table Service' | 'Self Dine-In (KFC Style)'
@@ -289,8 +295,8 @@ const CustomerMenu = () => {
             })),
             orderType: 'Dine In',
             serviceType: serviceType,
-            customerName: customerName.trim(),
-            customerPhone: customerPhone.trim(),
+            customerName: (customerName || `Guest (Table ${tableNumber || 'Dine-In'})`).trim(),
+            customerPhone: (customerPhone || '').trim(),
             tableNumber: tableNumber || 'Any',
             source: 'QR',
             restaurantId,

@@ -446,8 +446,15 @@ const RestaurantVerification = () => {
         );
     }
 
-    const verificationStatus = verification?.status || 'Pending';
-    const isUnderReview = verificationStatus === 'Under Review';
+    const isApprovedOrVerified = restaurant?.approvalStatus === 'Approved' || 
+        restaurant?.verificationStatus === 'Verified' || 
+        verification?.status === 'Verified' ||
+        restaurant?.subscription?.status === 'Active';
+
+    const verificationStatus = isApprovedOrVerified 
+        ? 'Verified' 
+        : (verification?.status || restaurant?.verificationStatus || 'Pending');
+    const isUnderReview = !isApprovedOrVerified && (verificationStatus === 'Under Review');
 
     return (
         <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-300">

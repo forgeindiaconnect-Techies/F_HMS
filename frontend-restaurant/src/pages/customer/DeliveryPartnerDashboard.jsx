@@ -310,10 +310,19 @@ const DeliveryPartnerDashboard = () => {
                         <Truck size={20} />
                     </div>
                     <div>
-                        <h1 className="text-sm font-black tracking-wide leading-none text-slate-900 dark:text-white">{user?.name}</h1>
-                        <div className="flex items-center gap-1 mt-1.5">
+                        <div className="flex items-center gap-2">
+                            <h1 className="text-sm font-black tracking-wide leading-none text-slate-900 dark:text-white">{user?.name}</h1>
+                            <span className="text-[10px] font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700">
+                                ID: {profile?.partnerCode || profile?._id?.slice(-6)?.toUpperCase() || user?._id?.slice(-6)?.toUpperCase() || 'DP-001'}
+                            </span>
+                        </div>
+                        <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
                             <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold tracking-wider uppercase">Active Agent</p>
+                            <span className="text-slate-300 dark:text-slate-700">•</span>
+                            <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold truncate max-w-[220px]">
+                                🏪 {profile?.restaurantId?.name || user?.restaurantName || 'Assigned Restaurant'}
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -360,7 +369,9 @@ const DeliveryPartnerDashboard = () => {
                             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
                             <span className="text-xs font-black tracking-wide uppercase text-slate-200">Delivery Fleet Active</span>
                             <span className="text-slate-600">|</span>
-                            <span className="text-xs text-slate-400 font-medium truncate max-w-[200px]">Partner: {user?.name || 'Delivery Partner'}</span>
+                            <span className="text-xs text-slate-400 font-medium truncate max-w-[320px]">
+                                Partner: {user?.name || 'Delivery Partner'} ({profile?.partnerCode || profile?._id?.slice(-6)?.toUpperCase() || user?._id?.slice(-6)?.toUpperCase()}) • 🏪 {profile?.restaurantId?.name || user?.restaurantName || 'Main Outlet'}
+                            </span>
                         </div>
                         <StaffShiftClockWidget compact={true} userRole="Delivery Runner Partner" userName={user?.name || "Delivery Agent"} />
                     </div>
@@ -471,7 +482,7 @@ const DeliveryPartnerDashboard = () => {
                                             <div className="grid grid-cols-2 gap-4 text-xs font-semibold text-slate-700 dark:text-slate-300 pt-1 text-left">
                                                 <div className="space-y-1 min-w-0 pr-1.5 flex-1">
                                                     <span className="text-[9px] text-slate-400 dark:text-slate-500 uppercase tracking-wider block font-bold">Restaurant Pickup</span>
-                                                    <p className="truncate text-slate-900 dark:text-white font-extrabold">Hub Kitchen Counter</p>
+                                                    <p className="truncate text-slate-900 dark:text-white font-extrabold">{profile?.restaurantId?.name || order.restaurantName || 'Main Kitchen Outlet'}</p>
                                                 </div>
                                                 <div className="space-y-1 text-right">
                                                     <span className="text-[9px] text-slate-400 dark:text-slate-500 uppercase tracking-wider block font-bold">Customer Destination</span>
@@ -893,7 +904,7 @@ const DeliveryPartnerDashboard = () => {
                             </a>
 
                             <a
-                                href={`https://www.google.com/maps/dir/?api=1&destination=13.0827,80.2707`}
+                                href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(selectedTrackingOrder.shippingAddress?.address || selectedTrackingOrder.shippingAddress?.city || 'Customer Destination')}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="py-3 px-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 active:scale-95 transition-all cursor-pointer"

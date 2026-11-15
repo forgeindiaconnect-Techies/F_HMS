@@ -116,8 +116,19 @@ const StaffShiftClockWidget = ({ userRole = 'Staff', userName = 'Staff Member', 
     // Format Time 12-hour AM/PM
     const formatTime12h = (isoString) => {
         if (!isoString) return '--:--';
-        const d = new Date(isoString);
-        return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+        if (typeof isoString === 'string' && /^\d{1,2}:\d{2}/.test(isoString) && !isoString.includes('T')) {
+            const [h, m] = isoString.split(':').map(Number);
+            const period = h >= 12 ? 'PM' : 'AM';
+            const h12 = h % 12 || 12;
+            return `${h12}:${String(m).padStart(2, '0')} ${period}`;
+        }
+        try {
+            const d = new Date(isoString);
+            if (isNaN(d.getTime())) return '--:--';
+            return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+        } catch {
+            return '--:--';
+        }
     };
 
     // Clock In Handler

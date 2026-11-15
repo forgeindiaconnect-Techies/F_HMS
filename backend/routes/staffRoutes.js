@@ -35,12 +35,14 @@ const router = express.Router();
 
 router.use(protect);
 router.use(checkSubscription);
-router.use(checkBillingModule('staffManagement'));
 
-// ── Staff Clock In / Clock Out (Self-Service) ──────────────────────────
+// ── Staff Clock In / Clock Out (Self-Service available to all staff) ──
 router.post('/clock-in', clockIn);
 router.post('/clock-out', clockOut);
+router.post('/attendance', clockIn); // Alias for single-staff attendance clock-in
 router.get('/my-attendance-today', getMyAttendanceToday);
+
+router.use(checkBillingModule('staffManagement'));
 
 // ── Attendance Routes ────────────────────────────────────────────────────────
 router.post('/attendance/bulk', authorize('RestaurantAdmin', 'BranchManager'), bulkMarkAttendance);

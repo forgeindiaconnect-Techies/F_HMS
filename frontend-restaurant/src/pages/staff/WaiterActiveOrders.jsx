@@ -19,9 +19,10 @@ const WaiterActiveOrders = () => {
     const fetchOrders = async () => {
         try {
             const res = await api.get('/orders');
+            const rawOrders = Array.isArray(res.data) ? res.data : (Array.isArray(res.data?.orders) ? res.data.orders : []);
             // Filter all active orders that are not Completed/Delivered/Served
-            const activeOrders = res.data.filter(o => 
-                !['Served', 'Delivered', 'Completed', 'Paid'].includes(o.status)
+            const activeOrders = rawOrders.filter(o => 
+                !['Served', 'Delivered', 'Completed', 'Paid'].includes(o?.status)
             );
             setOrders(activeOrders);
         } catch (error) {

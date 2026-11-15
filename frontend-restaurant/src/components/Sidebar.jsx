@@ -54,6 +54,13 @@ const Sidebar = () => {
     const location = useLocation();
     const { logout, restaurant, plans: allPlans = [] } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
+    const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(() => {
+        try {
+            return localStorage.getItem('admin_sidebar_collapsed') === 'true';
+        } catch (_) {
+            return false;
+        }
+    });
     const [logoError, setLogoError] = useState(false);
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
@@ -62,7 +69,17 @@ const Sidebar = () => {
     }, [restaurant?.logo, restaurant?._id]);
 
     useEffect(() => {
-        const handleToggle = () => setIsOpen(prev => !prev);
+        const handleToggle = () => {
+            if (window.innerWidth < 768) {
+                setIsOpen(prev => !prev);
+            } else {
+                setIsDesktopCollapsed(prev => {
+                    const next = !prev;
+                    try { localStorage.setItem('admin_sidebar_collapsed', String(next)); } catch (_) {}
+                    return next;
+                });
+            }
+        };
         window.addEventListener('toggle-sidebar', handleToggle);
         return () => window.removeEventListener('toggle-sidebar', handleToggle);
     }, []);
@@ -190,8 +207,9 @@ const Sidebar = () => {
                 />
             )}
             <aside className={clsx(
-                "w-64 bg-[#062419] text-white shadow-2xl h-screen fixed inset-y-0 left-0 md:sticky md:top-0 flex flex-col transition-transform duration-300 z-40 border-r border-[#0d3b2b]",
-                isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+                "bg-[#062419] text-white shadow-2xl h-screen fixed inset-y-0 left-0 md:sticky md:top-0 flex flex-col transition-all duration-300 z-40 border-r border-[#0d3b2b]",
+                isDesktopCollapsed ? "md:-translate-x-full md:w-0 md:opacity-0 md:pointer-events-none md:overflow-hidden" : "md:translate-x-0 md:w-64",
+                isOpen ? "translate-x-0 w-64" : "-translate-x-full"
             )}>
                 {/* Header */}
                 <div className="p-5 border-b border-[#0d3b2b] flex items-center gap-3 shrink-0">
@@ -308,7 +326,17 @@ const Sidebar = () => {
                                         >
                                             <Icon size={17} className={clsx("transition-transform group-hover:scale-110 shrink-0", isActive ? "text-white" : "text-emerald-300/60 group-hover:text-emerald-200")} />
                                             <span className="truncate">{item.name}</span>
-                                            {isActive && <ChevronRight size={14} className="ml-auto shrink-0 opacity-80" />}
+                                            {item.name === 'Verification' && (
+                                                <span className={clsx(
+                                                    "ml-auto text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider shrink-0",
+                                                    (restaurant?.approvalStatus === 'Approved' || restaurant?.verificationStatus === 'Verified')
+                                                        ? "bg-emerald-500/25 text-emerald-300 border border-emerald-500/40"
+                                                        : "bg-amber-500/25 text-amber-300 border border-amber-500/40"
+                                                )}>
+                                                    {(restaurant?.approvalStatus === 'Approved' || restaurant?.verificationStatus === 'Verified') ? 'Verified' : 'Pending'}
+                                                </span>
+                                            )}
+                                            {isActive && item.name !== 'Verification' && <ChevronRight size={14} className="ml-auto shrink-0 opacity-80" />}
                                         </NavLink>
                                     );
                                 })}

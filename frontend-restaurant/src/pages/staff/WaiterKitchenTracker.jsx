@@ -15,7 +15,8 @@ const WaiterKitchenTracker = () => {
         setLoading(true);
         try {
             const res = await api.get('/orders');
-            setOrders(res.data.filter(o => !['Completed', 'Served', 'Delivered'].includes(o.status)));
+            const rawOrders = Array.isArray(res.data) ? res.data : (Array.isArray(res.data?.orders) ? res.data.orders : []);
+            setOrders(rawOrders.filter(o => !['Completed', 'Served', 'Delivered'].includes(o?.status)));
         } catch (error) {
             console.error('Failed to fetch kitchen tracker orders', error);
         } finally {

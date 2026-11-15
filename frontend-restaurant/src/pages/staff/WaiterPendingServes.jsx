@@ -17,9 +17,10 @@ const WaiterPendingServes = () => {
     const fetchPendingOrders = async () => {
         try {
             const res = await api.get('/orders');
+            const rawOrders = Array.isArray(res.data) ? res.data : (Array.isArray(res.data?.orders) ? res.data.orders : []);
             // Filter all orders ready to be served or transferred
-            const pendingOrders = res.data.filter(o => 
-                ['Ready', 'Ready for Pickup'].includes(o.status)
+            const pendingOrders = rawOrders.filter(o => 
+                ['Ready', 'Ready for Pickup'].includes(o?.status)
             );
             setPending(pendingOrders);
         } catch (error) {

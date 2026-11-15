@@ -89,7 +89,7 @@ export const getRestaurants = async (req, res) => {
         };
 
         let restaurants = await Restaurant.find(filter)
-            .select('name badge rating deliveryTime cuisineType cuisine address city state country deliverySettings subscription approvalStatus isActive isDeleted status ownerId createdAt')
+            .select('name badge rating deliveryTime cuisineType dietaryType cuisine address city state country deliverySettings subscription approvalStatus verificationStatus isActive isDeleted status ownerId logo bannerImage showcaseImages createdAt')
             .populate('ownerId', 'name email')
             .sort({ createdAt: -1 })
             .lean();
@@ -104,7 +104,7 @@ export const getRestaurants = async (req, res) => {
             DeliveryPartner.distinct('restaurantId', { restaurantId: { $in: restIds } }),
             Branch.find({ restaurantId: { $in: restIds }, isActive: true }).select('restaurantId name location').lean(),
             RestaurantVerification.find({ restaurantId: { $in: restIds } })
-                .select('restaurantId documents.addressProof.addressText')
+                .select('restaurantId documents.addressProof.addressText documents.images documents.logo')
                 .lean()
                 .catch(() => [])
         ]);
@@ -157,10 +157,32 @@ export const getRestaurants = async (req, res) => {
             const verif = verifMap.get(restIdStr);
             const verifAddress = verif?.documents?.addressProof?.addressText || '';
             const thumbUrl = `/api/restaurants/${restIdStr}/thumbnail`;
-            rest.image = thumbUrl;
-            rest.bannerImage = thumbUrl;
-            rest.logo = `${thumbUrl}?kind=logo`;
-            rest.showcaseImages = [thumbUrl];
+
+            // Extract valid showcase images from restaurant model or verification documents
+            let resolvedShowcase = Array.isArray(rest.showcaseImages) && rest.showcaseImages.length > 0 
+                ? rest.showcaseImages.filter(img => typeof img === 'string' && img.trim() && !img.includes('/thumbnail')) 
+                : [];
+
+            if (resolvedShowcase.length === 0 && Array.isArray(verif?.documents?.images) && verif.documents.images.length > 0) {
+                resolvedShowcase = verif.documents.images
+                    .map(img => img?.filePath)
+                    .filter(p => typeof p === 'string' && p.trim() && !p.includes('.pdf') && !p.includes('/thumbnail'));
+            }
+
+            let resolvedBanner = (typeof rest.bannerImage === 'string' && rest.bannerImage.trim() && !rest.bannerImage.includes('/thumbnail')) 
+                ? rest.bannerImage 
+                : (resolvedShowcase.length > 0 ? resolvedShowcase[0] : thumbUrl);
+
+            let resolvedLogo = (typeof rest.logo === 'string' && rest.logo.trim() && !rest.logo.includes('.pdf') && !rest.logo.includes('/thumbnail'))
+                ? rest.logo
+                : ((typeof verif?.documents?.logo?.filePath === 'string' && !verif.documents.logo.filePath.includes('.pdf')) 
+                    ? verif.documents.logo.filePath 
+                    : `${thumbUrl}?kind=logo`);
+
+            rest.image = resolvedBanner;
+            rest.bannerImage = resolvedBanner;
+            rest.logo = resolvedLogo;
+            rest.showcaseImages = resolvedShowcase.length > 0 ? resolvedShowcase : [resolvedBanner];
 
             const branchAddress = primaryBranch?.location?.address && primaryBranch.location.address !== 'Primary Location' 
                 ? primaryBranch.location.address 
@@ -805,7 +827,7 @@ export const getRestaurantPublicConfig = async (req, res) => {
         if (restaurant.isDeleted || restaurant.status === 'Deleted') {
             return res.status(404).json({ message: 'Restaurant not found' });
         }
-        if (restaurant.status === 'Inactive' || restaurant.status === 'Suspended' || !restaurant.isActive || (restaurant.approvalStatus !== 'Approved' && restaurant.approvalStatus !== 'Pending')) {
+        if (restaurant.status === 'Suspended' || restaurant.isActive === false || restaurant.approvalStatus === 'Rejected') {
             return res.status(403).json({ message: 'This restaurant is currently unavailable or inactive.' });
         }
 
@@ -1114,8 +1136,7 @@ export const getRestaurantById = async (req, res) => {
             if (restaurant.isDeleted || restaurant.status === 'Deleted') {
                 return res.status(404).json({ message: 'Restaurant not found' });
             }
-            const isSubscribed = (restaurant.subscription?.status && !['Cancelled', 'Frozen', 'Expired', 'Suspended', 'Inactive'].includes(restaurant.subscription.status)) || restaurant.subscription?.trialActive;
-            if (restaurant.status === 'Inactive' || restaurant.status === 'Suspended' || !restaurant.isActive || (!isSubscribed && restaurant.approvalStatus !== 'Approved')) {
+            if (restaurant.status === 'Suspended' || restaurant.isActive === false || restaurant.approvalStatus === 'Rejected') {
                 return res.status(403).json({ message: 'This restaurant is currently unavailable or inactive.' });
             }
         }

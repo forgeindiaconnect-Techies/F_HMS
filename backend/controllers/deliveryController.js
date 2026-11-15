@@ -98,16 +98,20 @@ export const verifyOtp = async (req, res) => {
 // @access  Private (DeliveryPartner)
 export const getDeliveryProfile = async (req, res) => {
     try {
-        let partner = await DeliveryPartner.findOne({ userId: req.user._id }).populate('userId', 'name email phoneNumber');
+        let partner = await DeliveryPartner.findOne({ userId: req.user._id })
+            .populate('userId', 'name email phoneNumber')
+            .populate('restaurantId', 'name address phone');
         if (!partner) {
             partner = await DeliveryPartner.create({
                 userId: req.user._id,
                 restaurantId: req.user.restaurantId || null,
-                vehicleDetails: { vehicleType: 'Bike', registrationNumber: 'MH-01-AB-1234' },
+                vehicleDetails: { vehicleType: 'Bike', registrationNumber: req.user.phoneNumber ? `TN-${req.user.phoneNumber.slice(-4)}` : 'KA-01-DP-2024' },
                 verificationStatus: 'Approved',
                 status: 'Online'
             });
-            partner = await DeliveryPartner.findById(partner._id).populate('userId', 'name email phoneNumber');
+            partner = await DeliveryPartner.findById(partner._id)
+                .populate('userId', 'name email phoneNumber')
+                .populate('restaurantId', 'name address phone');
         }
         res.json(partner);
     } catch (error) {
@@ -298,7 +302,7 @@ export const getWithdrawalRequests = async (req, res) => {
             partner = await DeliveryPartner.create({
                 userId: req.user._id,
                 restaurantId: req.user.restaurantId || null,
-                vehicleDetails: { vehicleType: 'Bike', registrationNumber: 'MH-01-AB-1234' },
+                vehicleDetails: { vehicleType: 'Bike', registrationNumber: req.user.phoneNumber ? `TN-${req.user.phoneNumber.slice(-4)}` : 'KA-01-DP-2024' },
                 verificationStatus: 'Approved',
                 status: 'Online'
             });
@@ -321,7 +325,7 @@ export const getEarningsHistory = async (req, res) => {
             partner = await DeliveryPartner.create({
                 userId: req.user._id,
                 restaurantId: req.user.restaurantId || null,
-                vehicleDetails: { vehicleType: 'Bike', registrationNumber: 'MH-01-AB-1234' },
+                vehicleDetails: { vehicleType: 'Bike', registrationNumber: req.user.phoneNumber ? `TN-${req.user.phoneNumber.slice(-4)}` : 'KA-01-DP-2024' },
                 verificationStatus: 'Approved',
                 status: 'Online'
             });

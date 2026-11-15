@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { TrendingUp, Users, ShoppingBag, DollarSign, Sparkles, ArrowRight } from 'lucide-react';
 import StatCard from '../../components/StatCard';
+import StaffShiftClockWidget from '../../components/StaffShiftClockWidget';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { useAuth } from '../../context/AuthContext';
 
 const DashboardHome = () => {
-    const { api, restaurant } = useAuth();
+    const { api, restaurant, user } = useAuth();
     const isCustomActive = restaurant?.billingConfig?.isCustomBillingActive === true;
     const customModules = restaurant?.billingConfig?.modules || {};
     const [data, setData] = useState(() => {
@@ -86,6 +87,22 @@ const DashboardHome = () => {
             <div>
                 <h2 className="text-2xl font-bold text-gray-800 dark:text-slate-100" style={{ fontFamily: 'Poppins, sans-serif' }}>Business Overview</h2>
                 <p className="text-gray-500 dark:text-slate-400 text-sm mt-1">Welcome back! Manage your overall business operations, sales, staff, and customer orders.</p>
+            </div>
+
+            {/* Admin Shift & Duty Clock-in Strip */}
+            <div className="bg-slate-900 text-white px-3.5 sm:px-4 py-2.5 rounded-2xl flex flex-wrap items-center justify-between gap-3 shadow-md border border-slate-800 shrink-0">
+                <div className="flex items-center gap-3 flex-wrap">
+                    <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span className="text-xs font-black tracking-wide uppercase text-slate-200">Executive Duty Shift</span>
+                        <span className="text-slate-600">|</span>
+                        <span className="text-xs text-slate-400 font-medium truncate max-w-[200px]">Admin: {user?.name || 'Restaurant Admin'}</span>
+                    </div>
+                    <StaffShiftClockWidget compact={true} userRole="Restaurant Administrator" userName={user?.name || "Admin"} />
+                </div>
+                <div className="flex items-center gap-2 text-xs text-slate-400 font-medium">
+                    <span className="text-[11px] bg-slate-800/80 px-2.5 py-1 rounded-lg border border-slate-700/60 font-semibold">Live Attendance &amp; Shift Timer</span>
+                </div>
             </div>
 
             {/* Initial Restaurant Setup Wizard Prompt */}
@@ -220,7 +237,9 @@ const DashboardHome = () => {
                         </div>
                         <div className="bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/50 p-3 rounded-2xl flex flex-col justify-between items-center min-h-[96px] text-center">
                             <p className="text-[10px] sm:text-[11px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider h-7 flex items-center justify-center">Avg Prep Time</p>
-                            <p className="flex-1 flex items-center justify-center text-lg font-black text-emerald-800 dark:text-emerald-300" style={{ fontFamily: 'Manrope, sans-serif' }}>{data.qrAnalytics.avgPrepTime} <span className="text-xs font-semibold">min</span></p>
+                            <p className="flex-1 flex items-center justify-center text-lg font-black text-emerald-800 dark:text-emerald-300" style={{ fontFamily: 'Manrope, sans-serif' }}>
+                                {Math.min(60, Math.max(5, Math.round(data.qrAnalytics.avgPrepTime || 15)))} <span className="text-xs font-semibold">min</span>
+                            </p>
                         </div>
                     </div>
                 </div>

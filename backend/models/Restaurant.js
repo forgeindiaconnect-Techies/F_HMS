@@ -13,17 +13,24 @@ const restaurantSchema = new mongoose.Schema({
     },
     logo: {
         type: String,
-        select: false,
+        default: '',
     },
     bannerImage: {
         type: String,
         default: '',
-        select: false,
     },
     showcaseImages: {
         type: [String],
         default: [],
-        select: false,
+    },
+    cuisineType: {
+        type: String,
+        default: 'Multi-Cuisine',
+    },
+    dietaryType: {
+        type: String,
+        enum: ['Pure Veg', 'Non-Veg', 'Veg & Non-Veg', 'Pure Veg & Non-Veg'],
+        default: 'Veg & Non-Veg',
     },
     currency: {
         type: String,

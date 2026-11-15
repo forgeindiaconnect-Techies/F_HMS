@@ -310,8 +310,9 @@ const Topbar = () => {
                 <div className="flex items-center gap-1.5 sm:gap-2 md:gap-4 w-full md:w-auto flex-1 min-w-0">
                     <button
                         onClick={() => window.dispatchEvent(new Event('toggle-sidebar'))}
-                        className="md:hidden p-2 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg shrink-0"
-                        aria-label="Toggle Menu"
+                        className="p-2 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg shrink-0 cursor-pointer"
+                        aria-label="Toggle Sidebar Menu"
+                        title="Toggle Sidebar"
                     >
                         <Menu size={22} />
                     </button>

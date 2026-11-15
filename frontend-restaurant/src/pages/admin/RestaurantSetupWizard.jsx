@@ -3,7 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { 
     Check, ArrowRight, ArrowLeft, ChefHat, MonitorDot, Receipt, Users, 
     QrCode, Store, UtensilsCrossed, Banknote, CreditCard, Sparkles, 
-    ShieldCheck, CheckCircle2, AlertCircle, HelpCircle, Save, Printer
+    ShieldCheck, CheckCircle2, AlertCircle, HelpCircle, Save, Printer,
+    Truck, ShoppingBag
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
@@ -31,7 +32,9 @@ const RestaurantSetupWizard = ({ onComplete }) => {
         orderKitchen: {
             kotEnabled: true,
             kdsEnabled: true,
-            kotPrintEnabled: true
+            kotPrintEnabled: true,
+            homeDelivery: true,
+            selfPickup: true
         },
         waiterTips: {
             enabled: true,
@@ -74,7 +77,7 @@ const RestaurantSetupWizard = ({ onComplete }) => {
                             planFeatures: res.data.planFeatures || []
                         });
                     }
-                    if (res.data.config.setupStep && res.data.config.setupStep > 1 && res.data.config.setupStep <= 6) {
+                    if (!res.data.config.setupWizardCompleted && res.data.config.setupStep && res.data.config.setupStep > 1 && res.data.config.setupStep <= 6) {
                         setCurrentStep(res.data.config.setupStep);
                     }
                 }
@@ -169,12 +172,12 @@ const RestaurantSetupWizard = ({ onComplete }) => {
                 <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800/80">
                     <div className="grid grid-cols-6 gap-2">
                         {STEPS.map((s) => {
-                            const isDone = currentStep > s.id;
+                            const isDone = config.setupWizardCompleted || currentStep > s.id;
                             const isCurrent = currentStep === s.id;
                             return (
                                 <div 
                                     key={s.id}
-                                    onClick={() => isDone && setCurrentStep(s.id)}
+                                    onClick={() => (isDone || config.setupWizardCompleted) && setCurrentStep(s.id)}
                                     className={`flex flex-col items-center text-center cursor-pointer group`}
                                 >
                                     <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-black transition-all ${
@@ -301,6 +304,66 @@ const RestaurantSetupWizard = ({ onComplete }) => {
                                     </div>
                                     <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                                         Support thermal ESC/POS 80mm ticket printing directly from the waiter floor app, cashier counter, and kitchen station printers.
+                                    </p>
+                                </div>
+
+                                {/* Home Delivery Toggle */}
+                                <div className="p-5 rounded-2xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800 space-y-3">
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-xl bg-teal-100 dark:bg-teal-950/60 text-teal-600 flex items-center justify-center shrink-0">
+                                                <Truck size={20} />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-sm font-black text-slate-900 dark:text-white">Home Delivery Ordering</h3>
+                                                <p className="text-xs text-slate-500">Accept doorstep orders from online customers</p>
+                                            </div>
+                                        </div>
+                                        <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                                            <input 
+                                                type="checkbox" 
+                                                checked={config.orderKitchen.homeDelivery !== false}
+                                                onChange={(e) => setConfig(prev => ({
+                                                    ...prev,
+                                                    orderKitchen: { ...prev.orderKitchen, homeDelivery: e.target.checked }
+                                                }))}
+                                                className="sr-only peer" 
+                                            />
+                                            <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600"></div>
+                                        </label>
+                                    </div>
+                                    <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                                        When enabled, customers can place home delivery orders within your operating radius and track live rider status.
+                                    </p>
+                                </div>
+
+                                {/* Self-Pickup Toggle */}
+                                <div className="p-5 rounded-2xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800 space-y-3">
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 flex items-center justify-center shrink-0">
+                                                <ShoppingBag size={20} />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-sm font-black text-slate-900 dark:text-white">Self-Pickup (Takeaway)</h3>
+                                                <p className="text-xs text-slate-500">Allow customers to collect food at the counter</p>
+                                            </div>
+                                        </div>
+                                        <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                                            <input 
+                                                type="checkbox" 
+                                                checked={config.orderKitchen.selfPickup !== false}
+                                                onChange={(e) => setConfig(prev => ({
+                                                    ...prev,
+                                                    orderKitchen: { ...prev.orderKitchen, selfPickup: e.target.checked }
+                                                }))}
+                                                className="sr-only peer" 
+                                            />
+                                            <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
+                                        </label>
+                                    </div>
+                                    <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                                        Customers order ahead, bypass lines, and pick up their freshly prepared order using a token at your pickup counter.
                                     </p>
                                 </div>
                             </div>
@@ -640,6 +703,8 @@ const RestaurantSetupWizard = ({ onComplete }) => {
                                         <div className="flex justify-between"><span>KOT System:</span><span className={config.orderKitchen.kotEnabled ? 'text-emerald-600' : 'text-slate-400'}>{config.orderKitchen.kotEnabled ? 'Enabled' : 'Disabled'}</span></div>
                                         <div className="flex justify-between"><span>Digital KDS:</span><span className={config.orderKitchen.kdsEnabled ? 'text-blue-600' : 'text-slate-400'}>{config.orderKitchen.kdsEnabled ? 'Enabled' : 'Disabled'}</span></div>
                                         <div className="flex justify-between"><span>KOT Printing:</span><span className={config.orderKitchen.kotPrintEnabled ? 'text-emerald-600' : 'text-slate-400'}>{config.orderKitchen.kotPrintEnabled ? 'Enabled' : 'Disabled'}</span></div>
+                                        <div className="flex justify-between"><span>Home Delivery:</span><span className={config.orderKitchen.homeDelivery !== false ? 'text-teal-600' : 'text-slate-400'}>{config.orderKitchen.homeDelivery !== false ? 'Enabled' : 'Disabled'}</span></div>
+                                        <div className="flex justify-between"><span>Self-Pickup:</span><span className={config.orderKitchen.selfPickup !== false ? 'text-amber-600' : 'text-slate-400'}>{config.orderKitchen.selfPickup !== false ? 'Enabled' : 'Disabled'}</span></div>
                                     </div>
                                 </div>
 
@@ -703,15 +768,26 @@ const RestaurantSetupWizard = ({ onComplete }) => {
                             <ArrowRight size={16} />
                         </button>
                     ) : (
-                        <button
-                            type="button"
-                            onClick={() => handleSaveAndContinue(6, true)}
-                            disabled={saving}
-                            className="px-8 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-black flex items-center gap-2.5 shadow-lg shadow-emerald-500/20 transition-all cursor-pointer"
-                        >
-                            <Save size={18} />
-                            <span>{saving ? 'Activating...' : 'Finish & Activate Restaurant'}</span>
-                        </button>
+                        <div className="flex items-center gap-3">
+                            {config.setupWizardCompleted && (
+                                <button
+                                    type="button"
+                                    onClick={() => navigate('/admin')}
+                                    className="px-5 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all cursor-pointer"
+                                >
+                                    Dashboard
+                                </button>
+                            )}
+                            <button
+                                type="button"
+                                onClick={() => handleSaveAndContinue(6, true)}
+                                disabled={saving}
+                                className="px-8 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-black flex items-center gap-2.5 shadow-lg shadow-emerald-500/20 transition-all cursor-pointer"
+                            >
+                                <Save size={18} />
+                                <span>{saving ? 'Saving...' : (config.setupWizardCompleted ? 'Update Configuration' : 'Finish & Activate Restaurant')}</span>
+                            </button>
+                        </div>
                     )}
                 </div>
             </div>

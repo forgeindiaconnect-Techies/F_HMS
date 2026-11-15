@@ -14,6 +14,9 @@ import SubscriptionPayment from '../models/SubscriptionPayment.js';
 // @access  Private/SuperAdmin
 export const getStats = async (req, res) => {
     try {
+        const activeRestaurantsList = await Restaurant.find({ isDeleted: { $ne: true } }).select('_id').lean();
+        const activeRestaurantIds = activeRestaurantsList.map(r => r._id);
+
         const [
             totalRestaurants,
             activeRestaurants,
@@ -34,14 +37,19 @@ export const getStats = async (req, res) => {
             }),
             Restaurant.countDocuments({ isDeleted: { $ne: true }, approvalStatus: 'Pending' }),
             Restaurant.countDocuments({ isDeleted: { $ne: true }, 'subscription.status': 'Frozen' }),
-            User.countDocuments(),
-            Order.countDocuments(),
+            User.countDocuments({
+                $or: [
+                    { role: 'SuperAdmin' },
+                    { restaurantId: { $in: activeRestaurantIds } }
+                ]
+            }),
+            Order.countDocuments({ restaurantId: { $in: activeRestaurantIds } }),
             Restaurant.find(
                 { approvalStatus: { $ne: 'Rejected' }, 'subscription.status': { $ne: 'Cancelled' }, isDeleted: { $ne: true } },
                 '_id subscription'
             ).lean(),
             Restaurant.find({ isDeleted: { $ne: true } }, '_id commissionRate').lean(),
-            Order.find({ isPaid: true }, 'restaurantId totalPrice').lean()
+            Order.find({ isPaid: true, restaurantId: { $in: activeRestaurantIds } }, 'restaurantId totalPrice').lean()
         ]);
 
         // Calculate real MRR from active restaurant subscriptions
@@ -277,50 +285,93 @@ export const restoreRestaurant = async (req, res) => {
     }
 };
 
-// @desc    Delete a restaurant (Safe Soft Delete by default, preserves orders & billing records)
+// @desc    Delete a restaurant and cascade delete all its employers, orders, menus, and data
 // @route   DELETE /api/super-admin/restaurants/:id
 // @access  Private/SuperAdmin
 export const deleteRestaurant = async (req, res) => {
     try {
         const { id } = req.params;
-        const isPermanent = req.query.permanent === 'true';
 
         const restaurant = await Restaurant.findById(id);
         if (!restaurant) {
             return res.status(404).json({ message: 'Restaurant not found' });
         }
 
-        if (isPermanent) {
-            // Hard delete only if explicitly requested with ?permanent=true
-            const Branch = (await import('../models/Branch.js')).default;
-            const RestaurantVerification = (await import('../models/RestaurantVerification.js')).default;
-            const Menu = (await import('../models/Menu.js')).default;
-            const MenuItem = (await import('../models/MenuItem.js')).default;
-            const Table = (await import('../models/Table.js')).default;
-            const Category = (await import('../models/Category.js')).default;
+        // Dynamically import models for cascade deletion
+        const [
+            { default: Branch },
+            { default: RestaurantVerification },
+            { default: MenuItem },
+            { default: Table },
+            { default: Category },
+            { default: Order },
+            { default: User },
+            { default: KOT },
+            { default: DeliveryPartner },
+            { default: Attendance },
+            { default: Leave },
+            { default: Payroll },
+            { default: Expense },
+            { default: Inventory },
+            { default: Notification },
+            { default: ServiceRequest },
+            { default: Reservation },
+            { default: Payment }
+        ] = await Promise.all([
+            import('../models/Branch.js'),
+            import('../models/RestaurantVerification.js'),
+            import('../models/MenuItem.js'),
+            import('../models/Table.js'),
+            import('../models/Category.js'),
+            import('../models/Order.js'),
+            import('../models/User.js'),
+            import('../models/KOT.js'),
+            import('../models/DeliveryPartner.js'),
+            import('../models/Attendance.js'),
+            import('../models/Leave.js'),
+            import('../models/Payroll.js'),
+            import('../models/Expense.js'),
+            import('../models/Inventory.js'),
+            import('../models/Notification.js'),
+            import('../models/ServiceRequest.js'),
+            import('../models/Reservation.js'),
+            import('../models/Payment.js')
+        ]);
 
-            await Branch.deleteMany({ restaurantId: id });
-            await RestaurantVerification.deleteMany({ restaurantId: id });
-            await Menu.deleteMany({ restaurantId: id });
-            await MenuItem.deleteMany({ restaurantId: id });
-            await Table.deleteMany({ restaurantId: id });
-            await Category.deleteMany({ restaurantId: id });
-            await Restaurant.findByIdAndDelete(id);
+        // Cascade delete all associated records
+        await Promise.all([
+            Branch.deleteMany({ restaurantId: id }),
+            RestaurantVerification.deleteMany({ restaurantId: id }),
+            MenuItem.deleteMany({ restaurantId: id }),
+            Table.deleteMany({ restaurantId: id }),
+            Category.deleteMany({ restaurantId: id }),
+            Order.deleteMany({ restaurantId: id }),
+            // Delete employers/staff associated with this restaurant, but preserve SuperAdmin accounts
+            User.deleteMany({ 
+                role: { $ne: 'SuperAdmin' },
+                $or: [
+                    { restaurantId: id },
+                    ...(restaurant.ownerId ? [{ _id: restaurant.ownerId }] : [])
+                ]
+            }),
+            KOT.deleteMany({ restaurantId: id }),
+            DeliveryPartner.deleteMany({ restaurantId: id }),
+            Attendance.deleteMany({ restaurantId: id }),
+            Leave.deleteMany({ restaurantId: id }),
+            Payroll.deleteMany({ restaurantId: id }),
+            Expense.deleteMany({ restaurantId: id }),
+            Inventory.deleteMany({ restaurantId: id }),
+            Notification.deleteMany({ restaurantId: id }),
+            ServiceRequest.deleteMany({ restaurantId: id }),
+            Reservation.deleteMany({ restaurantId: id }),
+            Payment.deleteMany({ restaurantId: id })
+        ]);
 
-            return res.json({ message: 'Restaurant permanently removed.' });
-        }
-
-        // Safe Soft Delete: mark deleted, preserve all historical billing, orders, and payments
-        restaurant.status = 'Deleted';
-        restaurant.isDeleted = true;
-        restaurant.deletedAt = new Date();
-        restaurant.deletedBy = req.user._id;
-        restaurant.isActive = false;
-        await restaurant.save();
+        // Permanently remove the restaurant
+        await Restaurant.findByIdAndDelete(id);
 
         res.json({ 
-            message: 'Restaurant safely deactivated and soft-deleted. Historical orders and financial reports preserved.',
-            restaurant
+            message: 'Restaurant and all associated employers, orders, menus, and operations deleted successfully.' 
         });
     } catch (error) {
         console.error("Failed to delete restaurant:", error);
@@ -795,9 +846,18 @@ export const approveTrialRequest = async (req, res) => {
         restaurant.subscription.reminderSent24h = false;
 
         restaurant.approvalStatus = 'Approved';
+        restaurant.verificationStatus = 'Verified';
         restaurant.isActive = true;
 
         await restaurant.save();
+
+        try {
+            const RestaurantVerification = (await import('../models/RestaurantVerification.js')).default;
+            await RestaurantVerification.findOneAndUpdate(
+                { restaurantId: restaurant._id },
+                { $set: { status: 'Verified' } }
+            );
+        } catch (_) {}
 
         broadcastToRestaurant(restaurant._id, 'subscription_updated', {
             restaurantId: String(restaurant._id),

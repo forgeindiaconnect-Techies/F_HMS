@@ -177,7 +177,7 @@ const Settings = () => {
     // Restaurant-Specific Operational Configuration
     const [restConfig, setRestConfig] = useState({
         kitchenMode: 'KDS',
-        orderKitchen: { kitchenMode: 'KDS', kotEnabled: true, kdsEnabled: true, kotPrintEnabled: true },
+        orderKitchen: { kitchenMode: 'KDS', kotEnabled: true, kdsEnabled: true, kotPrintEnabled: true, homeDelivery: true, selfPickup: true },
         waiterTips: { enabled: true, allowCustomerTips: true, tipPercentages: [5, 10, 15, 20], customTipAllowed: true },
         qrOrdering: { enabled: true, allowSelfDineIn: true, allowWaiterOrdering: true },
         paymentMethods: { cash: true, upi: true, card: true, onlineGateway: true },
@@ -779,6 +779,64 @@ const Settings = () => {
                                         </div>
                                         <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md inline-block ${restConfig.orderKitchen?.kotPrintEnabled !== false ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300' : 'bg-gray-100 text-gray-500 dark:bg-slate-800 dark:text-slate-400'}`}>
                                             {restConfig.orderKitchen?.kotPrintEnabled !== false ? 'Printing Active' : 'Digital Only'}
+                                        </span>
+                                    </div>
+
+                                    {/* Home Delivery Toggle */}
+                                    <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div>
+                                                <h5 className="font-bold text-sm text-gray-900 dark:text-white flex items-center gap-2">
+                                                    <Truck size={16} className="text-teal-500" /> Home Delivery
+                                                </h5>
+                                                <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
+                                                    Allow online customers to order for home address delivery within radius.
+                                                </p>
+                                            </div>
+                                            <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1">
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={restConfig.orderKitchen?.homeDelivery !== false}
+                                                    onChange={(e) => setRestConfig(prev => ({
+                                                        ...prev,
+                                                        orderKitchen: { ...prev.orderKitchen, homeDelivery: e.target.checked }
+                                                    }))}
+                                                    className="sr-only peer"
+                                                />
+                                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600"></div>
+                                            </label>
+                                        </div>
+                                        <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md inline-block ${restConfig.orderKitchen?.homeDelivery !== false ? 'bg-teal-50 text-teal-700 dark:bg-teal-950/60 dark:text-teal-300' : 'bg-gray-100 text-gray-500 dark:bg-slate-800 dark:text-slate-400'}`}>
+                                            {restConfig.orderKitchen?.homeDelivery !== false ? 'Delivery Active' : 'Delivery Disabled'}
+                                        </span>
+                                    </div>
+
+                                    {/* Self-Pickup Toggle */}
+                                    <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div>
+                                                <h5 className="font-bold text-sm text-gray-900 dark:text-white flex items-center gap-2">
+                                                    <ShoppingBag size={16} className="text-amber-500" /> Self-Pickup (Takeaway)
+                                                </h5>
+                                                <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
+                                                    Allow customers to order online and collect their food directly at the counter.
+                                                </p>
+                                            </div>
+                                            <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1">
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={restConfig.orderKitchen?.selfPickup !== false}
+                                                    onChange={(e) => setRestConfig(prev => ({
+                                                        ...prev,
+                                                        orderKitchen: { ...prev.orderKitchen, selfPickup: e.target.checked }
+                                                    }))}
+                                                    className="sr-only peer"
+                                                />
+                                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
+                                            </label>
+                                        </div>
+                                        <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md inline-block ${restConfig.orderKitchen?.selfPickup !== false ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300' : 'bg-gray-100 text-gray-500 dark:bg-slate-800 dark:text-slate-400'}`}>
+                                            {restConfig.orderKitchen?.selfPickup !== false ? 'Pickup Active' : 'Pickup Disabled'}
                                         </span>
                                     </div>
                                 </div>

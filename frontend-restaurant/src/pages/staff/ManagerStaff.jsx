@@ -28,6 +28,42 @@ import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 import StaffShiftClockWidget from '../../components/StaffShiftClockWidget';
 
+const formatTimeHHMM = (val) => {
+    if (!val) return '';
+    if (typeof val === 'string') {
+        const trimmed = val.trim();
+        if (/^\d{2}:\d{2}$/.test(trimmed)) return trimmed;
+        if (/^\d{1}:\d{2}$/.test(trimmed)) return '0' + trimmed;
+        if (/^\d{2}:\d{2}:\d{2}/.test(trimmed)) return trimmed.slice(0, 5);
+    }
+    try {
+        const d = new Date(val);
+        if (isNaN(d.getTime())) return '';
+        const hh = String(d.getHours()).padStart(2, '0');
+        const mm = String(d.getMinutes()).padStart(2, '0');
+        return `${hh}:${mm}`;
+    } catch {
+        return '';
+    }
+};
+
+const toIsoSafe = (dateStr, timeStr) => {
+    if (!timeStr) return null;
+    if (timeStr.includes('T') || timeStr.includes('Z')) {
+        const d = new Date(timeStr);
+        return isNaN(d.getTime()) ? null : d.toISOString();
+    }
+    const cleanTime = timeStr.trim();
+    const parts = cleanTime.split(':');
+    if (parts.length >= 2) {
+        const hh = parts[0].padStart(2, '0');
+        const mm = parts[1].padStart(2, '0');
+        const d = new Date(`${dateStr}T${hh}:${mm}:00`);
+        return isNaN(d.getTime()) ? null : d.toISOString();
+    }
+    return null;
+};
+
 const ManagerStaff = () => {
     const { api, user, restaurant } = useAuth();
     const [searchParams, setSearchParams] = useSearchParams();
@@ -190,8 +226,8 @@ const ManagerStaff = () => {
                 if (existing) {
                     const rawIn = existing.checkIn || existing.checkInTime;
                     const rawOut = existing.checkOut || existing.checkOutTime;
-                    const cIn = rawIn ? new Date(rawIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : '';
-                    const cOut = rawOut ? new Date(rawOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : '';
+                    const cIn = formatTimeHHMM(rawIn);
+                    const cOut = formatTimeHHMM(rawOut);
                     const computedOt = (cIn && cOut) ? calculateOvertimeHours(cIn, cOut, shiftHrs) : 0;
                     const autoOt = (existing.overtimeHours !== undefined && existing.overtimeHours !== null && Number(existing.overtimeHours) > 0) 
                         ? Number(existing.overtimeHours) 
@@ -371,14 +407,8 @@ const ManagerStaff = () => {
         try {
             const records = staffList.map(emp => {
                 const data = attendanceMap[emp._id] || { status: 'Present' };
-                let checkInISO = null;
-                let checkOutISO = null;
-                if (data.checkInTime) {
-                    checkInISO = new Date(`${attendanceDate}T${data.checkInTime}:00`).toISOString();
-                }
-                if (data.checkOutTime) {
-                    checkOutISO = new Date(`${attendanceDate}T${data.checkOutTime}:00`).toISOString();
-                }
+                const checkInISO = toIsoSafe(attendanceDate, data.checkInTime);
+                const checkOutISO = toIsoSafe(attendanceDate, data.checkOutTime);
 
                 return {
                     employeeId: emp._id,
@@ -409,8 +439,8 @@ const ManagerStaff = () => {
         setCorrectionTarget(record);
         setCorrectionForm({
             status: record.status,
-            checkInTime: record.checkInTime ? new Date(record.checkInTime).toTimeString().slice(0, 5) : '09:00',
-            checkOutTime: record.checkOutTime ? new Date(record.checkOutTime).toTimeString().slice(0, 5) : '18:00',
+            checkInTime: formatTimeHHMM(record.checkIn || record.checkInTime) || '09:00',
+            checkOutTime: formatTimeHHMM(record.checkOut || record.checkOutTime) || '18:00',
             lateMinutes: record.lateMinutes || 0,
             overtimeHours: record.overtimeHours || 0,
             reason: ''
@@ -427,8 +457,8 @@ const ManagerStaff = () => {
 
         try {
             const dateStr = correctionTarget.dateString || new Date(correctionTarget.date).toISOString().split('T')[0];
-            const checkInISO = correctionForm.checkInTime ? new Date(`${dateStr}T${correctionForm.checkInTime}:00`).toISOString() : null;
-            const checkOutISO = correctionForm.checkOutTime ? new Date(`${dateStr}T${correctionForm.checkOutTime}:00`).toISOString() : null;
+            const checkInISO = toIsoSafe(dateStr, correctionForm.checkInTime);
+            const checkOutISO = toIsoSafe(dateStr, correctionForm.checkOutTime);
 
             await api.put(`/staff/attendance/${correctionTarget._id}/correct`, {
                 status: correctionForm.status,
@@ -1181,8 +1211,8 @@ const ManagerStaff = () => {
                                         const savedRecord = attendanceRecords.find(r => (r.employee?._id || r.employee) === emp._id);
                                         const entry = attendanceMap[emp._id] || (savedRecord ? {
                                             status: savedRecord.status,
-                                            checkInTime: savedRecord.checkIn ? new Date(savedRecord.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : '',
-                                            checkOutTime: savedRecord.checkOut ? new Date(savedRecord.checkOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : '',
+                                            checkInTime: formatTimeHHMM(savedRecord.checkIn || savedRecord.checkInTime),
+                                            checkOutTime: formatTimeHHMM(savedRecord.checkOut || savedRecord.checkOutTime),
                                             overtimeHours: savedRecord.overtimeHours || 0,
                                             isSaved: true
                                         } : { status: 'Not Marked', checkInTime: '', checkOutTime: '', overtimeHours: 0, isSaved: false });

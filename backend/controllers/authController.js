@@ -138,12 +138,15 @@ export const registerUser = async (req, res) => {
                 }
             }
 
+            const rawDietary = req.body.dietaryType || req.body.cuisineType || 'Veg & Non-Veg';
             createdRestaurant = await Restaurant.create({
                 name: restaurantName,
                 ownerId: user._id,
                 phone: phoneNumber || '',
                 address: rawAddress,
                 city: resolvedCity,
+                dietaryType: rawDietary,
+                cuisineType: req.body.cuisineType || rawDietary,
                 subscription: subData,
                 approvalStatus: isPaidUpfront ? 'Approved' : 'Pending',
                 verificationStatus: hasVerificationFiles ? 'Under Review' : 'Pending',

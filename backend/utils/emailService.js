@@ -64,28 +64,28 @@ const sendEmail = async ({ to, toName, subject, html }) => {
                 console.log(`[Brevo API Email Sent Successfully] Delivered real-time to ${to}. Message ID:`, data.messageId);
                 return true;
             } else {
-                console.error('[Brevo API Error Details]:', JSON.stringify(data));
-                if (response.status === 401 || response.status === 403) {
-                    return false;
-                }
+                console.warn('[Brevo API Response Not OK, falling back to SMTP Relay]:', JSON.stringify(data));
             }
         } catch (brevoErr) {
-            console.error('[Brevo HTTP Dispatch Error]:', brevoErr.message);
+            console.warn('[Brevo HTTP Dispatch Error, falling back to SMTP Relay]:', brevoErr.message);
         }
     }
 
-    // 2. Fallback to Brevo SMTP Relay (fail fast if blocked)
+    // 2. Fallback to Brevo SMTP Relay
     try {
         const transporter = nodemailer.createTransport({
             host: smtpConfig.host,
             port: smtpConfig.port,
             secure: false,
-            connectionTimeout: 2000,
-            greetingTimeout: 2000,
-            socketTimeout: 3000,
+            connectionTimeout: 10000,
+            greetingTimeout: 10000,
+            socketTimeout: 15000,
             auth: {
                 user: smtpConfig.user,
                 pass: smtpConfig.pass
+            },
+            tls: {
+                rejectUnauthorized: false
             }
         });
 

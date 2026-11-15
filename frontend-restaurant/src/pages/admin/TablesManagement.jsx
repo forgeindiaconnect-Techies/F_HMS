@@ -27,6 +27,15 @@ const TablesManagement = () => {
     const [loading, setLoading] = useState(() => !sessionStorage.getItem('restosys_tables_cache'));
     const [searchQuery, setSearchQuery] = useState('');
     
+    // Auto-detect localhost / dev environment
+    const isLocalhost = typeof window !== 'undefined' && (
+        window.location.hostname === 'localhost' ||
+        window.location.hostname === '127.0.0.1' ||
+        /^(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.)/.test(window.location.hostname)
+    );
+
+    const [qrMode, setQrMode] = useState('production');
+    
     // Modal states
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isQrModalOpen, setIsQrModalOpen] = useState(false);
@@ -133,8 +142,21 @@ const TablesManagement = () => {
 
     const getQrUrl = (table) => {
         if (!table) return '';
-        let baseUrl = import.meta.env.VITE_CUSTOMER_URL || 'https://f-hms.vercel.app';
+        let baseUrl = import.meta.env.VITE_CUSTOMER_URL || 'https://f-hms-customer-two.vercel.app';
         if (baseUrl.endsWith('/')) baseUrl = baseUrl.slice(0, -1);
+
+        if (isLocalhost) {
+            if (qrMode === 'localhost') {
+                baseUrl = 'http://localhost:5174';
+            } else if (qrMode === 'network') {
+                const host = (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')
+                    ? window.location.hostname
+                    : '192.168.1.48';
+                baseUrl = `http://${host}:5174`;
+            } else {
+                baseUrl = 'https://f-hms-customer-two.vercel.app';
+            }
+        }
 
         const bId = table.branchId?._id || table.branchId || '';
         const rId = table.restaurantId?._id || table.restaurantId || (table.branchId?.restaurantId) || restaurant?._id || '';
@@ -499,11 +521,46 @@ const TablesManagement = () => {
                             <h3 className="text-xl font-black text-emerald-800 tracking-wider">TABLE {selectedTable.tableNumber}</h3>
                             <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mt-0.5">FoodNest QR Ordering</p>
 
-                            {/* Live Production QR Ordering Badge */}
-                            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/95 text-emerald-800 text-[11px] font-bold mt-2.5 mb-2.5 border border-emerald-200/80 shadow-2xs">
-                                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                                Live Scanner
-                            </div>
+                            {/* Environment Switcher for Localhost / Phone Scanning, or Single Live Badge on Production */}
+                            {isLocalhost ? (
+                                <div className="flex items-center justify-center gap-1 mt-2.5 mb-2.5 p-1 bg-white/95 rounded-xl border border-emerald-200/80 shadow-2xs">
+                                    <button
+                                        type="button"
+                                        onClick={() => setQrMode('localhost')}
+                                        className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                                            qrMode === 'localhost' ? 'bg-emerald-600 text-white shadow-2xs' : 'text-slate-600 hover:text-emerald-700'
+                                        }`}
+                                        title="Direct localhost test URL for desktop browser"
+                                    >
+                                        Localhost:5174
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setQrMode('network')}
+                                        className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                                            qrMode === 'network' ? 'bg-emerald-600 text-white shadow-2xs' : 'text-slate-600 hover:text-emerald-700'
+                                        }`}
+                                        title="Allows mobile phone on the same WiFi to scan and open"
+                                    >
+                                        WiFi / Phone
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setQrMode('production')}
+                                        className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                                            qrMode === 'production' ? 'bg-emerald-600 text-white shadow-2xs' : 'text-slate-600 hover:text-emerald-700'
+                                        }`}
+                                        title="Live Vercel Production QR Menu"
+                                    >
+                                        Production
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/95 text-emerald-800 text-[11px] font-bold mt-2.5 mb-2.5 border border-emerald-200/80 shadow-2xs">
+                                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                    Live Scanner
+                                </div>
+                            )}
                             
                             <div className="bg-white p-3 rounded-2xl border border-emerald-100 shadow-xs flex items-center justify-center mx-auto">
                                 <QRCodeSVG
