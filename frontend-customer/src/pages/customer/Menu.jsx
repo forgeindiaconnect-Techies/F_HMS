@@ -6,17 +6,20 @@ import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import DishDetailModal from '../../components/DishDetailModal';
 import toast from 'react-hot-toast';
 
-const categories = ['All', 'Starters', 'Salads', 'Mains', 'Desserts', 'Beverages'];
+import { useLocation } from 'react-router-dom';
 
+const baseCategories = ['All', 'Mains & Meals', 'Starters', 'Salads', 'Desserts', 'Beverages'];
 
 const Menu = () => {
     const { addToCart, wishlist, toggleWishlist } = useCart();
     const { api } = useCustomerAuth();
+    const location = useLocation();
 
     const [menuItems, setMenuItems] = useState(() => {
         try {
             const cached = sessionStorage.getItem('foodnest_menu_cache');
-            return cached ? JSON.parse(cached) : [];
+            const parsed = cached ? JSON.parse(cached) : [];
+            return Array.isArray(parsed) && parsed.length > 0 ? parsed : [];
         } catch { return []; }
     });
     const [loading, setLoading] = useState(() => {
@@ -25,58 +28,127 @@ const Menu = () => {
             return !(cached && JSON.parse(cached)?.length > 0);
         } catch { return true; }
     });
-    const [searchQuery, setSearchQuery] = useState('');
-    const [activeCategory, setActiveCategory] = useState('All');
+    const [searchQuery, setSearchQuery] = useState(() => {
+        try {
+            return new URLSearchParams(window.location.search).get('search') || '';
+        } catch { return ''; }
+    });
+    const [activeCategory, setActiveCategory] = useState(() => {
+        try {
+            return new URLSearchParams(window.location.search).get('category') || 'All';
+        } catch { return 'All'; }
+    });
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [selectedDish, setSelectedDish] = useState(null);
+    const [restaurantFilter, setRestaurantFilter] = useState(() => {
+        try {
+            return new URLSearchParams(window.location.search).get('restaurantId') || '';
+        } catch { return ''; }
+    });
+
+    // Synchronize query parameters whenever location.search changes
+    useEffect(() => {
+        try {
+            const params = new URLSearchParams(location.search);
+            const s = params.get('search');
+            const c = params.get('category');
+            const r = params.get('restaurantId');
+            if (s !== null) setSearchQuery(s);
+            else if (!location.search.includes('search=')) setSearchQuery('');
+
+            if (c !== null) setActiveCategory(c);
+            else if (!location.search.includes('category=')) setActiveCategory('All');
+
+            if (r !== null) setRestaurantFilter(r);
+            else if (!location.search.includes('restaurantId=')) setRestaurantFilter('');
+        } catch { }
+    }, [location.search]);
+
+    // Dynamic categories from all loaded menu items
+    const categories = useMemo(() => {
+        const itemCategories = new Set();
+        menuItems.forEach(item => {
+            if (item.category && typeof item.category === 'string') {
+                const trimmed = item.category.trim();
+                if (trimmed) itemCategories.add(trimmed);
+            }
+        });
+        return ['All', 'Mains & Meals', 'Starters', 'Desserts', 'Beverages', ...Array.from(itemCategories).filter(c => 
+            !['main', 'mains', 'meal', 'meals', 'starter', 'starters', 'dessert', 'desserts', 'beverage', 'beverages'].includes(c.toLowerCase())
+        )];
+    }, [menuItems]);
 
     useEffect(() => {
-        const capTimer = setTimeout(() => setLoading(false), 1500);
+        let isMounted = true;
         const fetchMenu = async () => {
             try {
                 const { data } = await api.get('/menu');
-                if (Array.isArray(data)) {
+                if (isMounted && Array.isArray(data) && data.length > 0) {
                     setMenuItems(data);
                     try { sessionStorage.setItem('foodnest_menu_cache', JSON.stringify(data)); } catch {}
+                } else if (isMounted && Array.isArray(data)) {
+                    setMenuItems(data);
                 }
             } catch (error) {
-                console.error('Failed to fetch menu', error);
+                console.error('Failed to fetch menu:', error);
             } finally {
-                clearTimeout(capTimer);
-                setLoading(false);
+                if (isMounted) setLoading(false);
             }
         };
         fetchMenu();
-        return () => clearTimeout(capTimer);
+        return () => { isMounted = false; };
     }, [api]);
 
     const filteredMenu = useMemo(() => {
+        const cleanQuery = searchQuery.trim().toLowerCase();
+
+        // Check if there are dishes matching restaurantFilter
+        const hasRestaurantMatches = restaurantFilter 
+            ? menuItems.some(i => String(i.restaurantId?._id || i.restaurantId) === String(restaurantFilter))
+            : false;
+
         return menuItems.filter(item => {
-            let matchesCategory = false;
-            const itemCat = (item.category || '').toLowerCase();
-            if (activeCategory === 'All') {
-                matchesCategory = true;
-            } else if (activeCategory === 'Starters') {
-                matchesCategory = ['sides', 'bbq', 'starters', 'starter'].includes(itemCat);
-            } else if (activeCategory === 'Salads') {
-                matchesCategory = ['salads', 'salad'].includes(itemCat);
-            } else if (activeCategory === 'Mains') {
-                const isDosa = item.name.toLowerCase().includes('dosa') || item.name.toLowerCase().includes('dhosa');
-                matchesCategory = ['pizzas', 'pizza', 'burgers', 'burger', 'chinese', 'south indian', 'mains', 'main'].includes(itemCat) || isDosa;
-            } else if (activeCategory === 'Desserts') {
-                const isDosa = item.name.toLowerCase().includes('dosa') || item.name.toLowerCase().includes('dhosa');
-                matchesCategory = ['desserts', 'dessert', 'sweets', 'sweet'].includes(itemCat) && !isDosa;
-            } else if (activeCategory === 'Beverages') {
-                matchesCategory = ['beverages', 'beverage', 'drinks', 'drink'].includes(itemCat);
-            } else {
-                matchesCategory = itemCat === activeCategory.toLowerCase();
+            // If restaurant filter is set and matches exist, filter by restaurant
+            if (restaurantFilter && hasRestaurantMatches) {
+                const itemRestId = String(item.restaurantId?._id || item.restaurantId);
+                if (itemRestId !== String(restaurantFilter)) return false;
             }
 
-            const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                (item.description && item.description.toLowerCase().includes(searchQuery.toLowerCase()));
+            const itemCat = (item.category || '').toLowerCase().trim();
+            const itemName = (item.name || '').toLowerCase();
+            const itemDesc = (item.description || '').toLowerCase();
+            const restName = (item.restaurantId?.name || '').toLowerCase();
+
+            let matchesCategory = false;
+            if (activeCategory === 'All') {
+                matchesCategory = true;
+            } else if (activeCategory === 'Mains & Meals' || activeCategory === 'Mains') {
+                matchesCategory = [
+                    'mains', 'main', 'meal', 'meals', 'pizza', 'pizzas', 'burger', 'burgers',
+                    'rice', 'biryani', 'biriyani', 'briyani', 'curry', 'curries', 'roti',
+                    'bread', 'breads', 'chinese', 'south indian', 'north indian', 'dosa', 'dhosa', 'idily', 'idli', 'thali'
+                ].includes(itemCat) || itemName.includes('dosa') || itemName.includes('biryani') || itemName.includes('roti') || itemName.includes('idily');
+            } else if (activeCategory === 'Starters') {
+                matchesCategory = ['sides', 'side', 'bbq', 'starters', 'starter', 'appetizer', 'appetizers', 'snacks', 'snack'].includes(itemCat);
+            } else if (activeCategory === 'Salads') {
+                matchesCategory = ['salads', 'salad', 'soup', 'soups', 'healthy'].includes(itemCat);
+            } else if (activeCategory === 'Desserts') {
+                matchesCategory = ['desserts', 'dessert', 'sweets', 'sweet', 'cake', 'ice cream'].includes(itemCat);
+            } else if (activeCategory === 'Beverages') {
+                matchesCategory = ['beverages', 'beverage', 'drinks', 'drink', 'tea', 'coffee', 'juice', 'shake', 'shakes'].includes(itemCat);
+            } else {
+                matchesCategory = itemCat === activeCategory.toLowerCase().trim();
+            }
+
+            const matchesSearch = !cleanQuery || 
+                itemName.includes(cleanQuery) || 
+                itemDesc.includes(cleanQuery) || 
+                itemCat.includes(cleanQuery) ||
+                restName.includes(cleanQuery);
+
             return matchesCategory && matchesSearch;
         });
-    }, [searchQuery, activeCategory, menuItems]);
+    }, [searchQuery, activeCategory, restaurantFilter, menuItems]);
 
     return (
         <div className="bg-white min-h-screen pb-20 font-sans selection:bg-[#FF5A1F] selection:text-white">
@@ -154,6 +226,21 @@ const Menu = () => {
                 </div>
 
                 {/* Section Header Count */}
+                {restaurantFilter && (
+                    <div className="flex items-center gap-2 mb-3">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-50 border border-orange-200 text-[#FF5A1F] text-xs font-bold">
+                            <span>Filtered by Outlet</span>
+                            <button
+                                type="button"
+                                onClick={() => setRestaurantFilter('')}
+                                className="text-slate-400 hover:text-red-500 font-black ml-1 cursor-pointer"
+                                title="Clear restaurant filter"
+                            >
+                                ✕
+                            </button>
+                        </span>
+                    </div>
+                )}
                 <div className="flex items-center justify-between mb-5 mt-2">
                     <div className="text-left">
                         <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">

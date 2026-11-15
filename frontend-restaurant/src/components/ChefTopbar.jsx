@@ -93,26 +93,27 @@ const ChefTopbar = () => {
     const unreadCount = chefNotifications.filter(n => !n.read).length || 0;
 
     return (
-        <header className="h-16 bg-white dark:bg-[#1e2330] border-b border-gray-100 dark:border-[#2a3040] flex items-center justify-between px-3 sm:px-4 md:px-8 sticky top-0 z-10">
+        <header className="h-16 bg-white/95 backdrop-blur-md border-b border-slate-100 flex items-center justify-between px-3 sm:px-4 md:px-8 sticky top-0 z-10">
             <div className="flex items-center gap-1.5 sm:gap-2">
                 <button 
                     onClick={() => window.dispatchEvent(new Event('toggle-sidebar'))} 
-                    className="md:hidden p-2 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-[#252b3b] rounded-lg shrink-0"
+                    className="md:hidden p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg shrink-0 cursor-pointer"
                     aria-label="Toggle Menu"
+                    title="Toggle Sidebar"
                 >
                     <Menu size={22} />
                 </button>
                 <button
                     onClick={() => window.history.back()}
-                    className="md:hidden p-1.5 px-2 text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-colors flex items-center gap-1 text-xs font-bold border border-gray-200 dark:border-slate-800 shrink-0 shadow-xs"
+                    className="md:hidden p-1.5 px-2 text-slate-700 hover:bg-slate-100 rounded-xl transition-colors flex items-center gap-1 text-xs font-bold border border-slate-200 shrink-0 shadow-xs cursor-pointer"
                     aria-label="Go Back"
                     title="Back"
                 >
                     <ArrowLeft size={15} />
                     <span className="text-[11px] font-bold">Back</span>
                 </button>
-                <div className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400 font-bold text-xs sm:text-sm bg-gray-50 dark:bg-[#151923] px-2.5 sm:px-4 py-1.5 rounded-lg border border-gray-100 dark:border-[#2a3040]">
-                    <Clock size={15} className="text-orange-600 dark:text-orange-400 shrink-0" />
+                <div className="flex items-center gap-1.5 text-slate-600 font-bold text-xs sm:text-sm bg-slate-50 px-2.5 sm:px-4 py-1.5 rounded-lg border border-slate-200">
+                    <Clock size={15} className="text-orange-600 shrink-0" />
                     <span>{time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                 </div>
             </div>
@@ -121,17 +122,17 @@ const ChefTopbar = () => {
                 <div className="relative" ref={notifRef}>
                     <button 
                         onClick={() => { setShowNotifs(!showNotifs); setShowProfile(false); }}
-                        className="relative p-2 text-gray-500 dark:text-gray-400 hover:text-orange-500 dark:hover:text-orange-400 transition-colors bg-gray-50 dark:bg-[#151923] rounded-lg border border-gray-100 dark:border-[#2a3040]"
+                        className="relative p-2 text-slate-500 hover:text-orange-500 transition-colors bg-slate-50 rounded-lg border border-slate-200 cursor-pointer"
                     >
                         <Bell size={20} />
-                        {unreadCount > 0 && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-[#1e2330]"></span>}
+                        {unreadCount > 0 && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>}
                     </button>
  
                     {showNotifs && (
-                        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-[#1e2330] rounded-2xl shadow-2xl border border-gray-100 dark:border-[#2a3040] overflow-hidden z-50">
-                            <div className="p-3.5 border-b border-gray-100 dark:border-[#2a3040] bg-gray-50 dark:bg-[#1a1e2a] flex items-center justify-between">
+                        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden z-50">
+                            <div className="p-3.5 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
                                 <div className="flex items-center gap-2">
-                                    <h3 className="font-extrabold text-gray-800 dark:text-gray-200 text-xs sm:text-sm">Kitchen Alerts</h3>
+                                    <h3 className="font-extrabold text-slate-800 text-xs sm:text-sm">Kitchen Alerts</h3>
                                     {unreadCount > 0 && (
                                         <span className="px-1.5 py-0.5 rounded-full bg-orange-500 text-white text-[10px] font-black">
                                             {unreadCount}
@@ -142,37 +143,37 @@ const ChefTopbar = () => {
                                     <button
                                         type="button"
                                         onClick={handleClearAll}
-                                        className="text-[11px] font-bold text-red-500 hover:text-red-700 dark:hover:text-red-400 flex items-center gap-1 cursor-pointer transition-colors"
+                                        className="text-[11px] font-bold text-red-500 hover:text-red-700 flex items-center gap-1 cursor-pointer transition-colors"
                                     >
                                         <Trash2 size={12} /> Clear All
                                     </button>
                                 )}
                             </div>
-                            <div className="max-h-96 overflow-y-auto custom-scrollbar divide-y divide-gray-100 dark:divide-[#2a3040]">
+                            <div className="max-h-96 overflow-y-auto custom-scrollbar divide-y divide-slate-100">
                                 {chefNotifications.length === 0 ? (
-                                    <div className="p-6 text-center text-gray-400 dark:text-gray-500 text-xs font-semibold">
+                                    <div className="p-6 text-center text-slate-400 text-xs font-semibold">
                                         No active kitchen alerts
                                     </div>
                                 ) : (
                                     chefNotifications.slice(0, 15).map(note => (
                                         <div 
                                             key={note._id} 
-                                            className={`p-3.5 transition-colors ${!note.read ? 'bg-orange-50/30 dark:bg-[#252b3b]' : 'hover:bg-gray-50 dark:hover:bg-[#232837]'}`}
+                                            className={`p-3.5 transition-colors ${!note.read ? 'bg-orange-50/40' : 'hover:bg-slate-50'}`}
                                         >
                                             <div className="flex items-start justify-between gap-2">
-                                                <p className="font-bold text-gray-900 dark:text-gray-100 text-xs leading-snug">
+                                                <p className="font-bold text-slate-900 text-xs leading-snug">
                                                     {note.title}
                                                 </p>
                                                 <button
                                                     type="button"
                                                     onClick={(e) => handleDeleteNotification(note._id, e)}
-                                                    className="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-md transition-colors cursor-pointer shrink-0"
+                                                    className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors cursor-pointer shrink-0"
                                                     title="Delete alert"
                                                 >
                                                     <Trash2 size={13} />
                                                 </button>
                                             </div>
-                                            <p className="text-[11px] text-gray-600 dark:text-gray-400 mt-1 line-clamp-2 leading-relaxed">
+                                            <p className="text-[11px] text-slate-600 mt-1 line-clamp-2 leading-relaxed">
                                                 {note.desc}
                                             </p>
                                             <div className="mt-2.5 flex items-center justify-between gap-2">
@@ -182,7 +183,7 @@ const ChefTopbar = () => {
                                                         setSelectedOrderNote(note);
                                                         if (!note.read) handleMarkAsRead(note._id);
                                                     }}
-                                                    className="inline-flex items-center gap-1 px-2.5 py-1 bg-orange-100 dark:bg-orange-950/50 hover:bg-orange-200 dark:hover:bg-orange-900/50 text-orange-700 dark:text-orange-400 text-[10px] font-bold rounded-lg transition-colors cursor-pointer"
+                                                    className="inline-flex items-center gap-1 px-2.5 py-1 bg-orange-100 hover:bg-orange-200 text-orange-700 text-[10px] font-bold rounded-lg transition-colors cursor-pointer"
                                                 >
                                                     <Eye size={12} /> View Details
                                                 </button>
@@ -190,7 +191,7 @@ const ChefTopbar = () => {
                                                     <button 
                                                         type="button"
                                                         onClick={(e) => handleMarkAsRead(note._id, e)} 
-                                                        className="text-[10px] font-bold text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors cursor-pointer"
+                                                        className="text-[10px] font-bold text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
                                                     >
                                                         Mark as Read
                                                     </button>

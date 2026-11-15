@@ -128,6 +128,18 @@ export const getRestaurants = async (req, res) => {
                 const ownerName = rest.ownerId?.name || 'Partner';
                 rest.name = `${ownerName}'s Restaurant`;
                 nameFixes.push(Restaurant.findByIdAndUpdate(rest._id, { $set: { name: rest.name } }).catch(() => {}));
+            } else {
+                rest.name = rest.name.trim();
+            }
+
+            // Auto-populate city from address if not explicitly present
+            if (!rest.city && rest.address) {
+                const parts = rest.address.split(',').map(s => s.trim()).filter(Boolean);
+                if (parts.length > 1) {
+                    rest.city = parts[parts.length - 1];
+                } else if (parts.length === 1) {
+                    rest.city = parts[0];
+                }
             }
 
             if (partnerSet.has(restIdStr)) {

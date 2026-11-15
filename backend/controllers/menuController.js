@@ -46,9 +46,10 @@ export const getMenuItems = async (req, res) => {
         }
 
         const items = await MenuItem.find(filter)
-            .populate('restaurantId', 'name approvalStatus subscription isActive isDeleted status')
+            .populate('restaurantId', 'name city address approvalStatus subscription isActive isDeleted status')
             .lean();
-        // Exclude menu items whose parent restaurant has been deleted by Super Admin, rejected, or inactive/suspended/frozen!
+
+        // Exclude menu items whose parent restaurant has been deleted, rejected, or inactive/suspended/frozen!
         const validItems = items.filter(item => {
             if (!item.restaurantId) return false;
             if (typeof item.restaurantId === 'object') {
@@ -65,7 +66,7 @@ export const getMenuItems = async (req, res) => {
             return true;
         });
 
-        menuCache = { data: validItems, expiresAt: now + 30000, key: cacheKey };
+        menuCache = { data: validItems, expiresAt: now + 15000, key: cacheKey };
         res.json(validItems);
     } catch (error) {
         res.status(500).json({ message: error.message });

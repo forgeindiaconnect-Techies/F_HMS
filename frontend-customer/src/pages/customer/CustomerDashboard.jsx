@@ -748,9 +748,8 @@ const CustomerDashboard = () => {
 
                                 {/* Outlets Grid */}
                                 {(() => {
-                                    let list = showOnlyLocalOutlets && userLocation && locationFilteredRestaurants.length > 0
-                                        ? locationFilteredRestaurants
-                                        : registeredRestaurants;
+                                    const hasLocalMatches = showOnlyLocalOutlets && userLocation && locationFilteredRestaurants.length > 0;
+                                    let list = hasLocalMatches ? locationFilteredRestaurants : registeredRestaurants;
 
                                     if (outletSearchFilter.trim()) {
                                         const q = outletSearchFilter.toLowerCase();
@@ -762,109 +761,94 @@ const CustomerDashboard = () => {
                                         );
                                     }
 
-                                    if (list.length === 0) {
-                                        return (
-                                            <div className="text-center py-12 bg-slate-50 rounded-2xl border border-dashed border-slate-200 space-y-3">
-                                                <Store size={32} className="mx-auto text-slate-400" />
-                                                <h4 className="text-sm font-bold text-slate-700">No outlets found</h4>
-                                                <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                                                    No registered outlets matched your current filter. You can explore all outlets or pick a different city.
-                                                </p>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        setShowOnlyLocalOutlets(false);
-                                                        setOutletSearchFilter('');
-                                                    }}
-                                                    className="px-4 py-2 bg-[#FF5A1F] text-white text-xs font-bold rounded-xl shadow-xs"
-                                                >
-                                                    View All Registered Outlets
-                                                </button>
-                                            </div>
-                                        );
-                                    }
-
                                     return (
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                                            {list.map((outlet) => {
-                                                const branchList = Array.isArray(outlet.branches) ? outlet.branches : [];
-                                                const primaryBranch = branchList[0];
-                                                const branchCity = primaryBranch?.location?.city || outlet.city || '';
-                                                const branchAddr = primaryBranch?.location?.address || outlet.address || 'Central Kitchen';
-
-                                                return (
-                                                    <div 
-                                                        key={outlet._id}
-                                                        className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-3 group"
+                                        <div className="space-y-4 pt-1">
+                                            {/* Fallback Banner when user's specific location has no local outlets */}
+                                            {showOnlyLocalOutlets && userLocation && locationFilteredRestaurants.length === 0 && registeredRestaurants.length > 0 && (
+                                                <div className="p-3.5 bg-amber-50 border border-amber-200/90 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs text-amber-900 font-semibold shadow-2xs">
+                                                    <div className="flex items-center gap-2">
+                                                        <MapPin size={16} className="text-[#FF5A1F] shrink-0" />
+                                                        <span>No outlets located directly in <strong>{userLocation.split(',')[0]}</strong>. Showing all <strong>{registeredRestaurants.length} verified partner outlets</strong> available nationwide:</span>
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowOnlyLocalOutlets(false)}
+                                                        className="px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold rounded-lg shrink-0 cursor-pointer"
                                                     >
-                                                        <div className="space-y-2.5">
-                                                            <div className="flex items-start justify-between gap-2">
-                                                                <div className="flex items-center gap-2.5">
-                                                                    <div className="w-10 h-10 rounded-xl bg-orange-50 border border-orange-200 text-[#FF5A1F] flex items-center justify-center shrink-0">
-                                                                        <Store size={20} />
-                                                                    </div>
-                                                                    <div>
-                                                                        <h4 className="text-sm font-bold text-slate-900 group-hover:text-[#FF5A1F] transition-colors">
-                                                                            {outlet.name}
-                                                                        </h4>
-                                                                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-                                                                            Verified Kitchen
+                                                        Show All Outlets
+                                                    </button>
+                                                </div>
+                                            )}
+
+                                            {list.length === 0 ? (
+                                                <div className="text-center py-12 bg-slate-50 rounded-2xl border border-dashed border-slate-200 space-y-3">
+                                                    <Store size={32} className="mx-auto text-slate-400" />
+                                                    <h4 className="text-sm font-bold text-slate-700">No outlets found</h4>
+                                                    <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                                                        No registered outlets matched your current filter keyword. You can clear your search to explore all outlets.
+                                                    </p>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setShowOnlyLocalOutlets(false);
+                                                            setOutletSearchFilter('');
+                                                        }}
+                                                        className="px-4 py-2 bg-[#FF5A1F] text-white text-xs font-bold rounded-xl shadow-xs cursor-pointer"
+                                                    >
+                                                        View All Registered Outlets
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    {list.map((outlet) => {
+                                                        const branchList = Array.isArray(outlet.branches) ? outlet.branches : [];
+                                                        const primaryBranch = branchList[0];
+                                                        const branchCity = primaryBranch?.location?.city || outlet.city || '';
+                                                        const branchAddr = primaryBranch?.location?.address || outlet.address || 'Central Kitchen';
+
+                                                        return (
+                                                            <div 
+                                                                key={outlet._id}
+                                                                className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-3 group"
+                                                            >
+                                                                <div className="space-y-2.5">
+                                                                    <div className="flex items-start justify-between gap-2">
+                                                                        <div className="min-w-0">
+                                                                            <h4 className="font-bold text-slate-900 text-sm group-hover:text-[#FF5A1F] transition-colors truncate">
+                                                                                {outlet.name}
+                                                                            </h4>
+                                                                            <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-0.5">
+                                                                                <MapPin size={11} className="text-[#FF5A1F] shrink-0" />
+                                                                                <span className="truncate">{branchCity || branchAddr}</span>
+                                                                            </div>
+                                                                        </div>
+                                                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-700 border border-emerald-200 shrink-0">
+                                                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                                                            Verified
                                                                         </span>
                                                                     </div>
-                                                                </div>
-                                                                {branchCity && (
-                                                                    <span className="text-[11px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-lg shrink-0">
-                                                                        {branchCity}
-                                                                    </span>
-                                                                )}
-                                                            </div>
-
-                                                            <div className="space-y-1 text-xs text-slate-600 pl-0.5">
-                                                                <p className="flex items-center gap-1.5 text-[11px]">
-                                                                    <MapPin size={13} className="text-[#FF5A1F] shrink-0" />
-                                                                    <span className="line-clamp-1">{branchAddr}</span>
-                                                                </p>
-                                                                {outlet.phone && (
-                                                                    <p className="flex items-center gap-1.5 text-[11px] text-slate-500">
-                                                                        <Phone size={13} className="text-slate-400 shrink-0" />
-                                                                        <span>{outlet.phone}</span>
+                                                                    <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
+                                                                        {outlet.address || 'Verified Dining & Kitchen Outlet'}
                                                                     </p>
-                                                                )}
-                                                            </div>
-
-                                                            {branchList.length > 1 && (
-                                                                <div className="pt-1">
-                                                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                                                                        Available Branches ({branchList.length}):
-                                                                    </span>
-                                                                    <div className="flex flex-wrap gap-1">
-                                                                        {branchList.map(b => (
-                                                                            <span key={b._id} className="text-[10px] font-medium bg-slate-50 border border-slate-200 px-2 py-0.5 rounded-md text-slate-700">
-                                                                                {b.name}
-                                                                            </span>
-                                                                        ))}
-                                                                    </div>
                                                                 </div>
-                                                            )}
-                                                        </div>
 
-                                                        <div className="flex items-center justify-between gap-2 pt-3 border-t border-slate-100">
-                                                            <Link
-                                                                to={`/restaurant/${outlet._id}`}
-                                                                className="flex-1 py-2 px-3 bg-[#FF5A1F] hover:bg-[#e04f1a] text-white text-xs font-bold rounded-xl text-center shadow-xs transition-colors"
-                                                            >
-                                                                Browse Outlet Menu
-                                                            </Link>
-                                                            <Link
-                                                                to="/reservations"
-                                                                className="py-2 px-3 bg-white hover:bg-orange-50 text-slate-700 hover:text-[#FF5A1F] border border-slate-200 text-xs font-bold rounded-xl transition-colors"
-                                                            >
-                                                                Book Table
-                                                            </Link>
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })}
+                                                                <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
+                                                                    <span className="text-[11px] text-slate-400 font-semibold">
+                                                                        {branchList.length > 0 ? `${branchList.length} Branches` : 'Main Outlet'}
+                                                                    </span>
+                                                                    <Link
+                                                                        to={`/menu?restaurantId=${outlet._id}`}
+                                                                        className="px-3.5 py-1.5 bg-[#FF5A1F] hover:bg-[#e04f1a] text-white text-xs font-bold rounded-xl transition-all shadow-xs flex items-center gap-1 cursor-pointer"
+                                                                    >
+                                                                        <span>View Menu</span>
+                                                                        <ChevronRight size={13} />
+                                                                    </Link>
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
                                         </div>
                                     );
                                 })()}
@@ -1061,7 +1045,7 @@ const CustomerDashboard = () => {
                                     
                                     {/* Categories Row */}
                                     <div className="flex flex-wrap gap-1.5 select-none">
-                                        {['All', 'Starters', 'Salads', 'Mains', 'Desserts'].map(cat => {
+                                        {['All', 'Mains & Meals', 'Starters', 'Salads', 'Desserts', 'Beverages'].map(cat => {
                                             const isActive = selectedCategory === cat;
                                             return (
                                                 <button
@@ -1086,29 +1070,48 @@ const CustomerDashboard = () => {
                                          <div className="w-6 h-6 border-2 border-[#FF5A1F] border-t-transparent rounded-full animate-spin" />
                                      </div>
                                  ) : liveMenuItems.length === 0 ? (
-                                     <div className="text-center py-10 bg-slate-50/60 rounded-2xl border border-dashed border-slate-200">
-                                         <p className="text-xs font-semibold text-slate-500">No menu items found.</p>
+                                     <div className="text-center py-10 bg-slate-50/60 rounded-2xl border border-dashed border-slate-200 space-y-2">
+                                         <p className="text-xs font-semibold text-slate-500">No menu items loaded right now.</p>
+                                         <button
+                                             type="button"
+                                             onClick={() => {
+                                                 setLoadingMenuItems(true);
+                                                 api.get('/menu').then(res => {
+                                                     if (Array.isArray(res.data)) setLiveMenuItems(res.data);
+                                                 }).finally(() => setLoadingMenuItems(false));
+                                             }}
+                                             className="px-3.5 py-1.5 bg-[#FF5A1F] text-white text-xs font-bold rounded-lg cursor-pointer"
+                                         >
+                                             Refresh Menu
+                                         </button>
                                      </div>
                                  ) : (
                                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5 sm:gap-4 pt-1">
                                          {liveMenuItems
                                              .filter(food => {
-                                                 const foodCat = (food.category || '').toLowerCase();
+                                                 const foodCat = (food.category || '').toLowerCase().trim();
+                                                 const foodName = (food.name || '').toLowerCase();
                                                  const matchesCat = selectedCategory === 'All' || 
-                                                     (selectedCategory === 'Starters' && ['starters', 'starter', 'sides', 'bbq'].includes(foodCat)) ||
-                                                     (selectedCategory === 'Salads' && ['salads', 'salad'].includes(foodCat)) ||
-                                                     (selectedCategory === 'Mains' && ['mains', 'main', 'pizzas', 'pizza', 'burgers', 'burger'].includes(foodCat)) ||
-                                                     (selectedCategory === 'Desserts' && ['desserts', 'dessert', 'sweets'].includes(foodCat)) ||
+                                                     (selectedCategory === 'Starters' && ['starters', 'starter', 'sides', 'bbq', 'appetizer', 'snacks'].includes(foodCat)) ||
+                                                     (selectedCategory === 'Salads' && ['salads', 'salad', 'soup', 'soups'].includes(foodCat)) ||
+                                                     ((selectedCategory === 'Mains & Meals' || selectedCategory === 'Mains') && [
+                                                         'mains', 'main', 'meal', 'meals', 'pizza', 'pizzas', 'burger', 'burgers',
+                                                         'rice', 'biryani', 'biriyani', 'briyani', 'curry', 'curries', 'roti',
+                                                         'bread', 'breads', 'chinese', 'south indian', 'north indian', 'dosa', 'idily'
+                                                     ].includes(foodCat)) ||
+                                                     (selectedCategory === 'Desserts' && ['desserts', 'dessert', 'sweets', 'sweet', 'cake'].includes(foodCat)) ||
+                                                     (selectedCategory === 'Beverages' && ['beverages', 'beverage', 'drinks', 'drink', 'juice', 'shake'].includes(foodCat)) ||
                                                      foodCat === selectedCategory.toLowerCase();
 
-                                                 const restName = food.restaurantId?.name || food.restaurantName || '';
-                                                 const matchesRest = selectedRestaurantFilter === 'All' || restName === selectedRestaurantFilter;
+                                                 const restName = (food.restaurantId?.name || food.restaurantName || '').trim().toLowerCase();
+                                                 const filterName = selectedRestaurantFilter.trim().toLowerCase();
+                                                 const matchesRest = selectedRestaurantFilter === 'All' || restName === filterName;
 
                                                  return matchesCat && matchesRest;
                                              })
                                              .map(food => {
                                                  const foodImg = getItemImage(food);
-                                                 const restName = food.restaurantId?.name || food.restaurantName || registeredRestaurants[0]?.name || 'Partner Outlet';
+                                                 const restName = (food.restaurantId?.name || food.restaurantName || registeredRestaurants[0]?.name || 'Partner Outlet').trim();
 
                                                  return (
                                                      <div 
@@ -1157,8 +1160,8 @@ const CustomerDashboard = () => {
                                                              </div>
 
                                                              <div className="space-y-1">
-                                                                 <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#FF5A1F] bg-orange-50 px-2 py-0.5 rounded-md border border-orange-100">
-                                                                     <Store size={11} /> {restName}
+                                                                 <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#FF5A1F] bg-orange-50 px-2 py-0.5 rounded-md border border-orange-100 truncate max-w-full">
+                                                                     <Store size={11} className="shrink-0" /> <span className="truncate">{restName}</span>
                                                                  </span>
                                                                  <h4 className="font-bold text-slate-900 text-[13px] sm:text-sm line-clamp-1 group-hover:text-[#FF5A1F] transition-colors">
                                                                      {food.name}
@@ -1175,7 +1178,11 @@ const CustomerDashboard = () => {
                                                              <span className="font-black text-slate-900 text-sm sm:text-base">₹{food.price}</span>
                                                              <button 
                                                                  type="button"
-                                                                 onClick={(e) => { e.stopPropagation(); setSelectedDish({ ...food, restaurantName: restName }); }}
+                                                                 onClick={(e) => { 
+                                                                     e.stopPropagation(); 
+                                                                     addToCart(food, 1);
+                                                                     toast.success(`Added ${food.name} to cart!`);
+                                                                 }}
                                                                  className="px-3.5 py-1.5 bg-[#FF5A1F] hover:bg-[#e04f1a] active:scale-98 text-white text-xs font-bold rounded-lg transition-colors shadow-xs cursor-pointer flex items-center gap-1"
                                                              >
                                                                  <ShoppingBag size={12} />
@@ -1603,88 +1610,40 @@ const CustomerDashboard = () => {
                             </div>
 
                             <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-300">
-                                {/* Loyalty Tier Card */}
-                                <div className="bg-gradient-to-br from-[#111] via-[#1a1a1a] to-[#0a0a0a] rounded-2xl sm:rounded-3xl p-4 sm:p-7 text-white shadow-xl relative overflow-hidden border border-[#d4af37]/30">
-                                    <div className="absolute top-0 right-0 w-32 h-32 bg-[#d4af37]/10 rounded-full blur-3xl pointer-events-none"></div>
+                                {/* Loyalty Tier Card (Modern Clean Light UI) */}
+                                <div className="bg-gradient-to-br from-amber-50/80 via-orange-50/40 to-amber-100/30 rounded-2xl sm:rounded-3xl p-5 sm:p-7 text-slate-900 shadow-xs relative overflow-hidden border border-amber-200/90">
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-amber-400/10 rounded-full blur-2xl pointer-events-none"></div>
                                     <div className="flex items-center justify-between relative z-10">
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-[#ffe07d] to-[#f3c056] text-black flex items-center justify-center shadow-lg shadow-yellow-500/10 shrink-0">
-                                                <Crown size={15} className="fill-black" />
+                                        <div className="flex items-center gap-2.5">
+                                            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-[#FF5A1F] text-white flex items-center justify-center shadow-md shadow-[#FF5A1F]/25 shrink-0">
+                                                <Crown size={18} className="fill-white" />
                                             </div>
                                             <div>
-                                                <span className="block font-black tracking-widest text-[10px] sm:text-[11px] text-[#ffe07d]">{tierName}</span>
-                                                <span className="block text-[8px] sm:text-[9px] text-gray-400">FoodNest Rewards</span>
+                                                <span className="block font-black tracking-wider text-xs sm:text-sm text-slate-900">{tierName} Member</span>
+                                                <span className="block text-[10px] sm:text-xs text-slate-500 font-medium">FoodNest Rewards & VIP Club</span>
                                             </div>
                                         </div>
-                                        <Sparkles size={15} className="text-[#ffe07d] animate-pulse" />
+                                        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-black border border-amber-200 shadow-2xs">
+                                            <Sparkles size={13} className="text-amber-600 animate-pulse" />
+                                            <span>Active Tier</span>
+                                        </div>
                                     </div>
 
-                                    <div className="mt-4 sm:mt-6 space-y-0.5 sm:space-y-1 relative z-10">
-                                        <span className="text-[9px] sm:text-[10px] text-gray-400 font-extrabold uppercase tracking-wider block">Available Balance</span>
-                                        <h2 className="text-3xl sm:text-5xl font-black font-sans text-transparent bg-clip-text bg-gradient-to-r from-white via-[#fff2d1] to-[#f3c056]">
-                                            {userPoints.toLocaleString()} <span className="text-lg sm:text-2xl font-bold">Pts</span>
+                                    <div className="mt-5 sm:mt-6 space-y-1 relative z-10">
+                                        <span className="text-[10px] sm:text-xs text-slate-500 font-extrabold uppercase tracking-wider block">Available Balance</span>
+                                        <h2 className="text-3xl sm:text-5xl font-black font-sans text-slate-900">
+                                            {userPoints.toLocaleString()} <span className="text-lg sm:text-2xl font-bold text-[#FF5A1F]">Pts</span>
                                         </h2>
-                                        <p className="text-[11px] sm:text-xs text-gray-400 font-medium">Value: ₹{(userPoints * 0.1).toFixed(2)} (Redeemable at checkout)</p>
+                                        <p className="text-xs text-slate-600 font-medium">Value: ₹{(userPoints * 0.1).toFixed(2)} (Instant discount applicable at checkout)</p>
                                     </div>
 
-                                    <div className="mt-4 sm:mt-6 pt-3 sm:pt-5 border-t border-white/10 space-y-2 relative z-10">
-                                        <div className="flex justify-between text-[11px] sm:text-xs font-bold">
-                                            <span className="text-gray-300">Resto Platinum Tier Progress</span>
-                                            <span className="text-[#ffe07d]">80% Complete</span>
+                                    <div className="mt-5 sm:mt-6 pt-4 border-t border-amber-200/60 space-y-2 relative z-10">
+                                        <div className="flex justify-between text-xs font-bold">
+                                            <span className="text-slate-600">Resto Platinum Tier Progress</span>
+                                            <span className="text-[#FF5A1F]">80% Complete</span>
                                         </div>
-                                        <div className="h-2 bg-white/10 rounded-full overflow-hidden border border-[#ffe07d]/20">
-                                            <div className="h-full bg-gradient-to-r from-[#f3c056] via-[#ffe07d] to-[#f3c056] w-[80%] rounded-full shadow-[0_0_8px_rgba(243,192,86,0.3)]"></div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Rewards redemption catalog */}
-                                <div className="space-y-3 min-w-0 pr-0.5 flex-1">
-                                    <h4 className="font-extrabold text-xs sm:text-sm text-gray-900">Available Redemptions</h4>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-4">
-                                        <div className="border border-gray-100 p-3 sm:p-4 rounded-xl sm:rounded-2xl flex items-center justify-between gap-3 bg-gray-50/60 hover:bg-white transition-all shadow-2xs">
-                                            <div className="min-w-0">
-                                                <p className="font-bold text-gray-900 text-xs sm:text-sm truncate">₹100 Store Credit</p>
-                                                <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5">Requires 1000 pts</p>
-                                            </div>
-                                            <button 
-                                                onClick={() => {
-                                                    if (userPoints >= 1000) {
-                                                        deductUserPoints(1000);
-                                                        setWalletBalance(prev => {
-                                                            const next = prev + 100;
-                                                            localStorage.setItem('customerWalletBalance', String(next));
-                                                            return next;
-                                                        });
-                                                        toast.success('Successfully redeemed 1000 points for ₹100 Store Credit!');
-                                                    } else {
-                                                        toast.error('Insufficient points! You need 1000 points.');
-                                                    }
-                                                }}
-                                                className="px-3 py-1.5 sm:px-4 sm:py-2 bg-orange-600 hover:bg-orange-700 active:scale-95 transition-all text-white font-bold text-[11px] sm:text-xs rounded-lg sm:rounded-xl shadow-xs shrink-0 cursor-pointer"
-                                            >
-                                                Redeem
-                                            </button>
-                                        </div>
-
-                                        <div className="border border-gray-100 p-3 sm:p-4 rounded-xl sm:rounded-2xl flex items-center justify-between gap-3 bg-gray-50/60 hover:bg-white transition-all shadow-2xs">
-                                            <div className="min-w-0">
-                                                <p className="font-bold text-gray-900 text-xs sm:text-sm truncate">Free Cheese Pizza</p>
-                                                <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5">Requires 2000 pts</p>
-                                            </div>
-                                            <button 
-                                                onClick={() => {
-                                                    if (userPoints >= 2000) {
-                                                        deductUserPoints(2000);
-                                                        toast.success('🎉 Voucher for Free Double Cheese Pizza redeemed!');
-                                                    } else {
-                                                        toast.error('Insufficient points! You need 2000 points.');
-                                                    }
-                                                }}
-                                                className="px-3 py-1.5 sm:px-4 sm:py-2 bg-orange-600 hover:bg-orange-700 active:scale-95 transition-all text-white font-bold text-[11px] sm:text-xs rounded-lg sm:rounded-xl shadow-xs shrink-0 cursor-pointer"
-                                            >
-                                                Redeem
-                                            </button>
+                                        <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden border border-amber-200/60">
+                                            <div className="h-full bg-gradient-to-r from-[#FF5A1F] to-amber-500 w-[80%] rounded-full shadow-xs"></div>
                                         </div>
                                     </div>
                                 </div>

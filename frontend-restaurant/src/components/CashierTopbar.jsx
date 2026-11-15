@@ -75,28 +75,38 @@ const CashierTopbar = () => {
     };
 
     return (
-        <header className="h-16 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-gray-100 dark:border-slate-800 flex items-center justify-between px-3 sm:px-4 md:px-6 sticky top-0 z-10 shadow-xs">
+        <header className="h-16 bg-white/95 backdrop-blur-md border-b border-slate-100 flex items-center justify-between px-3 sm:px-4 md:px-6 sticky top-0 z-10 shadow-xs">
             <div className="flex-1 flex items-center gap-1.5 sm:gap-2 md:gap-4 min-w-0">
                 <button 
                     onClick={() => window.dispatchEvent(new Event('toggle-sidebar'))} 
-                    className="md:hidden p-2 text-gray-500 hover:bg-gray-100 rounded-lg shrink-0"
+                    className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg shrink-0 cursor-pointer"
+                    aria-label="Toggle Menu"
+                    title="Toggle Sidebar"
                 >
                     <Menu size={22} />
                 </button>
+                <button
+                    onClick={() => window.history.back()}
+                    className="md:hidden p-1.5 px-2 text-slate-700 hover:bg-slate-100 rounded-xl transition-colors flex items-center gap-1 text-xs font-bold border border-slate-200 shrink-0 shadow-xs cursor-pointer"
+                    aria-label="Go Back"
+                    title="Back"
+                >
+                    <span className="text-[11px] font-bold">← Back</span>
+                </button>
                 <div className="relative flex-1 max-w-[170px] sm:max-w-xs md:w-80">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                     <input 
                         type="text"
                         value={searchTerm}
                         onChange={(e) => handleSearchChange(e.target.value)}
                         placeholder="Search bill or table..."
-                        className="w-full pl-8 sm:pl-9 pr-7 sm:pr-8 py-1.5 sm:py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all placeholder:text-gray-400 text-gray-900 dark:text-white"
+                        className="w-full pl-8 sm:pl-9 pr-7 sm:pr-8 py-1.5 sm:py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all placeholder:text-slate-400 text-slate-900"
                     />
                     {searchTerm && (
                         <button
                             type="button"
                             onClick={() => handleSearchChange('')}
-                            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xs font-bold"
+                            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-bold"
                         >
                             ✕
                         </button>
@@ -108,16 +118,16 @@ const CashierTopbar = () => {
                 <div className="relative" ref={notifRef}>
                     <button 
                         onClick={() => { setShowNotifs(!showNotifs); setShowProfile(false); }}
-                        className="relative p-2 text-gray-400 hover:text-purple-600 transition-colors hover:bg-purple-50 rounded-lg"
+                        className="relative p-2 text-slate-400 hover:text-purple-600 transition-colors hover:bg-purple-50 rounded-lg"
                     >
                         <Bell size={20} />
                         {unreadCount > 0 && <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>}
                     </button>
                     {showNotifs && (
-                        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-800 overflow-hidden z-50">
-                            <div className="p-3.5 border-b border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-950 flex items-center justify-between">
+                        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden z-50">
+                            <div className="p-3.5 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
                                 <div className="flex items-center gap-2">
-                                    <h3 className="font-extrabold text-gray-900 dark:text-white text-xs sm:text-sm">Cashier Notifications</h3>
+                                    <h3 className="font-extrabold text-slate-900 text-xs sm:text-sm">Cashier Notifications</h3>
                                     {unreadCount > 0 && (
                                         <span className="px-1.5 py-0.5 rounded-full bg-purple-600 text-white text-[10px] font-black">
                                             {unreadCount}
@@ -134,7 +144,7 @@ const CashierTopbar = () => {
                                     </button>
                                 )}
                             </div>
-                            <div className="max-h-96 overflow-y-auto custom-scrollbar divide-y divide-gray-100 dark:divide-slate-800">
+                            <div className="max-h-96 overflow-y-auto custom-scrollbar divide-y divide-slate-100">
                                 {notifications.length === 0 ? (
                                     <div className="p-6 text-center text-gray-400 text-xs font-semibold">No new notifications</div>
                                 ) : (
@@ -187,27 +197,27 @@ const CashierTopbar = () => {
                         <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl border border-gray-100 dark:border-slate-800 overflow-hidden text-left animate-in zoom-in-95 duration-200">
                             <div className="px-5 py-4 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between bg-purple-50/60 dark:bg-slate-800">
                                 <div>
-                                    <h3 className="font-extrabold text-gray-900 dark:text-white text-sm">
+                                    <h3 className="font-extrabold text-slate-900 text-sm">
                                         {selectedOrderNote.title}
                                     </h3>
-                                    <p className="text-[10px] text-gray-500 dark:text-gray-400 font-medium mt-0.5">
+                                    <p className="text-[10px] text-slate-500 font-medium mt-0.5">
                                         {new Date(selectedOrderNote.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · Details
                                     </p>
                                 </div>
                                 <button
                                     type="button"
                                     onClick={() => setSelectedOrderNote(null)}
-                                    className="p-1.5 rounded-xl hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-400 hover:text-gray-700 transition-colors cursor-pointer"
+                                    className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
                                 >
                                     <X size={18} />
                                 </button>
                             </div>
                             <div className="p-5 space-y-3.5">
-                                <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800">
+                                <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
                                     <span className="text-[10px] font-black uppercase tracking-wider text-purple-600 block mb-1">
                                         Details
                                     </span>
-                                    <p className="text-xs text-gray-800 dark:text-gray-200 font-medium leading-relaxed">
+                                    <p className="text-xs text-slate-800 font-medium leading-relaxed">
                                         {selectedOrderNote.desc}
                                     </p>
                                 </div>
@@ -239,13 +249,13 @@ const CashierTopbar = () => {
                 <button
                     type="button"
                     onClick={() => window.dispatchEvent(new Event('open-cashier-settings'))}
-                    className="p-2 text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors hover:bg-purple-50 dark:hover:bg-slate-800 rounded-lg group cursor-pointer"
+                    className="p-2 text-slate-400 hover:text-purple-600 transition-colors hover:bg-purple-50 rounded-lg group cursor-pointer"
                     title="Cashier POS Settings"
                 >
                     <Settings size={20} className="group-hover:rotate-45 transition-transform duration-300" />
                 </button>
 
-                <div className="h-6 sm:h-8 w-px bg-gray-200 dark:bg-slate-800"></div>
+                <div className="h-6 sm:h-8 w-px bg-slate-200"></div>
 
                 <div className="relative" ref={profileRef}>
                     <div 

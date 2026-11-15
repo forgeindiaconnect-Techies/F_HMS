@@ -306,11 +306,11 @@ const Topbar = () => {
 
     return (
         <>
-            <header className="h-16 sm:h-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-100 dark:border-slate-800 flex items-center justify-between px-3 sm:px-4 md:px-8 sticky top-0 z-10">
+            <header className="h-16 sm:h-20 bg-white/95 backdrop-blur-md border-b border-slate-100 flex items-center justify-between px-3 sm:px-4 md:px-8 sticky top-0 z-10">
                 <div className="flex items-center gap-1.5 sm:gap-2 md:gap-4 w-full md:w-auto flex-1 min-w-0">
                     <button
                         onClick={() => window.dispatchEvent(new Event('toggle-sidebar'))}
-                        className="p-2 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg shrink-0 cursor-pointer"
+                        className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg shrink-0 cursor-pointer"
                         aria-label="Toggle Sidebar Menu"
                         title="Toggle Sidebar"
                     >
@@ -319,7 +319,7 @@ const Topbar = () => {
 
                     <button
                         onClick={() => window.history.back()}
-                        className="md:hidden p-1.5 px-2 text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-colors flex items-center gap-1 text-xs font-bold border border-gray-200 dark:border-slate-800 shrink-0 shadow-xs"
+                        className="md:hidden p-1.5 px-2 text-slate-700 hover:bg-slate-100 rounded-xl transition-colors flex items-center gap-1 text-xs font-bold border border-slate-200 shrink-0 shadow-xs cursor-pointer"
                         aria-label="Go Back"
                         title="Back"
                     >
@@ -329,8 +329,8 @@ const Topbar = () => {
 
                     {/* Branch Badge / Name display */}
                     {isAdmin && (
-                        <div className="flex items-center gap-1.5 sm:gap-2 bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/50 text-emerald-800 dark:text-emerald-300 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold shadow-xs truncate">
-                            <Store size={14} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+                        <div className="flex items-center gap-1.5 sm:gap-2 bg-emerald-50 border border-emerald-100 text-emerald-800 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold shadow-xs truncate">
+                            <Store size={14} className="text-emerald-600 shrink-0" />
                             <span className="truncate max-w-[100px] sm:max-w-[140px] md:max-w-[200px]">
                                 {selectedBranch?.name ? selectedBranch.name : 'Main Branch'}
                             </span>
@@ -338,10 +338,10 @@ const Topbar = () => {
                                 <select 
                                     value={selectedBranch?._id || ''}
                                     onChange={(e) => setSelectedBranch(branches.find(b => b._id === e.target.value))}
-                                    className="bg-transparent text-emerald-800 dark:text-emerald-300 font-bold text-xs outline-none cursor-pointer border-none pl-1"
+                                    className="bg-transparent text-emerald-800 font-bold text-xs outline-none cursor-pointer border-none pl-1"
                                 >
                                     {branches.map(b => (
-                                        <option key={b._id} value={b._id} className="bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 font-semibold">{b.name}</option>
+                                        <option key={b._id} value={b._id} className="bg-white text-slate-800 font-semibold">{b.name}</option>
                                     ))}
                                 </select>
                             ) : (

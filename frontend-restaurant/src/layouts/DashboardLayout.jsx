@@ -243,13 +243,13 @@ const DashboardLayout = () => {
     };
 
     return (
-        <div className="flex h-screen bg-gray-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 overflow-hidden font-sans">
+        <div className="flex h-screen bg-[#FAFAF8] text-slate-900 overflow-hidden font-sans">
             <Sidebar />
             
             <div className="flex-1 flex flex-col h-full min-h-0 overflow-hidden">
                 <Topbar />
                 
-                <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-2.5 sm:p-4 md:p-6 lg:p-8 relative custom-scrollbar">
+                <main className="flex-1 overflow-x-hidden overflow-y-auto bg-[#FAFAF8] text-slate-900 p-2.5 sm:p-4 md:p-6 lg:p-8 relative custom-scrollbar">
                     {isFrozen ? (
                         <SubscriptionFreezeOverlay onUnfrozen={() => fetchRestaurant()} />
                     ) : isUnverified && !isVerificationPage ? (

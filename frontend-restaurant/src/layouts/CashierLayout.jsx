@@ -24,13 +24,13 @@ const CashierLayout = () => {
     );
 
     return (
-        <div className="flex flex-col h-screen overflow-hidden font-sans">
+        <div className="flex flex-col h-screen overflow-hidden font-sans bg-slate-50 text-slate-900">
             <SubscriptionBanner />
-            <div className="flex flex-1 overflow-hidden bg-gray-50">
+            <div className="flex flex-1 overflow-hidden bg-slate-50">
                 <CashierSidebar />
             <div className="flex-1 flex flex-col h-full min-h-0 overflow-hidden">
                 <CashierTopbar />
-                <main className="flex-1 overflow-x-hidden overflow-y-auto p-2.5 sm:p-4 md:p-6 custom-scrollbar bg-gray-50 dark:bg-slate-950">
+                <main className="flex-1 overflow-x-hidden overflow-y-auto p-2.5 sm:p-4 md:p-6 custom-scrollbar bg-slate-50 text-slate-900">
                     <div className="min-h-full flex flex-col">
                         {isFrozen ? (
                             <SubscriptionFreezeOverlay onUnfrozen={() => fetchRestaurant()} />

@@ -100,14 +100,14 @@ const WaiterSidebar = () => {
             />
         )}
         <aside className={clsx(
-            "w-64 bg-[#061e1c] text-white border-r border-[#0d3632] shadow-2xl h-screen fixed inset-y-0 left-0 md:sticky md:top-0 flex flex-col transition-transform duration-300 z-40",
+            "w-64 bg-white text-slate-800 border-r border-slate-200 shadow-sm h-screen fixed inset-y-0 left-0 md:sticky md:top-0 flex flex-col transition-transform duration-300 z-40",
             isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         )}>
             {/* Header */}
-            <div className="h-16 flex items-center px-5 border-b border-[#0d3632] shrink-0">
+            <div className="h-16 flex items-center px-5 border-b border-slate-100 shrink-0">
                 <div className="flex items-center gap-3">
                     {logoSrc && !logoError ? (
-                        <div className="w-10 h-10 rounded-xl overflow-hidden border border-[#144743] bg-[#0c2e2b] flex items-center justify-center shrink-0">
+                        <div className="w-10 h-10 rounded-xl overflow-hidden border border-slate-200 bg-slate-50 flex items-center justify-center shrink-0">
                             <img 
                                 src={logoSrc} 
                                 alt="Logo" 
@@ -116,15 +116,15 @@ const WaiterSidebar = () => {
                             />
                         </div>
                     ) : (
-                        <div className="w-10 h-10 bg-teal-600 rounded-xl flex items-center justify-center shadow-lg shadow-teal-950 shrink-0">
+                        <div className="w-10 h-10 bg-teal-600 rounded-xl flex items-center justify-center shadow-xs shrink-0">
                             <Utensils className="text-white" size={22} strokeWidth={2.5} />
                         </div>
                     )}
                     <div>
-                        <h1 className="text-base font-bold text-white tracking-tight leading-none truncate max-w-[140px]" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                        <h1 className="text-base font-bold text-slate-900 tracking-tight leading-none truncate max-w-[140px]" style={{ fontFamily: 'Poppins, sans-serif' }}>
                             {restaurant && restaurant.name ? restaurant.name : 'FoodNest'}
                         </h1>
-                        <span className="text-[10px] font-bold text-teal-400 uppercase tracking-widest block mt-1">Floor Desk</span>
+                        <span className="text-[10px] font-bold text-teal-600 uppercase tracking-widest block mt-1">Floor Desk</span>
                     </div>
                 </div>
             </div>
@@ -133,7 +133,7 @@ const WaiterSidebar = () => {
             <nav className="flex-1 px-3 py-5 overflow-y-auto space-y-5 custom-scrollbar" style={{ scrollbarWidth: 'none' }}>
                 {navGroups.map((group, index) => (
                     <div key={index}>
-                        <h2 className="px-3 mb-2 text-[10px] font-bold text-teal-300/60 uppercase tracking-widest">
+                        <h2 className="px-3 mb-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                             {group.title}
                         </h2>
                         <ul className="space-y-0.5">
@@ -151,12 +151,12 @@ const WaiterSidebar = () => {
                                             className={clsx(
                                                 "relative flex items-center justify-between px-3 py-2.5 rounded-xl font-medium transition-all text-sm group",
                                                 isActive 
-                                                ? "bg-teal-600 text-white shadow-lg shadow-teal-950/50 font-semibold" 
-                                                : "text-teal-200/70 hover:bg-[#0c2e2b] hover:text-white"
+                                                ? "bg-teal-600 text-white shadow-sm font-semibold" 
+                                                : "text-slate-600 hover:bg-teal-50/80 hover:text-teal-700"
                                             )}
                                         >
                                             <div className="flex items-center gap-3 truncate">
-                                                <Icon size={17} className={clsx("transition-transform group-hover:scale-110 shrink-0", isActive ? "text-white" : "text-teal-300/60 group-hover:text-teal-200")} />
+                                                <Icon size={17} className={clsx("transition-transform group-hover:scale-110 shrink-0", isActive ? "text-white" : "text-slate-400 group-hover:text-teal-600")} />
                                                 <span className="truncate">{item.name}</span>
                                             </div>
                                             <div className="flex items-center gap-1.5 shrink-0 ml-1">
@@ -177,14 +177,14 @@ const WaiterSidebar = () => {
             </nav>
 
             {/* Footer Profile & Logout */}
-            <div className="p-3 border-t border-[#0d3632] shrink-0 bg-[#041514]">
-                <div className="px-3 py-2 mb-2 rounded-xl bg-[#0c2e2b]/80 border border-[#144743]/60">
-                    <p className="text-xs font-bold text-white truncate">{restaurant?.name || 'Floor Staff'}</p>
-                    <p className="text-[10px] text-teal-400 font-medium">Service & Order Desk</p>
+            <div className="p-3 border-t border-slate-100 shrink-0 bg-slate-50">
+                <div className="px-3 py-2 mb-2 rounded-xl bg-white border border-slate-200">
+                    <p className="text-xs font-bold text-slate-800 truncate">{restaurant?.name || 'Floor Staff'}</p>
+                    <p className="text-[10px] text-teal-600 font-medium">Service & Order Desk</p>
                 </div>
                 <button 
                     onClick={() => setShowLogoutConfirm(true)} 
-                    className="flex items-center gap-3 px-3 py-2.5 w-full rounded-xl font-medium text-teal-200/70 hover:bg-red-500/10 hover:text-red-400 transition-all text-sm cursor-pointer"
+                    className="flex items-center gap-3 px-3 py-2.5 w-full rounded-xl font-medium text-slate-600 hover:bg-red-50 hover:text-red-600 transition-all text-sm cursor-pointer"
                 >
                     <LogOut size={17} />
                     <span>End Shift</span>

@@ -24,15 +24,15 @@ const ChefLayout = () => {
     );
 
     return (
-        <div className="flex flex-col h-screen overflow-hidden font-sans text-slate-900 dark:text-gray-200 bg-gray-50 dark:bg-[#151923]">
+        <div className="flex flex-col h-screen overflow-hidden font-sans text-slate-900 bg-slate-50">
             <SubscriptionBanner />
-            <div className="flex flex-1 overflow-hidden">
+            <div className="flex flex-1 overflow-hidden bg-slate-50">
                 <ChefSidebar />
             
             <div className="flex-1 flex flex-col h-full min-h-0 overflow-hidden">
                 <ChefTopbar />
                 
-                <main className="flex-1 overflow-x-hidden overflow-y-auto p-2.5 sm:p-4 md:p-6 custom-scrollbar bg-gray-50 dark:bg-[#151923]">
+                <main className="flex-1 overflow-x-hidden overflow-y-auto p-2.5 sm:p-4 md:p-6 custom-scrollbar bg-slate-50">
                     {isFrozen ? (
                         <SubscriptionFreezeOverlay onUnfrozen={() => fetchRestaurant()} />
                     ) : isUnverified ? (
