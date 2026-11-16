@@ -69,21 +69,37 @@ const WaiterPriorityActions = () => {
                     } catch (e) {}
                 };
 
+                ws.onerror = () => {};
                 ws.onclose = () => {
-                    if (!isUnmounted) {
+                    if (!isUnmounted && document.visibilityState !== 'hidden') {
                         reconnectTimer = setTimeout(connectWS, 5000);
                     }
                 };
             } catch (err) {}
         };
 
+        const handlePageHide = () => {
+            clearTimeout(reconnectTimer);
+            if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
+                try { ws.close(1000, 'Page hidden'); } catch (_) {}
+            }
+        };
+
+        window.addEventListener('pagehide', handlePageHide);
         connectWS();
 
         return () => {
             isUnmounted = true;
+            window.removeEventListener('pagehide', handlePageHide);
             clearInterval(interval);
             clearTimeout(reconnectTimer);
-            if (ws) ws.close();
+            if (ws) {
+                ws.onopen = null;
+                ws.onmessage = null;
+                ws.onerror = null;
+                ws.onclose = null;
+                try { ws.close(1000, 'Unmount'); } catch (_) {}
+            }
         };
     }, [api, user]);
 

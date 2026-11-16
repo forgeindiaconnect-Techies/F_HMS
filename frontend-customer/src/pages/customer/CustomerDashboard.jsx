@@ -315,25 +315,46 @@ const CustomerDashboard = () => {
         }
     }, [api]);
 
-    // Real-time WebSocket connection to receive instant order updates
+    // Real-time WebSocket connection to receive instant order updates (bfcache & lifecycle resilient)
     useEffect(() => {
         let isUnmounted = false;
         let reconnectTimer;
-        let ws;
+        let ws = null;
+
+        const cleanupWS = () => {
+            clearTimeout(reconnectTimer);
+            if (ws) {
+                ws.onopen = null;
+                ws.onmessage = null;
+                ws.onerror = null;
+                ws.onclose = null;
+                try {
+                    if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
+                        ws.close(1000, 'Normal closure');
+                    }
+                } catch (_) {}
+                ws = null;
+            }
+        };
+
         const connectWS = () => {
-            if (isUnmounted) return;
+            if (isUnmounted || document.visibilityState === 'hidden') return;
+            cleanupWS();
+
             try {
-                let baseURL = getApiUrl();
-                let wsURL = baseURL.replace(/^http/, 'ws').replace(/\/api$/, '');
+                const baseURL = getApiUrl();
+                const wsURL = baseURL.replace(/^http/, 'ws').replace(/\/api$/, '');
                 ws = new WebSocket(wsURL);
 
                 ws.onopen = () => {
                     const token = sessionStorage.getItem('customer_token') || localStorage.getItem('customer_token') || sessionStorage.getItem('token') || localStorage.getItem('token');
-                    ws.send(JSON.stringify({
-                        type: 'register',
-                        role: 'customer',
-                        token
-                    }));
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({
+                            type: 'register',
+                            role: 'customer',
+                            token
+                        }));
+                    }
                 };
 
                 ws.onmessage = (event) => {
@@ -342,23 +363,59 @@ const CustomerDashboard = () => {
                         if (['new_order', 'order_updated', 'ready_to_serve', 'order_status_updated', 'delivery_updated'].includes(msg.type)) {
                             fetchOrders();
                         }
-                    } catch (e) {}
+                    } catch (_) {}
+                };
+
+                ws.onerror = () => {
+                    // Swallow connection drops cleanly to prevent unhandled console errors
                 };
 
                 ws.onclose = () => {
-                    if (!isUnmounted) {
+                    ws = null;
+                    if (!isUnmounted && document.visibilityState !== 'hidden') {
                         reconnectTimer = setTimeout(connectWS, 5000);
                     }
                 };
-            } catch (e) {}
+            } catch (_) {}
         };
 
         connectWS();
 
+        // Gracefully close WebSocket before page enters Back-Forward Cache (bfcache)
+        const handlePageHide = () => {
+            cleanupWS();
+        };
+
+        // Reconnect when page is restored from Back-Forward Cache
+        const handlePageShow = (e) => {
+            if (e.persisted || !ws || ws.readyState === WebSocket.CLOSED) {
+                fetchOrders();
+                connectWS();
+            }
+        };
+
+        // Pause connection when tab/window is hidden and resume when visible
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                if (!ws || ws.readyState === WebSocket.CLOSED) {
+                    fetchOrders();
+                    connectWS();
+                }
+            } else {
+                cleanupWS();
+            }
+        };
+
+        window.addEventListener('pagehide', handlePageHide);
+        window.addEventListener('pageshow', handlePageShow);
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
         return () => {
             isUnmounted = true;
-            clearTimeout(reconnectTimer);
-            if (ws) ws.close();
+            window.removeEventListener('pagehide', handlePageHide);
+            window.removeEventListener('pageshow', handlePageShow);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            cleanupWS();
         };
     }, []);
 

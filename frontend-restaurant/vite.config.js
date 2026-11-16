@@ -18,7 +18,6 @@ export default defineConfig(({ mode }) => {
       react(),
     ],
     resolve: {
-      preserveSymlinks: true,
       alias: {
         'react-router/dom': path.resolve(__dirname, 'node_modules/react-router/dist/production/dom-export.js'),
         'react-router': path.resolve(__dirname, 'node_modules/react-router/dist/production/index.js'),

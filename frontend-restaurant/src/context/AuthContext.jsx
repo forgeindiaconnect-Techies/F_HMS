@@ -337,23 +337,39 @@ export const AuthProvider = ({ children }) => {
                         }
                     } catch (_) { }
                 };
+                ws.onerror = () => { };
                 ws.onclose = () => {
-                    if (!isUnmounted) {
+                    if (!isUnmounted && document.visibilityState !== 'hidden') {
                         reconnectTimer = setTimeout(connectSubWS, 8000);
                     }
                 };
             } catch (_) { }
         };
 
+        const handlePageHide = () => {
+            if (reconnectTimer) clearTimeout(reconnectTimer);
+            if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
+                try { ws.close(1000, 'Page hidden'); } catch (_) { }
+            }
+        };
+
+        window.addEventListener('pagehide', handlePageHide);
         connectSubWS();
 
         return () => {
             isUnmounted = true;
             window.removeEventListener('focus', refresh);
             window.removeEventListener('subscription-frozen', refresh);
+            window.removeEventListener('pagehide', handlePageHide);
             clearInterval(interval);
             if (reconnectTimer) clearTimeout(reconnectTimer);
-            if (ws) ws.close();
+            if (ws) {
+                ws.onopen = null;
+                ws.onmessage = null;
+                ws.onerror = null;
+                ws.onclose = null;
+                try { ws.close(1000, 'Unmount'); } catch (_) { }
+            }
         };
     }, [user, fetchRestaurant]);
 

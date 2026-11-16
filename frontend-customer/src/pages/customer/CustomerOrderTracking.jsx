@@ -70,62 +70,116 @@ const CustomerOrderTracking = () => {
     useEffect(() => {
         fetchOrderDetails();
 
-        // WebSocket Connection for instant status updates!
+        // WebSocket Connection for instant status updates (bfcache & lifecycle resilient)
         let isUnmounted = false;
         let reconnectTimer;
-        let ws;
-        const connectWS = () => {
-            if (isUnmounted) return;
-            let baseURL = API_URL;
-            let wsURL = baseURL.replace(/^http/, 'ws').replace(/\/api$/, '');
-            
-            ws = new WebSocket(wsURL);
+        let ws = null;
 
-            ws.onopen = () => {
-                ws.send(JSON.stringify({
-                    type: 'register',
-                    orderId: orderId,
-                    role: 'customer'
-                }));
-            };
-
-            ws.onmessage = (event) => {
+        const cleanupWS = () => {
+            clearTimeout(reconnectTimer);
+            if (ws) {
+                ws.onopen = null;
+                ws.onmessage = null;
+                ws.onerror = null;
+                ws.onclose = null;
                 try {
-                    const msg = JSON.parse(event.data);
-                    if (msg.type === 'order_status_updated') {
-                        setOrder(msg.data);
-                        toast.success(`Order status updated to: ${msg.data.status}`);
-                    } else if (msg.type === 'delivery_location_updated') {
-                        setOrder(prev => {
-                            if (!prev) return prev;
-                            return {
-                                ...prev,
-                                deliveryPartnerLocation: {
-                                    latitude: msg.data.latitude,
-                                    longitude: msg.data.longitude,
-                                    updatedAt: msg.data.updatedAt
-                                }
-                            };
-                        });
+                    if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
+                        ws.close(1000, 'Normal closure');
                     }
-                } catch (e) {
-                    console.error("Error reading websocket message", e);
-                }
-            };
+                } catch (_) {}
+                ws = null;
+            }
+        };
 
-            ws.onclose = () => {
-                if (!isUnmounted) {
-                    reconnectTimer = setTimeout(connectWS, 5000);
-                }
-            };
+        const connectWS = () => {
+            if (isUnmounted || document.visibilityState === 'hidden') return;
+            cleanupWS();
+
+            const baseURL = API_URL;
+            const wsURL = baseURL.replace(/^http/, 'ws').replace(/\/api$/, '');
+            
+            try {
+                ws = new WebSocket(wsURL);
+
+                ws.onopen = () => {
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({
+                            type: 'register',
+                            orderId: orderId,
+                            role: 'customer'
+                        }));
+                    }
+                };
+
+                ws.onmessage = (event) => {
+                    try {
+                        const msg = JSON.parse(event.data);
+                        if (msg.type === 'order_status_updated') {
+                            setOrder(msg.data);
+                            toast.success(`Order status updated to: ${msg.data.status}`);
+                        } else if (msg.type === 'delivery_location_updated') {
+                            setOrder(prev => {
+                                if (!prev) return prev;
+                                return {
+                                    ...prev,
+                                    deliveryPartnerLocation: {
+                                        latitude: msg.data.latitude,
+                                        longitude: msg.data.longitude,
+                                        updatedAt: msg.data.updatedAt
+                                    }
+                                };
+                            });
+                        }
+                    } catch (_) {}
+                };
+
+                ws.onerror = () => {
+                    // Suppress connection failure errors in console
+                };
+
+                ws.onclose = () => {
+                    ws = null;
+                    if (!isUnmounted && document.visibilityState !== 'hidden') {
+                        reconnectTimer = setTimeout(connectWS, 5000);
+                    }
+                };
+            } catch (_) {}
         };
 
         connectWS();
 
+        const handlePageHide = () => {
+            cleanupWS();
+        };
+
+        const handlePageShow = (e) => {
+            if (e.persisted || !ws || ws.readyState === WebSocket.CLOSED) {
+                fetchOrderDetails();
+                connectWS();
+            }
+        };
+
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                if (!ws || ws.readyState === WebSocket.CLOSED) {
+                    fetchOrderDetails();
+                    connectWS();
+                }
+            } else {
+                cleanupWS();
+            }
+        };
+
+        window.addEventListener('pagehide', handlePageHide);
+        window.addEventListener('pageshow', handlePageShow);
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
         return () => {
             isUnmounted = true;
-            clearTimeout(reconnectTimer);
-            if (ws) ws.close();
+            window.removeEventListener('pagehide', handlePageHide);
+            window.removeEventListener('pageshow', handlePageShow);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            cleanupWS();
         };
     }, [orderId]);
 
