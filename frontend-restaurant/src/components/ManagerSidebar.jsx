@@ -140,15 +140,6 @@ const ManagerSidebar = () => {
                         </h1>
                         <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest block mt-0.5">Branch Manager</span>
                     </div>
-
-                    {/* Mobile Close Button */}
-                    <button
-                        onClick={() => setIsOpen(false)}
-                        className="md:hidden p-1.5 text-indigo-300 hover:text-white rounded-lg hover:bg-[#1a224a] transition-colors shrink-0 cursor-pointer"
-                        aria-label="Close Sidebar"
-                    >
-                        ✕
-                    </button>
                 </div>
 
                 {/* Mobile Close Button */}
@@ -190,14 +181,6 @@ const ManagerSidebar = () => {
                                 );
                             })}
                         </div>
-                    ))}
-                </nav>
-
-                {/* Sidebar Footer */}
-                <div className="p-3 border-t border-[#1a224a] shrink-0 bg-[#080b1c]">
-                    <div className="px-3 py-2 mb-2 rounded-xl bg-[#141b3d]/80 border border-[#232d61]/60">
-                        <p className="text-xs font-bold text-white truncate">{restaurant?.name || 'Branch Manager'}</p>
-                        <p className="text-[10px] text-indigo-400 font-medium">Branch Operations</p>
                     </div>
                 ))}
             </nav>
