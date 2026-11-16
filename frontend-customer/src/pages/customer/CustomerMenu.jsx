@@ -243,7 +243,7 @@ const CustomerMenu = () => {
         localStorage.setItem('restosys_guest_name', customerName.trim());
         if (customerPhone) localStorage.setItem('restosys_guest_phone', customerPhone.trim());
 
-        // If online payment (UPI or Card) is chosen, open the Dummy QR Scanner / Card confirmation modal
+        // If online payment (UPI or Card) is chosen, open the QR Scanner / Card confirmation modal
         if (paymentOption === 'UPI' || paymentOption === 'Card') {
             setPaymentStep('qr');
             setShowPaymentModal(true);
@@ -253,7 +253,7 @@ const CustomerMenu = () => {
         }
     };
 
-    const handleConfirmDummyQRPayment = async () => {
+    const handleConfirmQRPayment = async () => {
         if (isSubmitting) return;
         setPaymentStep('simulating');
         setTimeout(async () => {
@@ -1086,8 +1086,8 @@ const CustomerMenu = () => {
                                 </div>
                             ) : (
                                 <button
-                                    id="confirm-dummy-qr-payment-btn"
-                                    onClick={handleConfirmDummyQRPayment}
+                                    id="confirm-qr-payment-btn"
+                                    onClick={handleConfirmQRPayment}
                                     disabled={isSubmitting}
                                     className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-black rounded-2xl shadow-lg shadow-emerald-600/30 text-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
                                 >

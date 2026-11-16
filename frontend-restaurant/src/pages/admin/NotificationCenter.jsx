@@ -249,18 +249,7 @@ const NotificationCenter = () => {
             toast.success('Broadcast sent successfully');
         } catch (error) {
             console.error('Failed to create broadcast', error);
-            const newDummy = {
-                _id: `dummy-${Date.now()}`,
-                title: formData.title,
-                desc: formData.desc,
-                type: 'Broadcast',
-                read: false,
-                createdAt: new Date().toISOString()
-            };
-            setNotifications([newDummy, ...notifications]);
-            setIsModalOpen(false);
-            setFormData({ title: '', desc: '' });
-            toast.success('Broadcast notification added');
+            toast.error(error.response?.data?.message || 'Failed to send broadcast');
         } finally {
             setIsSubmitting(false);
         }

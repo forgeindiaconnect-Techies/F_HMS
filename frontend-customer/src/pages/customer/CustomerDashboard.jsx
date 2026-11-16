@@ -21,127 +21,6 @@ import { getSavedLocation, saveUserLocation, detectUserLocation, filterRestauran
 import { Navigation, Loader2 } from 'lucide-react';
 import { getOrderReadyTimeInfo } from '../../utils/orderReadyHelper';
 
-const DEFAULT_PARTNER_OUTLETS = [
-    {
-        _id: 'outlet_central_01',
-        name: 'Resto Central Kitchen',
-        city: 'Chennai',
-        address: '12 1st Main Rd, Anna Nagar, Chennai',
-        rating: 4.8,
-        deliveryTime: '20-30 mins',
-        cuisines: 'South Indian, Biryani, Tandoor',
-        badge: 'Top Rated',
-        isActive: true
-    },
-    {
-        _id: 'outlet_indiranagar_02',
-        name: 'FoodNest Gourmet',
-        city: 'Bengaluru',
-        address: '88 100ft Road, Indiranagar, Bengaluru',
-        rating: 4.9,
-        deliveryTime: '25-35 mins',
-        cuisines: 'Continental, Italian, Fast Food',
-        badge: 'Trending',
-        isActive: true
-    },
-    {
-        _id: 'outlet_tnagar_03',
-        name: 'The Spice Kitchen',
-        city: 'Chennai',
-        address: '45 G.N. Chetty Road, T. Nagar, Chennai',
-        rating: 4.7,
-        deliveryTime: '20-30 mins',
-        cuisines: 'Chettinad, Seafood, South Indian',
-        badge: 'Verified',
-        isActive: true
-    },
-    {
-        _id: 'outlet_koramangala_04',
-        name: 'Royal Dine Outlet',
-        city: 'Bengaluru',
-        address: '22 5th Block, Koramangala, Bengaluru',
-        rating: 4.8,
-        deliveryTime: '30-40 mins',
-        cuisines: 'Mughlai, Biryani, North Indian',
-        badge: 'Popular',
-        isActive: true
-    },
-    {
-        _id: 'outlet_jubilee_05',
-        name: 'FoodNest Express',
-        city: 'Hyderabad',
-        address: '36 Road No 36, Jubilee Hills, Hyderabad',
-        rating: 4.9,
-        deliveryTime: '20-30 mins',
-        cuisines: 'Hyderabadi Biryani, Kebabs, Desserts',
-        badge: 'Bestseller',
-        isActive: true
-    }
-];
-
-const DEFAULT_POPULAR_DISHES = [
-    {
-        _id: 'dish_001',
-        name: 'Hyderabadi Dum Biryani',
-        category: 'Mains & Meals',
-        price: 280,
-        rating: 4.9,
-        isVegetarian: false,
-        restaurantName: 'FoodNest Express',
-        description: 'Fragrant basmati rice slow-cooked with spiced marinated chicken and saffron.'
-    },
-    {
-        _id: 'dish_002',
-        name: 'Crispy Paneer Butter Masala',
-        category: 'Mains & Meals',
-        price: 240,
-        rating: 4.8,
-        isVegetarian: true,
-        restaurantName: 'The Spice Kitchen',
-        description: 'Rich tomato cashew gravy simmered with fresh cottage cheese cubes and butter.'
-    },
-    {
-        _id: 'dish_003',
-        name: 'Classic Margherita Pizza',
-        category: 'Fast Food',
-        price: 299,
-        rating: 4.7,
-        isVegetarian: true,
-        restaurantName: 'FoodNest Gourmet',
-        description: 'Fresh mozzarella, basil leaves, extra virgin olive oil on hand-stretched sourdough.'
-    },
-    {
-        _id: 'dish_004',
-        name: 'Special Chicken Ghee Roast',
-        category: 'Starters',
-        price: 260,
-        rating: 4.9,
-        isVegetarian: false,
-        restaurantName: 'Resto Central Kitchen',
-        description: 'Tender chicken tossed in fiery Byadgi chili paste roasted in pure country ghee.'
-    },
-    {
-        _id: 'dish_005',
-        name: 'Royal Falooda Delight',
-        category: 'Desserts',
-        price: 150,
-        rating: 4.8,
-        isVegetarian: true,
-        restaurantName: 'FoodNest Express',
-        description: 'Layered vermicelli, basil seeds, rose syrup, crushed pistachios, and rich kulfi.'
-    },
-    {
-        _id: 'dish_006',
-        name: 'Fresh Filter Coffee & Cold Brew',
-        category: 'Beverages',
-        price: 90,
-        rating: 4.9,
-        isVegetarian: true,
-        restaurantName: 'Resto Central Kitchen',
-        description: 'Authentic South Indian chicory blend frothed with hot creamy farm milk.'
-    }
-];
-
 const CustomerDashboard = () => {
     const { user, logout, api } = useCustomerAuth();
 
@@ -177,8 +56,8 @@ const CustomerDashboard = () => {
         try {
             const cached = sessionStorage.getItem('restosys_reg_rests_cache');
             const parsed = cached ? JSON.parse(cached) : [];
-            return Array.isArray(parsed) && parsed.length > 0 ? parsed : DEFAULT_PARTNER_OUTLETS;
-        } catch { return DEFAULT_PARTNER_OUTLETS; }
+            return Array.isArray(parsed) ? parsed : [];
+        } catch { return []; }
     });
     const [selectedRestaurantFilter, setSelectedRestaurantFilter] = useState('All');
     const [userLocation, setUserLocation] = useState(() => getSavedLocation() || '');
@@ -303,8 +182,8 @@ const CustomerDashboard = () => {
         try {
             const cached = sessionStorage.getItem('restosys_live_menu_cache') || sessionStorage.getItem('foodnest_menu_cache');
             const parsed = cached ? JSON.parse(cached) : [];
-            return Array.isArray(parsed) && parsed.length > 0 ? parsed : DEFAULT_POPULAR_DISHES;
-        } catch { return DEFAULT_POPULAR_DISHES; }
+            return Array.isArray(parsed) ? parsed : [];
+        } catch { return []; }
     });
     const [loadingMenuItems, setLoadingMenuItems] = useState(() => {
         try {
@@ -326,7 +205,7 @@ const CustomerDashboard = () => {
         const fetchRegisteredRestaurants = async () => {
             try {
                 const { data } = await client.get('/restaurants');
-                if (isMounted && Array.isArray(data) && data.length > 0) {
+                if (isMounted && Array.isArray(data)) {
                     setRegisteredRestaurants(data);
                     try { sessionStorage.setItem('restosys_reg_rests_cache', JSON.stringify(data)); } catch { }
                 }
@@ -339,32 +218,15 @@ const CustomerDashboard = () => {
             setLoadingMenuItems(true);
             try {
                 const { data } = await client.get('/menu');
-                if (isMounted && Array.isArray(data) && data.length > 0) {
+                if (isMounted && Array.isArray(data)) {
                     setLiveMenuItems(data);
                     try {
                         sessionStorage.setItem('restosys_live_menu_cache', JSON.stringify(data));
                         sessionStorage.setItem('foodnest_menu_cache', JSON.stringify(data));
                     } catch { }
-                } else if (isMounted && (!liveMenuItems || liveMenuItems.length === 0)) {
-                    setLiveMenuItems(DEFAULT_POPULAR_DISHES);
                 }
             } catch (err) {
                 console.error('Failed to load live menu in dashboard', err);
-                try {
-                    const fallback = sessionStorage.getItem('foodnest_menu_cache') || sessionStorage.getItem('restosys_live_menu_cache');
-                    if (fallback) {
-                        const parsed = JSON.parse(fallback);
-                        if (isMounted && Array.isArray(parsed) && parsed.length > 0) {
-                            setLiveMenuItems(parsed);
-                        } else if (isMounted) {
-                            setLiveMenuItems(DEFAULT_POPULAR_DISHES);
-                        }
-                    } else if (isMounted) {
-                        setLiveMenuItems(DEFAULT_POPULAR_DISHES);
-                    }
-                } catch (_) {
-                    if (isMounted) setLiveMenuItems(DEFAULT_POPULAR_DISHES);
-                }
             } finally {
                 if (isMounted) setLoadingMenuItems(false);
             }
