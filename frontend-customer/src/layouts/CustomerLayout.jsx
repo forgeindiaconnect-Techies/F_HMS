@@ -118,16 +118,18 @@ const CustomerLayout = () => {
                 <header className="bg-white/95 backdrop-blur-md border-b border-slate-100 sticky top-0 z-40 shadow-[0_2px_12px_rgba(0,0,0,0.03)]">
                     <div className="max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8 h-14 sm:h-[76px] flex items-center justify-between gap-1.5 sm:gap-4">
                         <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 min-w-0">
-                            {/* Hamburger Menu Navigation Drawer Button */}
-                            <button
-                                type="button"
-                                onClick={() => setIsNavDrawerOpen(true)}
-                                className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-100 hover:bg-orange-50 active:bg-orange-100 text-slate-700 hover:text-[#FF5A1F] transition-colors shrink-0 flex items-center justify-center border border-slate-200 shadow-xs cursor-pointer"
-                                aria-label="Open Navigation Drawer"
-                                title="Customer Menu & Sections"
-                            >
-                                <Menu size={18} className="stroke-[2.2]" />
-                            </button>
+                            {/* Hamburger Menu Navigation Drawer Button (Hidden on Customer Profile) */}
+                            {!location.pathname.startsWith('/profile') && !location.pathname.startsWith('/dashboard') && (
+                                <button
+                                    type="button"
+                                    onClick={() => setIsNavDrawerOpen(true)}
+                                    className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-100 hover:bg-orange-50 active:bg-orange-100 text-slate-700 hover:text-[#FF5A1F] transition-colors shrink-0 flex items-center justify-center border border-slate-200 shadow-xs cursor-pointer"
+                                    aria-label="Open Navigation Drawer"
+                                    title="Customer Menu & Sections"
+                                >
+                                    <Menu size={18} className="stroke-[2.2]" />
+                                </button>
+                            )}
 
                             {/* Back Button */}
                             <button

@@ -593,45 +593,7 @@ const CustomerDashboard = () => {
                 }}
             />
 
-            {/* Fixed Top Dashboard Navigation Bar */}
-            <div className="shrink-0 mb-3 z-30">
-                <div className="bg-white/95 backdrop-blur-md rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 border border-slate-200/90 shadow-xs flex items-center gap-3">
-                    {/* Left: Hamburger Button + Current Active Section */}
-                    <div className="flex items-center gap-2.5 min-w-0">
-                        <button
-                            type="button"
-                            onClick={() => setIsNavDrawerOpen(true)}
-                            className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-black text-slate-800 hover:text-[#FF5A1F] bg-slate-100 hover:bg-orange-50 active:bg-orange-100 border border-slate-200 hover:border-orange-200 transition-all cursor-pointer shrink-0 shadow-2xs"
-                            title="Open Dashboard Navigation Menu"
-                            aria-label="Open Navigation Menu"
-                        >
-                            <Menu size={18} className="text-slate-800" />
-                            <span className="font-bold">Menu</span>
-                        </button>
-
-                        <div className="h-6 w-px bg-slate-200 shrink-0" />
-
-                        {/* Current Active Section Name & Icon */}
-                        {activeTabObj && (
-                            <div className="flex items-center gap-2 min-w-0">
-                                <div className="w-7 h-7 rounded-lg bg-orange-50 text-[#FF5A1F] border border-orange-200/60 flex items-center justify-center shrink-0">
-                                    <ActiveTabIcon size={15} />
-                                </div>
-                                <div className="min-w-0 text-left">
-                                    <span className="text-xs sm:text-sm font-black text-slate-900 truncate block leading-tight">
-                                        {activeTabObj.name}
-                                    </span>
-                                    <span className="text-[10px] text-slate-400 font-medium truncate hidden sm:block">
-                                        {activeTabObj.desc}
-                                    </span>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
-
-            {/* Independent Scrollable Content Container Below Navigation */}
+            {/* Independent Scrollable Content Container */}
             <div 
                 ref={contentScrollRef}
                 className="flex-1 overflow-y-auto pr-1 pb-16 space-y-4 sm:space-y-6"

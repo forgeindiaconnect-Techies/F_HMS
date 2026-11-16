@@ -5,11 +5,8 @@ import tailwindcss from '@tailwindcss/vite'
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  let apiUrl = env.VITE_API_URL || 'https://f-hms.onrender.com/api';
-  if (apiUrl.includes('f-hms-1') || apiUrl.includes('backend-ochre')) {
-    apiUrl = 'https://f-hms.onrender.com/api';
-  }
-  const customerUrl = env.VITE_CUSTOMER_URL || 'https://f-hms.vercel.app';
+  const apiUrl = env.VITE_API_URL || '';
+  const customerUrl = env.VITE_CUSTOMER_URL || '';
 
   return {
     plugins: [

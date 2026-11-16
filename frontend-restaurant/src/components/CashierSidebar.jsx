@@ -5,6 +5,7 @@ import {
     CalendarDays, CreditCard, ChevronRight
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { getApiUrl } from '../utils/axiosInstance';
 import clsx from 'clsx';
 
 const CashierSidebar = () => {
@@ -27,7 +28,7 @@ const CashierSidebar = () => {
         if (restaurant.logo.startsWith('http') || restaurant.logo.startsWith('data:')) {
             return restaurant.logo;
         }
-        const apiBase = import.meta.env.VITE_API_URL || 'https://f-hms.onrender.com/api';
+        const apiBase = getApiUrl();
         try {
             const origin = new URL(apiBase).origin;
             return `${origin}${restaurant.logo.startsWith('/') ? '' : '/'}${restaurant.logo}`;

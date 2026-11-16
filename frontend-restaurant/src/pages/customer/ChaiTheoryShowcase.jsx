@@ -648,7 +648,7 @@ const ChaiTheoryShowcase = () => {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         <a 
-                            href={`${import.meta.env.VITE_CUSTOMER_URL || 'http://localhost:5174'}/customer/menu`} 
+                            href={`${import.meta.env.VITE_CUSTOMER_URL || (typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:5174` : '')}/customer/menu`} 
                             target="_blank" 
                             rel="noreferrer"
                             className="bg-[#FAFAF8] p-6 rounded-3xl border border-[#6B3F1D]/20 shadow-md hover:-translate-y-1.5 transition-all text-left space-y-3 group"
@@ -661,7 +661,7 @@ const ChaiTheoryShowcase = () => {
                         </a>
 
                         <a 
-                            href={`${import.meta.env.VITE_CUSTOMER_URL || 'http://localhost:5174'}/menu`} 
+                            href={`${import.meta.env.VITE_CUSTOMER_URL || (typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:5174` : '')}/menu`} 
                             target="_blank" 
                             rel="noreferrer"
                             className="bg-[#FAFAF8] p-6 rounded-3xl border border-[#6B3F1D]/20 shadow-md hover:-translate-y-1.5 transition-all text-left space-y-3 group"

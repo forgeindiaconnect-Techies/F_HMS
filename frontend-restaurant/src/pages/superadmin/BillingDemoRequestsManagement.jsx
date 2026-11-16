@@ -1633,7 +1633,8 @@ const BillingDemoRequestsManagement = ({ defaultTab = 'demos' }) => {
                                 <button
                                     type="button"
                                     onClick={() => {
-                                        const text = `Portal Login: https://f-hms-restaurant.vercel.app/staff/login\nEmail: ${credEmail}${credPassword ? `\nPassword: ${credPassword}` : ''}`;
+                                        const portalUrl = typeof window !== 'undefined' ? `${window.location.origin}/staff/login` : '/staff/login';
+                                        const text = `Portal Login: ${portalUrl}\nEmail: ${credEmail}${credPassword ? `\nPassword: ${credPassword}` : ''}`;
                                         navigator.clipboard?.writeText(text);
                                         toast.success('Login details copied to clipboard!');
                                     }}

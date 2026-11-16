@@ -144,7 +144,7 @@ export default function Explore() {
           let rawImg = showcaseImg || null;
           if (rawImg && typeof rawImg === 'string') {
             const apiBase = getApiUrl() || api?.defaults?.baseURL || '';
-            const origin = apiBase.startsWith('http') ? new URL(apiBase).origin : 'https://f-hms.onrender.com';
+            const origin = apiBase.startsWith('http') ? new URL(apiBase).origin : (typeof window !== 'undefined' ? window.location.origin : '');
             if (!rawImg.startsWith('http') && !rawImg.startsWith('data:')) {
               rawImg = origin + (rawImg.startsWith('/') ? '' : '/') + rawImg;
             }
@@ -215,7 +215,7 @@ export default function Explore() {
           let dishImg = d.image && typeof d.image === 'string' && !d.image.includes('undefined') && !d.image.includes('unsplash.com') ? d.image : null;
           if (dishImg && !dishImg.startsWith('http') && !dishImg.startsWith('data:')) {
             const apiBase = getApiUrl() || api?.defaults?.baseURL || '';
-            const origin = apiBase.startsWith('http') ? new URL(apiBase).origin : 'https://f-hms.onrender.com';
+            const origin = apiBase.startsWith('http') ? new URL(apiBase).origin : (typeof window !== 'undefined' ? window.location.origin : '');
             dishImg = `${origin}${dishImg.startsWith('/') ? '' : '/'}${dishImg}`;
           }
 

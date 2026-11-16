@@ -9,7 +9,7 @@ export const errorHandler = (err, req, res, next) => {
     let message = err.message;
 
     // Ensure CORS headers are explicitly present on error responses
-    const origin = req.headers.origin || 'https://f-hms.vercel.app';
+    const origin = req.headers.origin || process.env.FRONTEND_URL || '*';
     res.setHeader('Access-Control-Allow-Origin', origin);
     res.setHeader('Access-Control-Allow-Credentials', 'true');
 

@@ -694,7 +694,7 @@ export const activateBillingDemo = async (req, res) => {
         };
         await request.save();
 
-        const portalBase = process.env.RESTAURANT_FRONTEND_URL || process.env.FRONTEND_URL || 'https://f-hms-restaurant.vercel.app';
+        const portalBase = process.env.RESTAURANT_FRONTEND_URL || process.env.FRONTEND_URL || '';
         const activationUrl = `${portalBase}/activate-account?token=${activationToken}`;
 
         if (providedPassword && ownerUser?.email) {

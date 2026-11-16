@@ -254,7 +254,7 @@ const RestaurantDetails = () => {
                     const rawBanner = hasDedicatedBanner ? (restaurant.bannerImage || restaurant.image) : null;
                     if (rawBanner && typeof rawBanner === 'string') {
                         const apiBase = getApiUrl();
-                        const origin = apiBase.startsWith('http') ? new URL(apiBase).origin : 'https://f-hms.onrender.com';
+                        const origin = apiBase.startsWith('http') ? new URL(apiBase).origin : (typeof window !== 'undefined' ? window.location.origin : '');
                         const bannerSrc = (rawBanner.startsWith('http') || rawBanner.startsWith('data:'))
                             ? rawBanner
                             : `${origin}${rawBanner.startsWith('/') ? '' : '/'}${rawBanner}`;
@@ -286,7 +286,7 @@ const RestaurantDetails = () => {
                             {/* Restaurant Logo */}
                             {restaurant.logo && (() => {
                                 const apiBase = getApiUrl();
-                                const origin = apiBase.startsWith('http') ? new URL(apiBase).origin : 'https://f-hms.onrender.com';
+                                const origin = apiBase.startsWith('http') ? new URL(apiBase).origin : (typeof window !== 'undefined' ? window.location.origin : '');
                                 const logoSrc = (restaurant.logo.startsWith('http') || restaurant.logo.startsWith('data:'))
                                     ? restaurant.logo
                                     : `${origin}${restaurant.logo.startsWith('/') ? '' : '/'}${restaurant.logo}`;
@@ -338,7 +338,7 @@ const RestaurantDetails = () => {
                             <div className="flex items-center gap-2.5 overflow-x-auto pb-1 no-scrollbar">
                                 {restaurant.showcaseImages.map((imgUrl, i) => {
                                     const apiBase = getApiUrl();
-                                    const origin = apiBase.startsWith('http') ? new URL(apiBase).origin : 'https://f-hms.onrender.com';
+                                    const origin = apiBase.startsWith('http') ? new URL(apiBase).origin : (typeof window !== 'undefined' ? window.location.origin : '');
                                     const src = (imgUrl.startsWith('http') || imgUrl.startsWith('data:'))
                                         ? imgUrl
                                         : `${origin}${imgUrl.startsWith('/') ? '' : '/'}${imgUrl}`;

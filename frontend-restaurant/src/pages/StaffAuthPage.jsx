@@ -165,7 +165,8 @@ const StaffAuthPage = () => {
             else if (role.includes('cashier')) route = '/cashier';
             else if (role.includes('delivery')) route = '/delivery/dashboard';
             else if (role.includes('customer')) {
-                window.location.href = `${import.meta.env.VITE_CUSTOMER_URL || 'http://localhost:5174'}/profile`;
+                const customerBase = import.meta.env.VITE_CUSTOMER_URL || (typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:5174` : '');
+                window.location.href = `${customerBase}/profile`;
                 return;
             }
             navigate(route);
@@ -241,22 +242,10 @@ const StaffAuthPage = () => {
         try {
             setRegStatusMessage('Processing registration on server...');
 
-            try {
-                await api.post('/auth/register', formData, {
-                    headers: { 'Content-Type': 'multipart/form-data' },
-                    timeout: 45000
-                });
-            } catch (postErr) {
-                const isNetErr = !postErr.response || postErr.code === 'ERR_NETWORK' || postErr.code === 'ECONNABORTED';
-                if (isNetErr) {
-                    await axios.post('https://f-hms.onrender.com/api/auth/register', formData, {
-                        headers: { 'Content-Type': 'multipart/form-data' },
-                        timeout: 60000
-                    });
-                } else {
-                    throw postErr;
-                }
-            }
+            await api.post('/auth/register', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+                timeout: 45000
+            });
 
             setRegStatusMessage('Signing into restaurant portal...');
             try {

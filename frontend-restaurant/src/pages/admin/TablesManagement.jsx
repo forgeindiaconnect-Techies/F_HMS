@@ -142,19 +142,17 @@ const TablesManagement = () => {
 
     const getQrUrl = (table) => {
         if (!table) return '';
-        let baseUrl = import.meta.env.VITE_CUSTOMER_URL || 'https://f-hms-customer-two.vercel.app';
+        let baseUrl = import.meta.env.VITE_CUSTOMER_URL || (typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:5174` : 'http://localhost:5174');
         if (baseUrl.endsWith('/')) baseUrl = baseUrl.slice(0, -1);
 
         if (isLocalhost) {
             if (qrMode === 'localhost') {
                 baseUrl = 'http://localhost:5174';
             } else if (qrMode === 'network') {
-                const host = (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')
-                    ? window.location.hostname
-                    : '192.168.1.48';
+                const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
                 baseUrl = `http://${host}:5174`;
             } else {
-                baseUrl = 'https://f-hms-customer-two.vercel.app';
+                baseUrl = import.meta.env.VITE_CUSTOMER_URL || `http://${window.location.hostname}:5174`;
             }
         }
 

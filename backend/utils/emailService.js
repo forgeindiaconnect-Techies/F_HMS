@@ -32,6 +32,8 @@ const getSmtpConfig = () => {
     return { host, port, user, pass, senderEmail, senderName };
 };
 
+const getAppUrl = () => process.env.FRONTEND_URL || process.env.RESTAURANT_FRONTEND_URL || '';
+
 // Generic Send Email Function supporting Brevo SMTP Relay, Brevo HTTPS API, or Ethereal test inbox
 const sendEmail = async ({ to, toName, subject, html }) => {
     if (!to) return false;
@@ -133,7 +135,7 @@ export const sendWelcomeEmail = async ({ email, name, restaurantName, plan }) =>
                     Your account registration details have been submitted to our Super Admin verification team for review. As soon as your restaurant verification is approved, your plan dashboard will unlock automatically.
                 </p>
                 <div style="text-align: center; margin-top: 30px;">
-                    <a href="https://f-hms.vercel.app" style="background-color: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
+                    <a href="${getAppUrl()}" style="background-color: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
                         Access Restaurant Hub Portal
                     </a>
                 </div>
@@ -172,7 +174,7 @@ export const sendSubscriptionExpiredEmail = async ({ email, name, restaurantName
                     You can easily renew or upgrade your plan by visiting the SaaS Subscription portal in your admin dashboard.
                 </p>
                 <div style="text-align: center; margin-top: 30px;">
-                    <a href="https://f-hms.vercel.app/admin/billing" style="background-color: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
+                    <a href="${getAppUrl()}/admin/billing" style="background-color: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
                         Renew Subscription Now
                     </a>
                 </div>
@@ -210,7 +212,7 @@ export const sendApprovalEmail = async ({ email, name, restaurantName, plan }) =
                     You can now access all features, order management, menu setup, staff accounts, and branch operations according to your plan tier.
                 </p>
                 <div style="text-align: center; margin-top: 30px;">
-                    <a href="https://f-hms.vercel.app/admin" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
+                    <a href="${getAppUrl()}/admin" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
                         Open Your Dashboard
                     </a>
                 </div>
@@ -249,7 +251,7 @@ export const sendLoginNotificationEmail = async ({ email, name, role }) => {
                     If this was you, no further action is required. If you did not perform this login, please reset your password immediately.
                 </p>
                 <div style="text-align: center; margin-top: 30px;">
-                    <a href="https://f-hms.vercel.app" style="background-color: #1e293b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
+                    <a href="${getAppUrl()}" style="background-color: #1e293b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
                         Access Restaurant Hub
                     </a>
                 </div>
@@ -315,7 +317,7 @@ export const sendSubscriptionSuccessEmail = async ({ email, name, restaurantName
                     All modules and features associated with the <strong>${plan}</strong> plan are now immediately accessible across your management dashboard, POS billing, orders, and staff workflows.
                 </p>
                 <div style="text-align: center; margin-top: 30px;">
-                    <a href="https://f-hms.vercel.app/admin" style="background-color: #10b981; color: white; padding: 12px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
+                    <a href="${getAppUrl()}/admin" style="background-color: #10b981; color: white; padding: 12px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
                         Go to Your Dashboard
                     </a>
                 </div>
@@ -334,7 +336,7 @@ export const sendSubscriptionSuccessEmail = async ({ email, name, restaurantName
 // 7-DAY FREE TRIAL & SUBSCRIPTION LIFECYCLE EMAIL NOTIFICATIONS (10 TRIGGERS)
 // ============================================================================
 
-const portalBaseUrl = process.env.RESTAURANT_FRONTEND_URL || process.env.FRONTEND_URL || 'https://f-hms-restaurant.vercel.app';
+const portalBaseUrl = process.env.RESTAURANT_FRONTEND_URL || process.env.FRONTEND_URL || '';
 
 /**
  * 1. Free trial subscription request submitted

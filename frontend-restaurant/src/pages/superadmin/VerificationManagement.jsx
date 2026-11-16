@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { getApiUrl } from '../../utils/axiosInstance';
 import { ShieldCheck, Eye, Check, X, Clock, AlertTriangle, FileText, Download, CheckCircle, XCircle, ArrowUpRight, History, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const resolveDocUrl = (filePath) => {
-        if (!filePath) return '';
-        if (filePath.startsWith('http://') || filePath.startsWith('https://') || filePath.startsWith('data:')) {
-            return filePath;
-        }
-        const apiBase = import.meta.env.VITE_API_URL || 'https://f-hms-1-a2ig.onrender.com/api';
-        const origin = apiBase.replace(/\/api\/?$/, '');
-        return `${origin}${filePath.startsWith('/') ? '' : '/'}${filePath}`;
-    };
+    if (!filePath) return '';
+    if (filePath.startsWith('http://') || filePath.startsWith('https://') || filePath.startsWith('data:')) {
+        return filePath;
+    }
+    const apiBase = getApiUrl();
+    const origin = apiBase.startsWith('http') ? new URL(apiBase).origin : (typeof window !== 'undefined' ? window.location.origin : '');
+    return `${origin}${filePath.startsWith('/') ? '' : '/'}${filePath}`;
+};
 
 const VerificationManagement = () => {
     const { api } = useAuth();
@@ -186,18 +187,7 @@ const VerificationManagement = () => {
     };
 
     const getFullUrl = (filePath) => {
-        if (!filePath) return '';
-        if (filePath.startsWith('http://') || filePath.startsWith('https://') || filePath.startsWith('data:')) {
-            return filePath;
-        }
-        let base = import.meta.env.VITE_API_URL || 'https://f-hms-1-a2ig.onrender.com';
-        if (!base.startsWith('http')) base = 'https://f-hms-1-a2ig.onrender.com';
-        try {
-            const origin = new URL(base).origin;
-            return `${origin}${filePath.startsWith('/') ? '' : '/'}${filePath}`;
-        } catch (e) {
-            return `https://f-hms-1-a2ig.onrender.com${filePath.startsWith('/') ? '' : '/'}${filePath}`;
-        }
+        return resolveDocUrl(filePath);
     };
 
     if (loading) {

@@ -60,12 +60,7 @@ api.interceptors.response.use(
             config.baseURL.includes('172.')
         );
 
-        const isDeadRender = config?.baseURL && (config.baseURL.includes('f-hms-1') || config.baseURL.includes('backend-ochre'));
-        if (config && !config._fallbackTried && (isDeadRender || (isNetworkDown && isLocalTarget))) {
-            config._fallbackTried = true;
-            config.baseURL = 'https://f-hms.onrender.com/api';
-            return api.request(config);
-        }
+
         if (config && isColdStart && (!config._retryCount || config._retryCount < 5)) {
             config._retryCount = (config._retryCount || 0) + 1;
             await new Promise((resolve) => setTimeout(resolve, 2000));

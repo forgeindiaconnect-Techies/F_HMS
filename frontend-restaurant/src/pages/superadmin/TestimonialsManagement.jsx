@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { getApiUrl } from '../../utils/axiosInstance';
 import { 
     MessageSquareQuote, Star, CheckCircle2, XCircle, Clock, AlertCircle, 
     Trash2, Eye, Search, Filter, RefreshCw, Check, X, ShieldAlert 
@@ -120,9 +121,11 @@ const TestimonialsManagement = () => {
     const formatAvatarUrl = (avatar) => {
         if (!avatar) return null;
         if (avatar.startsWith('http') || avatar.startsWith('data:')) return avatar;
-        const apiBase = import.meta.env.VITE_API_URL || 'https://f-hms-1-a2ig.onrender.com/api';
+        const apiBase = getApiUrl();
         let origin = '';
-        try { origin = new URL(apiBase).origin; } catch (_) {}
+        try { origin = new URL(apiBase).origin; } catch (_) {
+            origin = typeof window !== 'undefined' ? window.location.origin : '';
+        }
         return `${origin}${avatar.startsWith('/') ? '' : '/'}${avatar}`;
     };
 

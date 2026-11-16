@@ -1,35 +1,35 @@
 import axios from 'axios';
 
 export const getApiUrl = () => {
-    // If local port 5000 was tested and found unreachable, use the cloud backend immediately without delay
-    if (typeof window !== 'undefined' && window.__localPort5000Down) {
-        return 'https://f-hms.onrender.com/api';
+    // 1. Check custom localStorage override first
+    if (typeof window !== 'undefined' && window.localStorage) {
+        const customUrl = window.localStorage.getItem('restosys_api_url');
+        if (customUrl) return customUrl;
     }
 
-    // If running in browser on localhost or local network, use local backend port 5000
-    if (typeof window !== 'undefined') {
+    // 2. Use configured environment variable VITE_API_URL if provided
+    if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) {
+        let envUrl = import.meta.env.VITE_API_URL.trim();
+        if (envUrl) {
+            if (envUrl.endsWith('/')) envUrl = envUrl.slice(0, -1);
+            if (!envUrl.endsWith('/api')) envUrl += '/api';
+            return envUrl;
+        }
+    }
+
+    // 3. In browser environments without explicit VITE_API_URL, infer from window.location
+    if (typeof window !== 'undefined' && window.location) {
         const host = window.location.hostname;
         if (host === 'localhost' || host === '127.0.0.1') {
-            return 'http://localhost:5000/api';
+            return `http://${host}:5000/api`;
         }
-        // Support local WiFi / LAN IP (e.g. 192.168.x.x)
         if (/^(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.)/.test(host)) {
             return `http://${host}:5000/api`;
         }
     }
 
-    if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) {
-        let envUrl = import.meta.env.VITE_API_URL.trim();
-        if (envUrl.endsWith('/')) envUrl = envUrl.slice(0, -1);
-        if (!envUrl.endsWith('/api')) envUrl += '/api';
-        if (envUrl.includes('f-hms-1') || envUrl.includes('backend-ochre')) {
-            return 'https://f-hms.onrender.com/api';
-        }
-        return envUrl;
-    }
-
-    // Default to deployed backend URL for seamless connectivity across web & mobile apps
-    return 'https://f-hms.onrender.com/api';
+    // 4. Default fallback for local development
+    return 'http://localhost:5000/api';
 };
 
 const api = axios.create({
@@ -67,7 +67,7 @@ api.interceptors.request.use(
     (error) => Promise.reject(error)
 );
 
-// Response interceptor to handle automatic retries for Render cold-starts (503 / Network Error)
+// Response interceptor to handle automatic retries for cold-starts (502 / 503 / 504 / Network Error)
 api.interceptors.response.use(
     (response) => response,
     async (error) => {
@@ -77,29 +77,10 @@ api.interceptors.response.use(
         const isNetworkDown = !error.response || error.code === 'ERR_NETWORK' || isTimeout;
         const isColdStart = status === 502 || status === 503 || status === 504 || isNetworkDown;
 
-        // Fallback to live backend if local/LAN port 5000 is down or timed out, NEVER on 401/400/404
-        const isLocalTarget = config?.baseURL && (
-            config.baseURL.includes(':5000') || 
-            config.baseURL.includes('localhost') || 
-            config.baseURL.includes('127.0.0.1') || 
-            config.baseURL.includes('192.168.') || 
-            config.baseURL.includes('10.') || 
-            config.baseURL.includes('172.')
-        );
-
-        const isDeadRender = config?.baseURL && (config.baseURL.includes('f-hms-1') || config.baseURL.includes('backend-ochre'));
-        if (config && !config._fallbackTried && (isDeadRender || (isNetworkDown && isLocalTarget))) {
-            if (typeof window !== 'undefined' && isLocalTarget) {
-                window.__localPort5000Down = true;
-            }
-            config._fallbackTried = true;
-            config.baseURL = 'https://f-hms.onrender.com/api';
-            return api.request(config);
-        }
-
-        if (config && isColdStart && (!config._retryCount || config._retryCount < 5)) {
+        // Exponential backoff retry on cold start (up to 3 retries) against the configured backend URL
+        if (config && isColdStart && (!config._retryCount || config._retryCount < 3)) {
             config._retryCount = (config._retryCount || 0) + 1;
-            const backoffMs = Math.min(config._retryCount * 2000 + 1000, 10000);
+            const backoffMs = Math.min(config._retryCount * 2000 + 1000, 8000);
             await new Promise((resolve) => setTimeout(resolve, backoffMs));
             return api.request(config);
         }

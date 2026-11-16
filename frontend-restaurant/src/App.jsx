@@ -121,9 +121,8 @@ import { Toaster } from 'react-hot-toast';
 
 // Forwarding handler for customer routes that direct visitors to the Customer Website
 const CustomerRedirect = ({ path }) => {
-  const customerBaseUrl = import.meta.env.VITE_CUSTOMER_URL && !import.meta.env.VITE_CUSTOMER_URL.includes('localhost')
-    ? import.meta.env.VITE_CUSTOMER_URL
-    : 'https://f-hms.vercel.app';
+  const customerBaseUrl = import.meta.env.VITE_CUSTOMER_URL
+    || (typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:5174` : '');
   useEffect(() => {
     const fullTarget = path 
       ? `${customerBaseUrl}${path}`

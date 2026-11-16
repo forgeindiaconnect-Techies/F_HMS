@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { getApiUrl } from '../../utils/axiosInstance';
 import { 
     Plus, Check, X, Ban, RefreshCw, Eye, EyeOff, Trash2, Search, Store, 
     Sparkles, TrendingUp, ShieldCheck, AlertCircle, Building2, Calendar, 
@@ -7,6 +8,11 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import ConfirmModal from '../../components/ConfirmModal';
+
+const getOrigin = () => {
+    const apiBase = getApiUrl();
+    return apiBase.startsWith('http') ? new URL(apiBase).origin : (typeof window !== 'undefined' ? window.location.origin : '');
+};
 
 const PlatformRestaurants = () => {
     const { api } = useAuth();
@@ -429,7 +435,7 @@ const PlatformRestaurants = () => {
                                                 <div className="w-11 h-11 rounded-xl overflow-hidden bg-gray-100 shrink-0 border border-gray-200">
                                                     {restaurant.logo ? (
                                                         <img 
-                                                            src={restaurant.logo.startsWith('http') || restaurant.logo.startsWith('data:') ? restaurant.logo : `https://f-hms-1-a2ig.onrender.com${restaurant.logo.startsWith('/') ? '' : '/'}${restaurant.logo}`} 
+                                                            src={restaurant.logo.startsWith('http') || restaurant.logo.startsWith('data:') ? restaurant.logo : `${getOrigin()}${restaurant.logo.startsWith('/') ? '' : '/'}${restaurant.logo}`} 
                                                             alt={restaurant.name} 
                                                             className="w-full h-full object-cover" 
                                                             onError={(e) => { e.currentTarget.style.display = 'none'; }}
@@ -668,7 +674,7 @@ const PlatformRestaurants = () => {
                                 <div className="w-16 h-16 rounded-2xl overflow-hidden bg-gray-100 shrink-0 border border-gray-200">
                                     {viewingRestaurant.logo ? (
                                         <img 
-                                            src={viewingRestaurant.logo.startsWith('http') || viewingRestaurant.logo.startsWith('data:') ? viewingRestaurant.logo : `https://f-hms-1-a2ig.onrender.com${viewingRestaurant.logo.startsWith('/') ? '' : '/'}${viewingRestaurant.logo}`} 
+                                            src={viewingRestaurant.logo.startsWith('http') || viewingRestaurant.logo.startsWith('data:') ? viewingRestaurant.logo : `${getOrigin()}${viewingRestaurant.logo.startsWith('/') ? '' : '/'}${viewingRestaurant.logo}`} 
                                             alt={viewingRestaurant.name} 
                                             className="w-full h-full object-cover" 
                                             onError={(e) => { e.currentTarget.style.display = 'none'; }}
