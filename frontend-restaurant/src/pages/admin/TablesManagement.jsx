@@ -26,7 +26,7 @@ const TablesManagement = () => {
     });
     const [loading, setLoading] = useState(() => !sessionStorage.getItem('restosys_tables_cache'));
     const [searchQuery, setSearchQuery] = useState('');
-    
+
     // Auto-detect localhost / dev environment
     const isLocalhost = typeof window !== 'undefined' && (
         window.location.hostname === 'localhost' ||
@@ -35,7 +35,7 @@ const TablesManagement = () => {
     );
 
     const [qrMode, setQrMode] = useState('production');
-    
+
     // Modal states
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isQrModalOpen, setIsQrModalOpen] = useState(false);
@@ -51,7 +51,7 @@ const TablesManagement = () => {
         isOpen: false,
         title: '',
         message: '',
-        onConfirm: () => {},
+        onConfirm: () => { },
         isDestructive: true
     });
 
@@ -68,8 +68,8 @@ const TablesManagement = () => {
             try {
                 sessionStorage.setItem('restosys_tables_cache', JSON.stringify(tblList));
                 sessionStorage.setItem('restosys_branches_cache', JSON.stringify(brList));
-            } catch (_) {}
-            
+            } catch (_) { }
+
             if (brList.length > 0 && !formData.branchId) {
                 setFormData(prev => ({ ...prev, branchId: brList[0]._id }));
             }
@@ -126,7 +126,7 @@ const TablesManagement = () => {
                 sessionStorage.removeItem('restosys_tables_cache');
                 localStorage.removeItem('restosys_tables_cache');
                 window.dispatchEvent(new CustomEvent('table-deleted', { detail: tableId }));
-            } catch (_) {}
+            } catch (_) { }
             fetchData();
             setConfirmModal(prev => ({ ...prev, isOpen: false }));
         } catch (error) {
@@ -256,7 +256,7 @@ const TablesManagement = () => {
         URL.revokeObjectURL(svgUrl);
     };
 
-    const filteredTables = tables.filter(t => 
+    const filteredTables = tables.filter(t =>
         String(t.tableNumber).includes(searchQuery)
     );
 
@@ -273,9 +273,9 @@ const TablesManagement = () => {
 
     return (
         <div className="space-y-6 relative pb-20">
-            <ConfirmModal 
-                {...confirmModal} 
-                onClose={() => setConfirmModal({...confirmModal, isOpen: false})} 
+            <ConfirmModal
+                {...confirmModal}
+                onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
             />
 
             {/* Header & Unified Tabs */}
@@ -293,23 +293,21 @@ const TablesManagement = () => {
                         <button
                             type="button"
                             onClick={() => setActiveTab('tables')}
-                            className={`px-3.5 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
-                                activeTab === 'tables' ? 'bg-white text-green-700 shadow-sm' : 'text-gray-600 hover:text-gray-900'
-                            }`}
+                            className={`px-3.5 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${activeTab === 'tables' ? 'bg-white text-green-700 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+                                }`}
                         >
                             <Users size={14} /> Tables ({tables.length})
                         </button>
                         <button
                             type="button"
                             onClick={() => setActiveTab('qr')}
-                            className={`px-3.5 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
-                                activeTab === 'qr' ? 'bg-white text-green-700 shadow-sm' : 'text-gray-600 hover:text-gray-900'
-                            }`}
+                            className={`px-3.5 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${activeTab === 'qr' ? 'bg-white text-green-700 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+                                }`}
                         >
                             <QrCode size={14} /> QR Digital Menu
                         </button>
                     </div>
-                    <button 
+                    <button
                         onClick={handleAddClick}
                         className="bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-xl font-medium transition-colors flex items-center gap-2 text-sm shadow-sm cursor-pointer"
                     >
@@ -320,114 +318,114 @@ const TablesManagement = () => {
 
             {/* Controls (only for Tables tab) */}
             {activeTab === 'tables' && (
-            <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-wrap gap-4 justify-between items-center">
-                <div className="relative w-full md:w-96">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-                    <input 
-                        type="text" 
-                        placeholder="Search by table number..." 
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all"
-                    />
+                <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-wrap gap-4 justify-between items-center">
+                    <div className="relative w-full md:w-96">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                        <input
+                            type="text"
+                            placeholder="Search by table number..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all"
+                        />
+                    </div>
                 </div>
-            </div>
             )}
 
             {/* QR Digital Menu Tab */}
             {activeTab === 'qr' && (
-            <div className="space-y-6 min-w-0 pr-1.5 flex-1">
-                {loading ? (
-                    <div className="flex justify-center p-20">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
-                    </div>
-                ) : tables.length === 0 ? (
-                    <div className="bg-white rounded-2xl border border-gray-100 p-20 text-center text-gray-500">
-                        <QrCode size={48} className="mx-auto text-gray-300 mb-4" />
-                        <p className="text-lg font-bold">No Tables Set Up</p>
-                        <p className="text-sm mt-1">Go to <strong>Table Management</strong> to add tables first.</p>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {tables.map((table) => (
-                            <div key={table._id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col p-5 space-y-4 hover:shadow-md transition-shadow items-center text-center">
-                                <div className="bg-green-50 border border-green-100 rounded-xl p-3 w-full">
-                                    <p className="text-xs font-bold text-green-600 uppercase tracking-widest">Table {table.tableNumber}</p>
-                                    <div className="bg-white p-2 rounded-lg mt-2 inline-block shadow-sm">
-                                        <QRCodeSVG
-                                            value={getQrUrl(table)}
-                                            size={112}
-                                            level="M"
-                                            includeMargin={false}
-                                        />
+                <div className="space-y-6 min-w-0 pr-1.5 flex-1">
+                    {loading ? (
+                        <div className="flex justify-center p-20">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+                        </div>
+                    ) : tables.length === 0 ? (
+                        <div className="bg-white rounded-2xl border border-gray-100 p-20 text-center text-gray-500">
+                            <QrCode size={48} className="mx-auto text-gray-300 mb-4" />
+                            <p className="text-lg font-bold">No Tables Set Up</p>
+                            <p className="text-sm mt-1">Go to <strong>Table Management</strong> to add tables first.</p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
+                            {tables.map((table) => (
+                                <div key={table._id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col p-5 space-y-4 hover:shadow-md transition-shadow items-center text-center">
+                                    <div className="bg-green-50 border border-green-100 rounded-xl p-3 w-full">
+                                        <p className="text-xs font-bold text-green-600 uppercase tracking-widest">Table {table.tableNumber}</p>
+                                        <div className="bg-white p-2 rounded-lg mt-2 inline-block shadow-sm">
+                                            <QRCodeSVG
+                                                value={getQrUrl(table)}
+                                                size={112}
+                                                level="M"
+                                                includeMargin={false}
+                                            />
+                                        </div>
                                     </div>
+                                    <p className="text-xs text-gray-400 font-semibold flex items-center gap-1"><Store size={12} />{table.branchId?.name || 'Main Branch'}</p>
+                                    <button
+                                        onClick={() => openQrModal(table)}
+                                        className="w-full py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm"
+                                    >
+                                        <QrCode size={14} /> View Full QR
+                                    </button>
                                 </div>
-                                <p className="text-xs text-gray-400 font-semibold flex items-center gap-1"><Store size={12}/>{table.branchId?.name || 'Main Branch'}</p>
-                                <button
-                                    onClick={() => openQrModal(table)}
-                                    className="w-full py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm"
-                                >
-                                    <QrCode size={14} /> View Full QR
-                                </button>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
             )}
 
             {/* Tables Grid (only for Table Management tab) */}
             {activeTab === 'tables' && (
-            loading ? (
-                <div className="flex justify-center p-20">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
-                </div>
-            ) : filteredTables.length === 0 ? (
-                <div className="bg-white rounded-2xl border border-gray-100 p-20 text-center text-gray-500">
-                    <QrCode size={48} className="mx-auto text-gray-300 mb-4" />
-                    <p className="text-lg font-bold">No Tables Set Up</p>
-                    <p className="text-sm mt-1">Click "Add Table" above to create tables and generate smart scan QR codes.</p>
-                </div>
-            ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {filteredTables.map((table) => (
-                        <div key={table._id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col p-5 space-y-4 hover:shadow-md transition-shadow">
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <h4 className="text-xl font-black text-gray-900">Table {table.tableNumber}</h4>
-                                    <p className="text-xs text-gray-400 font-semibold uppercase mt-0.5 flex items-center gap-1">
-                                        <Store size={12} /> {table.branchId?.name || 'Main Branch'}
-                                    </p>
+                loading ? (
+                    <div className="flex justify-center p-20">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+                    </div>
+                ) : filteredTables.length === 0 ? (
+                    <div className="bg-white rounded-2xl border border-gray-100 p-20 text-center text-gray-500">
+                        <QrCode size={48} className="mx-auto text-gray-300 mb-4" />
+                        <p className="text-lg font-bold">No Tables Set Up</p>
+                        <p className="text-sm mt-1">Click "Add Table" above to create tables and generate smart scan QR codes.</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {filteredTables.map((table) => (
+                            <div key={table._id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col p-5 space-y-4 hover:shadow-md transition-shadow">
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <h4 className="text-xl font-black text-gray-900">Table {table.tableNumber}</h4>
+                                        <p className="text-xs text-gray-400 font-semibold uppercase mt-0.5 flex items-center gap-1">
+                                            <Store size={12} /> {table.branchId?.name || 'Main Branch'}
+                                        </p>
+                                    </div>
+                                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${getStatusColor(table.status)}`}>
+                                        {table.status}
+                                    </span>
                                 </div>
-                                <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${getStatusColor(table.status)}`}>
-                                    {table.status}
-                                </span>
-                            </div>
 
-                            <div className="flex items-center gap-2 text-sm text-gray-500 bg-gray-50 p-2.5 rounded-xl border border-gray-100">
-                                <Users size={16} className="text-gray-400" />
-                                <span>Capacity: <strong>{table.capacity} guests</strong></span>
-                            </div>
+                                <div className="flex items-center gap-2 text-sm text-gray-500 bg-gray-50 p-2.5 rounded-xl border border-gray-100">
+                                    <Users size={16} className="text-gray-400" />
+                                    <span>Capacity: <strong>{table.capacity} guests</strong></span>
+                                </div>
 
-                            <div className="flex gap-2 pt-2 border-t border-gray-100">
-                                <button 
-                                    onClick={() => openQrModal(table)}
-                                    className="flex-1 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm shadow-green-500/10"
-                                >
-                                    <QrCode size={14} /> Scan Code
-                                </button>
-                                <button 
-                                    onClick={() => handleDeleteClick(table)}
-                                    className="p-2.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl transition-all border border-red-100 flex items-center justify-center"
-                                    title="Delete Table"
-                                >
-                                    <Trash2 size={16} />
-                                </button>
+                                <div className="flex gap-2 pt-2 border-t border-gray-100">
+                                    <button
+                                        onClick={() => openQrModal(table)}
+                                        className="flex-1 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm shadow-green-500/10"
+                                    >
+                                        <QrCode size={14} /> Scan Code
+                                    </button>
+                                    <button
+                                        onClick={() => handleDeleteClick(table)}
+                                        className="p-2.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl transition-all border border-red-100 flex items-center justify-center"
+                                        title="Delete Table"
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
-            ))}
+                        ))}
+                    </div>
+                ))}
 
             {/* New Table Modal */}
             {isModalOpen && (
@@ -440,28 +438,28 @@ const TablesManagement = () => {
                                 <X size={20} />
                             </button>
                         </div>
-                        
+
                         <form onSubmit={handleSubmit} className="p-6 space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Table Number (ID)</label>
-                                <input 
-                                    type="number" 
+                                <input
+                                    type="number"
                                     required
                                     value={formData.tableNumber}
-                                    onChange={(e) => setFormData({...formData, tableNumber: e.target.value})}
+                                    onChange={(e) => setFormData({ ...formData, tableNumber: e.target.value })}
                                     className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all"
                                     placeholder="e.g. 1, 2, 3"
                                     min="1"
                                 />
                             </div>
-                            
+
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Capacity (Seats)</label>
-                                <input 
-                                    type="number" 
+                                <input
+                                    type="number"
                                     required
                                     value={formData.capacity}
-                                    onChange={(e) => setFormData({...formData, capacity: e.target.value})}
+                                    onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
                                     className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all"
                                     placeholder="e.g. 4, 6"
                                     min="1"
@@ -470,9 +468,9 @@ const TablesManagement = () => {
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Branch</label>
-                                <select 
+                                <select
                                     value={formData.branchId}
-                                    onChange={(e) => setFormData({...formData, branchId: e.target.value})}
+                                    onChange={(e) => setFormData({ ...formData, branchId: e.target.value })}
                                     className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all"
                                     required
                                 >
@@ -484,15 +482,15 @@ const TablesManagement = () => {
                             </div>
 
                             <div className="px-6 py-4 border-t border-gray-100 flex gap-3 bg-gray-50/50 shrink-0 mt-6 -mx-6 -mb-6">
-                                <button 
-                                    type="button" 
+                                <button
+                                    type="button"
                                     onClick={() => setIsModalOpen(false)}
                                     className="flex-1 py-2.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-bold rounded-xl transition-colors text-sm shadow-sm"
                                 >
                                     Cancel
                                 </button>
-                                <button 
-                                    type="submit" 
+                                <button
+                                    type="submit"
                                     className="flex-1 py-2.5 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-sm shadow-green-600/20 transition-colors text-sm"
                                 >
                                     Add Table
@@ -508,8 +506,8 @@ const TablesManagement = () => {
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
                     <div className="absolute inset-0 bg-gray-900/50 backdrop-blur-sm" onClick={() => setIsQrModalOpen(false)}></div>
                     <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm relative z-10 overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col p-4 sm:p-5 items-center text-center">
-                        <button 
-                            onClick={() => setIsQrModalOpen(false)} 
+                        <button
+                            onClick={() => setIsQrModalOpen(false)}
                             className="absolute right-3.5 top-3.5 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer p-1"
                         >
                             <X size={18} />
@@ -525,9 +523,8 @@ const TablesManagement = () => {
                                     <button
                                         type="button"
                                         onClick={() => setQrMode('localhost')}
-                                        className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
-                                            qrMode === 'localhost' ? 'bg-emerald-600 text-white shadow-2xs' : 'text-slate-600 hover:text-emerald-700'
-                                        }`}
+                                        className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${qrMode === 'localhost' ? 'bg-emerald-600 text-white shadow-2xs' : 'text-slate-600 hover:text-emerald-700'
+                                            }`}
                                         title="Direct localhost test URL for desktop browser"
                                     >
                                         Localhost:5174
@@ -535,9 +532,8 @@ const TablesManagement = () => {
                                     <button
                                         type="button"
                                         onClick={() => setQrMode('network')}
-                                        className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
-                                            qrMode === 'network' ? 'bg-emerald-600 text-white shadow-2xs' : 'text-slate-600 hover:text-emerald-700'
-                                        }`}
+                                        className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${qrMode === 'network' ? 'bg-emerald-600 text-white shadow-2xs' : 'text-slate-600 hover:text-emerald-700'
+                                            }`}
                                         title="Allows mobile phone on the same WiFi to scan and open"
                                     >
                                         WiFi / Phone
@@ -545,9 +541,8 @@ const TablesManagement = () => {
                                     <button
                                         type="button"
                                         onClick={() => setQrMode('production')}
-                                        className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
-                                            qrMode === 'production' ? 'bg-emerald-600 text-white shadow-2xs' : 'text-slate-600 hover:text-emerald-700'
-                                        }`}
+                                        className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${qrMode === 'production' ? 'bg-emerald-600 text-white shadow-2xs' : 'text-slate-600 hover:text-emerald-700'
+                                            }`}
                                         title="Live Vercel Production QR Menu"
                                     >
                                         Production
@@ -559,7 +554,7 @@ const TablesManagement = () => {
                                     Live Scanner
                                 </div>
                             )}
-                            
+
                             <div className="bg-white p-3 rounded-2xl border border-emerald-100 shadow-xs flex items-center justify-center mx-auto">
                                 <QRCodeSVG
                                     id={`table-qr-svg-${selectedTable?._id || selectedTable?.tableNumber}`}
@@ -575,10 +570,10 @@ const TablesManagement = () => {
                             Scan with camera or click below to test ordering.
                         </p>
 
-                        <a 
-                            href={getQrUrl(selectedTable)} 
-                            target="_blank" 
-                            rel="noreferrer" 
+                        <a
+                            href={getQrUrl(selectedTable)}
+                            target="_blank"
+                            rel="noreferrer"
                             className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-98 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm shadow-emerald-600/20 mb-2.5 cursor-pointer"
                         >
                             <span>Open Table Menu &amp; Order (Test)</span>
@@ -604,13 +599,13 @@ const TablesManagement = () => {
                         </div>
 
                         <div className="grid grid-cols-2 gap-2 w-full">
-                            <button 
+                            <button
                                 onClick={handlePrintQr}
                                 className="py-2 bg-gray-900 hover:bg-black text-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
                             >
                                 <Printer size={14} /> Print Card
                             </button>
-                            <button 
+                            <button
                                 onClick={handleDownloadQr}
                                 className="py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 border border-gray-200 cursor-pointer"
                             >

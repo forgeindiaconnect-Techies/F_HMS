@@ -34,7 +34,7 @@ const VerificationManagement = () => {
             setLoading(true);
             const res = await api.get('/restaurants/verification/all');
             let data = Array.isArray(res.data) ? res.data : [];
-            
+
             // Fallback: If verification endpoint returns no items, query all platform restaurants directly
             if (data.length === 0) {
                 const restRes = await api.get('/super-admin/restaurants');
@@ -46,7 +46,7 @@ const VerificationManagement = () => {
                     documents: {}
                 }));
             }
-            
+
             setVerifications(data);
         } catch (error) {
             console.error("Failed to fetch verifications", error);
@@ -76,7 +76,7 @@ const VerificationManagement = () => {
         setSelectedReview(verification);
         setOverallStatus('Verified');
         setOverallReason('');
-        
+
         // Populate current doc review states
         const initialDocReviews = {};
         const fields = ['fssai', 'businessRegistration', 'panCard', 'aadhaarCard', 'addressProof', 'bankProof'];
@@ -217,7 +217,7 @@ const VerificationManagement = () => {
             </div>
 
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                
+
                 {/* Verification list table */}
                 <div className="xl:col-span-2 bg-white border border-gray-100 rounded-3xl shadow-sm overflow-hidden flex flex-col">
                     <div className="overflow-x-auto">
@@ -247,9 +247,9 @@ const VerificationManagement = () => {
                                                             );
                                                         }
                                                         return (
-                                                            <img 
-                                                                src={getFullUrl(logoPath)} 
-                                                                alt={v.restaurantId?.name || 'Restaurant'} 
+                                                            <img
+                                                                src={getFullUrl(logoPath)}
+                                                                alt={v.restaurantId?.name || 'Restaurant'}
                                                                 className="w-full h-full object-cover"
                                                                 onError={(e) => {
                                                                     e.currentTarget.style.display = 'none';
@@ -277,13 +277,12 @@ const VerificationManagement = () => {
                                             </span>
                                         </td>
                                         <td className="p-4">
-                                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black border uppercase tracking-wider ${
-                                                v.status === 'Verified' ? 'bg-green-100 text-green-700 border-green-200' :
+                                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black border uppercase tracking-wider ${v.status === 'Verified' ? 'bg-green-100 text-green-700 border-green-200' :
                                                 v.status === 'Under Review' ? 'bg-blue-100 text-blue-700 border-blue-200 animate-pulse' :
-                                                v.status === 'Re-upload Required' ? 'bg-orange-100 text-orange-700 border-orange-200' :
-                                                v.status === 'Rejected' ? 'bg-red-100 text-red-700 border-red-200' :
-                                                'bg-amber-100 text-amber-700 border-amber-200'
-                                            }`}>
+                                                    v.status === 'Re-upload Required' ? 'bg-orange-100 text-orange-700 border-orange-200' :
+                                                        v.status === 'Rejected' ? 'bg-red-100 text-red-700 border-red-200' :
+                                                            'bg-amber-100 text-amber-700 border-amber-200'
+                                                }`}>
                                                 {v.status}
                                             </span>
                                         </td>
@@ -340,7 +339,7 @@ const VerificationManagement = () => {
                             {/* Inspection block */}
                             <div className="space-y-4 max-h-[50vh] overflow-y-auto pr-1">
                                 <h4 className="text-xs font-black text-gray-500 uppercase tracking-wider">Submitted Documents</h4>
-                                
+
                                 {Object.keys(docLabels).map(key => {
                                     const doc = selectedReview.documents?.[key];
                                     if (!doc || !doc.filePath) {
@@ -383,22 +382,20 @@ const VerificationManagement = () => {
                                                         <button
                                                             type="button"
                                                             onClick={() => handleDocStatusChange(key, 'Approved')}
-                                                            className={`px-3 py-1 text-[10px] font-bold rounded-lg border transition-all flex items-center gap-1 ${
-                                                                docReviews[key]?.status === 'Approved'
-                                                                    ? 'bg-green-50 text-green-700 border-green-200'
-                                                                    : 'bg-white text-gray-400 border-gray-200'
-                                                            }`}
+                                                            className={`px-3 py-1 text-[10px] font-bold rounded-lg border transition-all flex items-center gap-1 ${docReviews[key]?.status === 'Approved'
+                                                                ? 'bg-green-50 text-green-700 border-green-200'
+                                                                : 'bg-white text-gray-400 border-gray-200'
+                                                                }`}
                                                         >
                                                             <CheckCircle size={10} /> Approve
                                                         </button>
                                                         <button
                                                             type="button"
                                                             onClick={() => handleDocStatusChange(key, 'Rejected')}
-                                                            className={`px-3 py-1 text-[10px] font-bold rounded-lg border transition-all flex items-center gap-1 ${
-                                                                docReviews[key]?.status === 'Rejected'
-                                                                    ? 'bg-red-50 text-red-700 border-red-200'
-                                                                    : 'bg-white text-gray-400 border-gray-200'
-                                                            }`}
+                                                            className={`px-3 py-1 text-[10px] font-bold rounded-lg border transition-all flex items-center gap-1 ${docReviews[key]?.status === 'Rejected'
+                                                                ? 'bg-red-50 text-red-700 border-red-200'
+                                                                : 'bg-white text-gray-400 border-gray-200'
+                                                                }`}
                                                         >
                                                             <XCircle size={10} /> Reject / Request Re-upload
                                                         </button>
@@ -436,8 +433,8 @@ const VerificationManagement = () => {
                                                 </button>
                                             )}
                                             {selectedReview.documents.images?.map((img, i) => (
-                                                <button key={i} onClick={() => setPreviewDoc({ label: `Showcase ${i+1}`, path: img.filePath })} className="px-2 py-1 bg-white rounded border hover:bg-gray-100 flex items-center gap-1 transition-all">
-                                                    🖼️ Image {i+1}
+                                                <button key={i} onClick={() => setPreviewDoc({ label: `Showcase ${i + 1}`, path: img.filePath })} className="px-2 py-1 bg-white rounded border hover:bg-gray-100 flex items-center gap-1 transition-all">
+                                                    🖼️ Image {i + 1}
                                                 </button>
                                             ))}
                                         </div>
@@ -459,11 +456,10 @@ const VerificationManagement = () => {
                                                 key={opt.val}
                                                 type="button"
                                                 onClick={() => setOverallStatus(opt.val)}
-                                                className={`py-2 text-xs font-bold rounded-xl border text-center transition-all ${
-                                                    overallStatus === opt.val
-                                                        ? opt.color + ' ring-2 ring-offset-1 ring-blue-500'
-                                                        : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
-                                                }`}
+                                                className={`py-2 text-xs font-bold rounded-xl border text-center transition-all ${overallStatus === opt.val
+                                                    ? opt.color + ' ring-2 ring-offset-1 ring-blue-500'
+                                                    : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
+                                                    }`}
                                             >
                                                 {opt.label}
                                             </button>
@@ -511,10 +507,9 @@ const VerificationManagement = () => {
                                                 </div>
                                                 <div className="flex items-center gap-1">
                                                     <span className="font-black text-gray-800">Action:</span>
-                                                    <span className={`px-1.5 py-0.2 rounded font-black text-[9px] uppercase ${
-                                                        hist.status === 'Verified' ? 'bg-green-100 text-green-700' :
+                                                    <span className={`px-1.5 py-0.2 rounded font-black text-[9px] uppercase ${hist.status === 'Verified' ? 'bg-green-100 text-green-700' :
                                                         hist.status === 'Rejected' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'
-                                                    }`}>{hist.status}</span>
+                                                        }`}>{hist.status}</span>
                                                 </div>
                                                 {hist.reason && <p className="text-red-500 font-bold">Reason: {hist.reason}</p>}
                                             </div>
@@ -537,7 +532,7 @@ const VerificationManagement = () => {
                 <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
                     <div className="absolute inset-0" onClick={() => setPreviewDoc(null)}></div>
                     <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[85vh] relative z-10 overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
-                        
+
                         <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
                             <span className="font-black text-gray-900 text-base">{previewDoc.label} Preview</span>
                             <div className="flex items-center gap-2">

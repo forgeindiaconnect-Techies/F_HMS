@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { 
-    Star, MessageSquareQuote, CheckCircle2, AlertCircle, Clock, 
-    Upload, Eye, Send, Sparkles, Building2, MapPin, User, ShieldCheck, RefreshCw 
+import {
+    Star, MessageSquareQuote, CheckCircle2, AlertCircle, Clock,
+    Upload, Eye, Send, Sparkles, Building2, MapPin, User, ShieldCheck, RefreshCw
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
@@ -62,7 +62,7 @@ const MyTestimonial = () => {
                     setOwnerName(user?.name || defaults.ownerName || '');
                     setRestaurantName(restaurant?.name || defaults.restaurantName || '');
                     setLocation(
-                        restaurant?.address || 
+                        restaurant?.address ||
                         (restaurant?.city && restaurant?.state ? `${restaurant.city}, ${restaurant.state}` : defaults.location || '')
                     );
                     setRating(5);
@@ -210,7 +210,7 @@ const MyTestimonial = () => {
 
     return (
         <div className="p-4 sm:p-6 md:p-8 max-w-5xl mx-auto space-y-6 text-slate-900 dark:text-slate-100">
-            
+
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
                 <div>
@@ -279,10 +279,10 @@ const MyTestimonial = () => {
 
             {/* Main Form & Live Card Preview Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                
+
                 {/* Form Inputs (7 cols) */}
                 <form onSubmit={handleSubmit} className="lg:col-span-7 bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm space-y-5">
-                    
+
                     <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
                         <h2 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
                             <Sparkles size={16} className="text-[#FF5A1F]" />
@@ -483,8 +483,8 @@ const MyTestimonial = () => {
                             <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                     {avatarPreview ? (
-                                        <img 
-                                            src={avatarPreview} 
+                                        <img
+                                            src={avatarPreview}
                                             alt={ownerName || "Owner"}
                                             className="w-10 h-10 rounded-full object-cover border border-slate-200"
                                         />
@@ -550,8 +550,8 @@ const MyTestimonial = () => {
                             <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                     {avatarPreview ? (
-                                        <img 
-                                            src={avatarPreview} 
+                                        <img
+                                            src={avatarPreview}
                                             alt={ownerName}
                                             className="w-10 h-10 rounded-full object-cover border border-slate-200"
                                         />
