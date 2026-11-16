@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { Capacitor } from '@capacitor/core';
 
-export const PROD_API_URL = 'https://f-hms-mb86.onrender.com/api';
+export const PROD_API_URL = 'https://backend-ochre-five-29.vercel.app/api';
 
 export const getApiUrl = () => {
     // 1. Check custom localStorage override first (useful for manual setting or testing on physical devices)

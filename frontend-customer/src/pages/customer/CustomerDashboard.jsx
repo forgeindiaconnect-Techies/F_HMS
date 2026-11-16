@@ -766,7 +766,11 @@ const CustomerDashboard = () => {
 
                         <div className="flex gap-2 w-full sm:w-auto relative z-10">
                             <button
-                                onClick={logout}
+                                type="button"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    logout();
+                                }}
                                 className="flex-1 sm:flex-initial px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-red-50 hover:text-red-600 hover:border-red-200 text-slate-700 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
                             >
                                 <LogOut size={14} /> Log Out

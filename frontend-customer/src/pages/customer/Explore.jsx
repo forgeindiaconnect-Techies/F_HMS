@@ -37,6 +37,7 @@ export default function Explore() {
   const navigate = useNavigate();
   const { cartCount, addToCart, wishlist, toggleWishlist, setIsCartOpen } = useCart();
   const { user, api, logout } = useCustomerAuth();
+  const isNative = typeof window !== 'undefined' && (Capacitor.isNativePlatform() || window.Capacitor?.isNativePlatform?.());
 
   // State (Initialized cleanly with cached fallback for instant rendering)
   const [restaurants, setRestaurants] = useState(() => {
@@ -590,7 +591,7 @@ export default function Explore() {
       {/* ======================================================================= */}
       {/* 1. NAVBAR (RESPONSIVE FOR MOBILE APPS & TABLETS)                        */}
       {/* ======================================================================= */}
-      <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-[0_2px_12px_rgba(0,0,0,0.03)]">
+      <nav className={`sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-[0_2px_12px_rgba(0,0,0,0.03)] ${isNative ? 'pt-8' : 'pt-[env(safe-area-inset-top,0px)]'}`}>
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-[76px] flex items-center justify-between gap-2 sm:gap-4">
           
           {/* Logo with Utensil Icon & Tagline */}

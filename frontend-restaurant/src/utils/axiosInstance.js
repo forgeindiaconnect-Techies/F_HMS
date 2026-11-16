@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export const PROD_API_URL = 'https://f-hms-mb86.onrender.com/api';
+export const PROD_API_URL = 'https://backend-ochre-five-29.vercel.app/api';
 
 export const getApiUrl = () => {
     // 1. Check custom localStorage override first

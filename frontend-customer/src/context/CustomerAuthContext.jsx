@@ -119,18 +119,24 @@ export const CustomerAuthProvider = ({ children }) => {
         }
     };
 
-    const logout = async () => {
+    const logout = () => {
         try {
-            await api.post('/auth/logout');
-        } catch (error) {
-            console.error('Logout error:', error);
-        }
+            api.post('/auth/logout').catch(() => {});
+        } catch (_) {}
         setUser(null);
+        localStorage.removeItem('token');
         localStorage.removeItem('restosys_customer_user');
         localStorage.removeItem('restosys_cart');
         localStorage.removeItem('restosys_wishlist');
         localStorage.removeItem('customerWalletBalance');
+        localStorage.removeItem('customerWalletTransactions');
         localStorage.removeItem('customerReservations');
+        try {
+            sessionStorage.removeItem('restosys_cust_orders_cache');
+            sessionStorage.removeItem('restosys_reg_rests_cache');
+            sessionStorage.removeItem('restosys_live_menu_cache');
+            sessionStorage.removeItem('foodnest_menu_cache');
+        } catch (_) {}
         window.location.href = '/customer/login';
     };
 

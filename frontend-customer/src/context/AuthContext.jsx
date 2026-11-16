@@ -208,13 +208,11 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const logout = async () => {
+    const logout = () => {
         const isDelivery = user?.role === 'DeliveryPartner' || window.location.pathname.startsWith('/delivery');
         try {
-            await api.post('/auth/logout');
-        } catch (error) {
-            console.error('Logout error:', error);
-        }
+            api.post('/auth/logout').catch(() => {});
+        } catch (_) {}
         clearAllStaleState();
         window.location.href = isDelivery ? '/delivery/login' : '/staff/login';
     };

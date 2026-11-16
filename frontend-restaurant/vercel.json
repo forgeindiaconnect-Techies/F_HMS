@@ -6,7 +6,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://f-hms-mb86.onrender.com/api/:path*"
+      "destination": "https://backend-ochre-five-29.vercel.app/api/:path*"
     },
     {
       "source": "/(.*)",
