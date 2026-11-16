@@ -73,7 +73,7 @@ const Menu = () => {
                 if (trimmed) itemCategories.add(trimmed);
             }
         });
-        return ['All', 'Mains & Meals', 'Starters', 'Desserts', 'Beverages', ...Array.from(itemCategories).filter(c => 
+        return ['All', 'Mains & Meals', 'Starters', 'Desserts', 'Beverages', ...Array.from(itemCategories).filter(c =>
             !['main', 'mains', 'meal', 'meals', 'starter', 'starters', 'dessert', 'desserts', 'beverage', 'beverages'].includes(c.toLowerCase())
         )];
     }, [menuItems]);
@@ -85,7 +85,7 @@ const Menu = () => {
                 const { data } = await api.get('/menu');
                 if (isMounted && Array.isArray(data) && data.length > 0) {
                     setMenuItems(data);
-                    try { sessionStorage.setItem('foodnest_menu_cache', JSON.stringify(data)); } catch {}
+                    try { sessionStorage.setItem('foodnest_menu_cache', JSON.stringify(data)); } catch { }
                 } else if (isMounted && Array.isArray(data)) {
                     setMenuItems(data);
                 }
@@ -103,7 +103,7 @@ const Menu = () => {
         const cleanQuery = searchQuery.trim().toLowerCase();
 
         // Check if there are dishes matching restaurantFilter
-        const hasRestaurantMatches = restaurantFilter 
+        const hasRestaurantMatches = restaurantFilter
             ? menuItems.some(i => String(i.restaurantId?._id || i.restaurantId) === String(restaurantFilter))
             : false;
 
@@ -140,9 +140,9 @@ const Menu = () => {
                 matchesCategory = itemCat === activeCategory.toLowerCase().trim();
             }
 
-            const matchesSearch = !cleanQuery || 
-                itemName.includes(cleanQuery) || 
-                itemDesc.includes(cleanQuery) || 
+            const matchesSearch = !cleanQuery ||
+                itemName.includes(cleanQuery) ||
+                itemDesc.includes(cleanQuery) ||
                 itemCat.includes(cleanQuery) ||
                 restName.includes(cleanQuery);
 
