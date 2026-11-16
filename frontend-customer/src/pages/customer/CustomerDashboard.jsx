@@ -473,7 +473,7 @@ const CustomerDashboard = () => {
                     if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
                         ws.close(1000, 'Normal closure');
                     }
-                } catch (_) {}
+                } catch (_) { }
                 ws = null;
             }
         };
@@ -504,7 +504,7 @@ const CustomerDashboard = () => {
                         if (['new_order', 'order_updated', 'ready_to_serve', 'order_status_updated', 'delivery_updated'].includes(msg.type)) {
                             fetchOrders();
                         }
-                    } catch (_) {}
+                    } catch (_) { }
                 };
 
                 ws.onerror = () => {
@@ -517,7 +517,7 @@ const CustomerDashboard = () => {
                         reconnectTimer = setTimeout(connectWS, 5000);
                     }
                 };
-            } catch (_) {}
+            } catch (_) { }
         };
 
         connectWS();
