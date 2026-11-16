@@ -103,7 +103,7 @@ const Reservations = () => {
     return (
         <div className="bg-gray-50 min-h-[85vh] pb-24">
             {/* Header Banner */}
-            <div className="bg-gray-900 text-white py-8 sm:py-14 px-4 relative overflow-hidden">
+            <div className="bg-gray-900 text-white pt-4 pb-7 sm:py-14 px-4 relative overflow-hidden">
                 <img 
                     src="https://images.unsplash.com/photo-1514933651103-005eec06c04b?q=80&w=2000&auto=format&fit=crop" 
                     alt="Restaurant Interior" 

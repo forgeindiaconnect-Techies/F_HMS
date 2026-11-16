@@ -599,7 +599,7 @@ const CustomerDashboard = () => {
     const ActiveTabIcon = activeTabObj?.icon || LayoutGrid;
 
     return (
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-3 sm:pt-4 pb-0 h-[calc(100vh-155px)] md:h-[calc(100vh-115px)] flex flex-col overflow-hidden animate-in fade-in duration-300 text-slate-800">
+        <div className="max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8 pt-1 sm:pt-4 pb-0 h-[calc(100vh-140px)] md:h-[calc(100vh-115px)] flex flex-col overflow-hidden animate-in fade-in duration-300 text-slate-800">
             {/* Slide-out Navigation Drawer for Dashboard Sections */}
             <CustomerNavDrawer
                 isOpen={isNavDrawerOpen}

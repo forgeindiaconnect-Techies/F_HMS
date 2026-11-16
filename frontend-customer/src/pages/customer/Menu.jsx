@@ -153,7 +153,7 @@ const Menu = () => {
     return (
         <div className="bg-white min-h-screen pb-20 font-sans selection:bg-[#FF5A1F] selection:text-white">
             {/* 1. Warm Hero Banner Matching Landing Page */}
-            <div className="relative w-full overflow-hidden bg-gradient-to-r from-white via-[#FCF9F5] to-[#F8F5EE] border-b border-slate-100 py-10 sm:py-14">
+            <div className="relative w-full overflow-hidden bg-gradient-to-r from-white via-[#FCF9F5] to-[#F8F5EE] border-b border-slate-100 pt-3 pb-6 sm:py-14">
                 {/* Soft Organic Background Glow */}
                 <div className="absolute top-0 left-0 w-72 h-72 bg-gradient-to-br from-emerald-100/40 via-orange-100/20 to-transparent rounded-full blur-3xl pointer-events-none" />
 
