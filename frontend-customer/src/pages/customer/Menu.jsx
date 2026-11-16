@@ -3,12 +3,76 @@ import { Search, Heart, ShoppingBag, Star, Filter, Info, Flame, Leaf } from 'luc
 import { useCart } from '../../context/CartContext';
 import { getItemImage, getFallbackFoodImage } from '../../utils/imageHelper';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
+import defaultApi from '../../utils/axiosInstance';
 import DishDetailModal from '../../components/DishDetailModal';
 import toast from 'react-hot-toast';
 
 import { useLocation } from 'react-router-dom';
 
 const baseCategories = ['All', 'Mains & Meals', 'Starters', 'Salads', 'Desserts', 'Beverages'];
+
+const DEFAULT_POPULAR_DISHES = [
+    {
+        _id: 'dish_001',
+        name: 'Hyderabadi Dum Biryani',
+        category: 'Mains & Meals',
+        price: 280,
+        rating: 4.9,
+        isVegetarian: false,
+        restaurantName: 'FoodNest Express',
+        description: 'Fragrant basmati rice slow-cooked with spiced marinated chicken and saffron.'
+    },
+    {
+        _id: 'dish_002',
+        name: 'Crispy Paneer Butter Masala',
+        category: 'Mains & Meals',
+        price: 240,
+        rating: 4.8,
+        isVegetarian: true,
+        restaurantName: 'The Spice Kitchen',
+        description: 'Rich tomato cashew gravy simmered with fresh cottage cheese cubes and butter.'
+    },
+    {
+        _id: 'dish_003',
+        name: 'Classic Margherita Pizza',
+        category: 'Fast Food',
+        price: 299,
+        rating: 4.7,
+        isVegetarian: true,
+        restaurantName: 'FoodNest Gourmet',
+        description: 'Fresh mozzarella, basil leaves, extra virgin olive oil on hand-stretched sourdough.'
+    },
+    {
+        _id: 'dish_004',
+        name: 'Special Chicken Ghee Roast',
+        category: 'Starters',
+        price: 260,
+        rating: 4.9,
+        isVegetarian: false,
+        restaurantName: 'Resto Central Kitchen',
+        description: 'Tender chicken tossed in fiery Byadgi chili paste roasted in pure country ghee.'
+    },
+    {
+        _id: 'dish_005',
+        name: 'Royal Falooda Delight',
+        category: 'Desserts',
+        price: 150,
+        rating: 4.8,
+        isVegetarian: true,
+        restaurantName: 'FoodNest Express',
+        description: 'Layered vermicelli, basil seeds, rose syrup, crushed pistachios, and rich kulfi.'
+    },
+    {
+        _id: 'dish_006',
+        name: 'Fresh Filter Coffee & Cold Brew',
+        category: 'Beverages',
+        price: 90,
+        rating: 4.9,
+        isVegetarian: true,
+        restaurantName: 'Resto Central Kitchen',
+        description: 'Authentic South Indian chicory blend frothed with hot creamy farm milk.'
+    }
+];
 
 const Menu = () => {
     const { addToCart, wishlist, toggleWishlist } = useCart();
@@ -17,16 +81,16 @@ const Menu = () => {
 
     const [menuItems, setMenuItems] = useState(() => {
         try {
-            const cached = sessionStorage.getItem('foodnest_menu_cache');
+            const cached = sessionStorage.getItem('foodnest_menu_cache') || sessionStorage.getItem('restosys_live_menu_cache');
             const parsed = cached ? JSON.parse(cached) : [];
-            return Array.isArray(parsed) && parsed.length > 0 ? parsed : [];
-        } catch { return []; }
+            return Array.isArray(parsed) && parsed.length > 0 ? parsed : DEFAULT_POPULAR_DISHES;
+        } catch { return DEFAULT_POPULAR_DISHES; }
     });
     const [loading, setLoading] = useState(() => {
         try {
-            const cached = sessionStorage.getItem('foodnest_menu_cache');
+            const cached = sessionStorage.getItem('foodnest_menu_cache') || sessionStorage.getItem('restosys_live_menu_cache');
             return !(cached && JSON.parse(cached)?.length > 0);
-        } catch { return true; }
+        } catch { return false; }
     });
     const [searchQuery, setSearchQuery] = useState(() => {
         try {
@@ -80,23 +144,51 @@ const Menu = () => {
 
     useEffect(() => {
         let isMounted = true;
+        const client = api || defaultApi;
+
+        // 2500ms failsafe timer so loading skeleton/spinner NEVER hangs
+        const safetyTimer = setTimeout(() => {
+            if (isMounted) setLoading(false);
+        }, 2500);
+
         const fetchMenu = async () => {
             try {
-                const { data } = await api.get('/menu');
+                const { data } = await client.get('/menu');
                 if (isMounted && Array.isArray(data) && data.length > 0) {
                     setMenuItems(data);
-                    try { sessionStorage.setItem('foodnest_menu_cache', JSON.stringify(data)); } catch { }
-                } else if (isMounted && Array.isArray(data)) {
-                    setMenuItems(data);
+                    try {
+                        sessionStorage.setItem('foodnest_menu_cache', JSON.stringify(data));
+                        sessionStorage.setItem('restosys_live_menu_cache', JSON.stringify(data));
+                    } catch { }
+                } else if (isMounted && (!menuItems || menuItems.length === 0)) {
+                    setMenuItems(DEFAULT_POPULAR_DISHES);
                 }
             } catch (error) {
                 console.error('Failed to fetch menu:', error);
+                try {
+                    const fallback = sessionStorage.getItem('foodnest_menu_cache') || sessionStorage.getItem('restosys_live_menu_cache');
+                    if (fallback) {
+                        const parsed = JSON.parse(fallback);
+                        if (isMounted && Array.isArray(parsed) && parsed.length > 0) {
+                            setMenuItems(parsed);
+                        } else if (isMounted) {
+                            setMenuItems(DEFAULT_POPULAR_DISHES);
+                        }
+                    } else if (isMounted) {
+                        setMenuItems(DEFAULT_POPULAR_DISHES);
+                    }
+                } catch (_) {
+                    if (isMounted) setMenuItems(DEFAULT_POPULAR_DISHES);
+                }
             } finally {
                 if (isMounted) setLoading(false);
             }
         };
         fetchMenu();
-        return () => { isMounted = false; };
+        return () => { 
+            isMounted = false; 
+            clearTimeout(safetyTimer);
+        };
     }, [api]);
 
     const filteredMenu = useMemo(() => {

@@ -119,7 +119,7 @@ const CustomerLayout = () => {
             {!isLandingPage && (
                 <header className="bg-white/95 backdrop-blur-md border-b border-slate-100 fixed top-0 left-0 right-0 z-40 shadow-[0_2px_12px_rgba(0,0,0,0.03)] pt-[env(safe-area-inset-top,0px)]">
                     <div className="max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8 h-14 sm:h-[76px] flex items-center justify-between gap-1.5 sm:gap-4">
-                        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 min-w-0">
+                        <div className="flex items-center gap-2 sm:gap-3 shrink-0 min-w-0">
                             {/* Back Button */}
                             <button
                                 type="button"
@@ -131,7 +131,7 @@ const CustomerLayout = () => {
                                 <ArrowLeft size={16} className="text-slate-700 stroke-[2.2]" />
                             </button>
 
-                            <Link to="/" className="flex items-center gap-1.5 sm:gap-2 shrink-0 group">
+                            <Link to="/" className="flex items-center gap-1.5 sm:gap-2 shrink-0 group ml-0.5">
                                 <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#FF5A1F] text-white flex items-center justify-center shadow-md shadow-[#FF5A1F]/25 group-hover:scale-105 transition-transform shrink-0">
                                     <UtensilsCrossed size={17} className="stroke-[2.2]" />
                                 </div>

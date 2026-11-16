@@ -1,6 +1,8 @@
 import axios from 'axios';
 import { Capacitor } from '@capacitor/core';
 
+export const PROD_API_URL = 'https://f-hms-mb86.onrender.com/api';
+
 export const getApiUrl = () => {
     // 1. Check custom localStorage override first (useful for manual setting or testing on physical devices)
     if (typeof window !== 'undefined' && window.localStorage) {
@@ -19,18 +21,18 @@ export const getApiUrl = () => {
         }
     }
 
-    // 3. When deployed (e.g. on Vercel) or on native app, use VITE_API_URL
+    // 3. Environment variable if available and valid
     if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) {
-        let envUrl = import.meta.env.VITE_API_URL.trim();
-        if (envUrl) {
+        let envUrl = String(import.meta.env.VITE_API_URL).trim();
+        if (envUrl && !envUrl.includes('localhost') && !envUrl.includes('127.0.0.1')) {
             if (envUrl.endsWith('/')) envUrl = envUrl.slice(0, -1);
             if (!envUrl.endsWith('/api')) envUrl += '/api';
             return envUrl;
         }
     }
 
-    // 4. Default fallback for local development / native apps
-    return 'http://localhost:5000/api';
+    // 4. Default fallback for deployed production web (Vercel/Render) and native mobile apps
+    return PROD_API_URL;
 };
 
 const api = axios.create({

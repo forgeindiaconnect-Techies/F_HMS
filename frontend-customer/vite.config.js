@@ -9,7 +9,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const apiUrl = env.VITE_API_URL || '';
+  const apiUrl = env.VITE_API_URL || 'https://f-hms-mb86.onrender.com';
   const restaurantUrl = env.VITE_RESTAURANT_URL || '';
 
   return {

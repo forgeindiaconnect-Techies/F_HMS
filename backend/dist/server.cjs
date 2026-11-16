@@ -65974,17 +65974,24 @@ var init_Restaurant = __esm({
       },
       logo: {
         type: String,
-        select: false
+        default: ""
       },
       bannerImage: {
         type: String,
-        default: "",
-        select: false
+        default: ""
       },
       showcaseImages: {
         type: [String],
-        default: [],
-        select: false
+        default: []
+      },
+      cuisineType: {
+        type: String,
+        default: "Multi-Cuisine"
+      },
+      dietaryType: {
+        type: String,
+        enum: ["Pure Veg", "Non-Veg", "Veg & Non-Veg", "Pure Veg & Non-Veg"],
+        default: "Veg & Non-Veg"
       },
       currency: {
         type: String,
@@ -66270,7 +66277,7 @@ var init_Notification = __esm({
 });
 
 // utils/emailService.js
-var import_nodemailer, getBrevoConfig, getSmtpConfig, sendEmail, sendWelcomeEmail, sendSubscriptionExpiredEmail, sendApprovalEmail, sendLoginNotificationEmail, sendSubscriptionSuccessEmail, portalBaseUrl, sendTrialRequestSubmittedEmail, sendTrialApprovedEmail, sendTrialRejectedEmail, sendTrialStartedEmail, sendTrialExpiringReminderEmail, sendTrialExpiredAndFrozenEmail, sendManualFreezeEmail, sendManualUnfreezeEmail, sendStaffRoleCredentialsEmail, sendOutletFormatSubmissionEmail;
+var import_nodemailer, getBrevoConfig, getSmtpConfig, getAppUrl, sendEmail, sendWelcomeEmail, sendSubscriptionExpiredEmail, sendApprovalEmail, sendLoginNotificationEmail, sendSubscriptionSuccessEmail, portalBaseUrl, sendTrialRequestSubmittedEmail, sendTrialApprovedEmail, sendTrialRejectedEmail, sendTrialStartedEmail, sendTrialExpiringReminderEmail, sendTrialExpiredAndFrozenEmail, sendManualFreezeEmail, sendManualUnfreezeEmail, sendStaffRoleCredentialsEmail, sendOutletFormatSubmissionEmail;
 var init_emailService = __esm({
   "utils/emailService.js"() {
     import_nodemailer = __toESM(require("nodemailer"), 1);
@@ -66299,6 +66306,7 @@ var init_emailService = __esm({
       const senderName = process.env.BREVO_SENDER_NAME || "FoodNest";
       return { host, port, user, pass, senderEmail, senderName };
     };
+    getAppUrl = () => process.env.FRONTEND_URL || process.env.RESTAURANT_FRONTEND_URL || "";
     sendEmail = async ({ to, toName, subject, html }) => {
       if (!to) return false;
       const smtpConfig = getSmtpConfig();
@@ -66325,13 +66333,10 @@ var init_emailService = __esm({
             console.log(`[Brevo API Email Sent Successfully] Delivered real-time to ${to}. Message ID:`, data.messageId);
             return true;
           } else {
-            console.error("[Brevo API Error Details]:", JSON.stringify(data));
-            if (response.status === 401 || response.status === 403) {
-              return false;
-            }
+            console.warn("[Brevo API Response Not OK, falling back to SMTP Relay]:", JSON.stringify(data));
           }
         } catch (brevoErr) {
-          console.error("[Brevo HTTP Dispatch Error]:", brevoErr.message);
+          console.warn("[Brevo HTTP Dispatch Error, falling back to SMTP Relay]:", brevoErr.message);
         }
       }
       try {
@@ -66339,12 +66344,15 @@ var init_emailService = __esm({
           host: smtpConfig.host,
           port: smtpConfig.port,
           secure: false,
-          connectionTimeout: 2e3,
-          greetingTimeout: 2e3,
-          socketTimeout: 3e3,
+          connectionTimeout: 1e4,
+          greetingTimeout: 1e4,
+          socketTimeout: 15e3,
           auth: {
             user: smtpConfig.user,
             pass: smtpConfig.pass
+          },
+          tls: {
+            rejectUnauthorized: false
           }
         });
         const info = await transporter.sendMail({
@@ -66381,7 +66389,7 @@ var init_emailService = __esm({
                     Your account registration details have been submitted to our Super Admin verification team for review. As soon as your restaurant verification is approved, your plan dashboard will unlock automatically.
                 </p>
                 <div style="text-align: center; margin-top: 30px;">
-                    <a href="https://f-hms.vercel.app" style="background-color: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
+                    <a href="${getAppUrl()}" style="background-color: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
                         Access Restaurant Hub Portal
                     </a>
                 </div>
@@ -66415,7 +66423,7 @@ var init_emailService = __esm({
                     You can easily renew or upgrade your plan by visiting the SaaS Subscription portal in your admin dashboard.
                 </p>
                 <div style="text-align: center; margin-top: 30px;">
-                    <a href="https://f-hms.vercel.app/admin/billing" style="background-color: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
+                    <a href="${getAppUrl()}/admin/billing" style="background-color: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
                         Renew Subscription Now
                     </a>
                 </div>
@@ -66448,7 +66456,7 @@ var init_emailService = __esm({
                     You can now access all features, order management, menu setup, staff accounts, and branch operations according to your plan tier.
                 </p>
                 <div style="text-align: center; margin-top: 30px;">
-                    <a href="https://f-hms.vercel.app/admin" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
+                    <a href="${getAppUrl()}/admin" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
                         Open Your Dashboard
                     </a>
                 </div>
@@ -66482,7 +66490,7 @@ var init_emailService = __esm({
                     If this was you, no further action is required. If you did not perform this login, please reset your password immediately.
                 </p>
                 <div style="text-align: center; margin-top: 30px;">
-                    <a href="https://f-hms.vercel.app" style="background-color: #1e293b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
+                    <a href="${getAppUrl()}" style="background-color: #1e293b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
                         Access Restaurant Hub
                     </a>
                 </div>
@@ -66543,7 +66551,7 @@ var init_emailService = __esm({
                     All modules and features associated with the <strong>${plan}</strong> plan are now immediately accessible across your management dashboard, POS billing, orders, and staff workflows.
                 </p>
                 <div style="text-align: center; margin-top: 30px;">
-                    <a href="https://f-hms.vercel.app/admin" style="background-color: #10b981; color: white; padding: 12px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
+                    <a href="${getAppUrl()}/admin" style="background-color: #10b981; color: white; padding: 12px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
                         Go to Your Dashboard
                     </a>
                 </div>
@@ -66555,7 +66563,7 @@ var init_emailService = __esm({
     `;
       return await sendEmail({ to: email, toName: name, subject, html });
     };
-    portalBaseUrl = process.env.RESTAURANT_FRONTEND_URL || process.env.FRONTEND_URL || "https://f-hms-restaurant.vercel.app";
+    portalBaseUrl = process.env.RESTAURANT_FRONTEND_URL || process.env.FRONTEND_URL || "";
     sendTrialRequestSubmittedEmail = async ({ email, name, restaurantName, requestDate }) => {
       const formattedDate = requestDate ? new Date(requestDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" }) : (/* @__PURE__ */ new Date()).toLocaleDateString("en-US");
       const subject = `Free Trial Request Received: ${restaurantName || "Your Restaurant"}`;
@@ -72528,6 +72536,10 @@ var require_bcryptjs = __commonJS({
 });
 
 // models/User.js
+var User_exports = {};
+__export(User_exports, {
+  default: () => User_default
+});
 var import_mongoose3, import_bcryptjs, userSchema, User, User_default;
 var init_User = __esm({
   "models/User.js"() {
@@ -126293,6 +126305,235 @@ var init_subscriptionHelper = __esm({
   }
 });
 
+// models/DeliveryPartner.js
+var DeliveryPartner_exports = {};
+__export(DeliveryPartner_exports, {
+  default: () => DeliveryPartner_default
+});
+var import_mongoose12, deliveryPartnerSchema, DeliveryPartner, DeliveryPartner_default;
+var init_DeliveryPartner = __esm({
+  "models/DeliveryPartner.js"() {
+    import_mongoose12 = __toESM(require_mongoose2(), 1);
+    deliveryPartnerSchema = new import_mongoose12.default.Schema({
+      userId: {
+        type: import_mongoose12.default.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+        unique: true
+      },
+      restaurantId: {
+        type: import_mongoose12.default.Schema.Types.ObjectId,
+        ref: "Restaurant",
+        required: true
+      },
+      status: {
+        type: String,
+        enum: ["Online", "Offline", "Busy", "On Delivery"],
+        default: "Offline"
+      },
+      verificationStatus: {
+        type: String,
+        enum: ["Pending", "Approved", "Rejected", "Suspended"],
+        default: "Pending"
+      },
+      vehicleDetails: {
+        type: { type: String, default: "Bike" },
+        // Bike, Scooter, Car, etc.
+        model: { type: String, default: "" },
+        rcNumber: { type: String, default: "" },
+        licenseNumber: { type: String, default: "" }
+      },
+      documents: {
+        drivingLicense: { type: String, default: "" },
+        aadhaarProof: { type: String, default: "" },
+        vehicleRc: { type: String, default: "" },
+        vehicleInsurance: { type: String, default: "" },
+        profilePhoto: { type: String, default: "" }
+      },
+      walletBalance: {
+        type: Number,
+        default: 0
+      },
+      earnings: {
+        type: Number,
+        default: 0
+      },
+      currentLocation: {
+        latitude: { type: Number, default: 12.9716 },
+        // Defaults to center coordinates
+        longitude: { type: Number, default: 77.5946 }
+      }
+    }, { timestamps: true });
+    DeliveryPartner = import_mongoose12.default.model("DeliveryPartner", deliveryPartnerSchema);
+    DeliveryPartner_default = DeliveryPartner;
+  }
+});
+
+// models/KOT.js
+var KOT_exports = {};
+__export(KOT_exports, {
+  default: () => KOT_default
+});
+var import_mongoose14, kotItemSchema, kotSchema, KOT, KOT_default;
+var init_KOT = __esm({
+  "models/KOT.js"() {
+    import_mongoose14 = __toESM(require_mongoose2(), 1);
+    kotItemSchema = new import_mongoose14.default.Schema({
+      name: {
+        type: String,
+        required: true
+      },
+      qty: {
+        type: Number,
+        required: true,
+        min: 1
+      },
+      price: {
+        type: Number,
+        default: 0
+      },
+      notes: {
+        type: String,
+        default: ""
+      },
+      product: {
+        type: import_mongoose14.default.Schema.Types.ObjectId,
+        ref: "MenuItem"
+      },
+      kitchenStation: {
+        type: String,
+        default: "Main Kitchen"
+      },
+      status: {
+        type: String,
+        enum: ["Pending", "Preparing", "Ready", "Served", "Cancelled"],
+        default: "Pending"
+      }
+    }, { _id: true });
+    kotSchema = new import_mongoose14.default.Schema({
+      kotNumber: {
+        type: String,
+        required: true,
+        index: true
+      },
+      kotSequence: {
+        type: Number,
+        required: true,
+        index: true
+      },
+      orderId: {
+        type: import_mongoose14.default.Schema.Types.ObjectId,
+        ref: "Order",
+        required: true,
+        index: true
+      },
+      orderNumber: {
+        type: String,
+        default: ""
+      },
+      restaurantId: {
+        type: import_mongoose14.default.Schema.Types.ObjectId,
+        ref: "Restaurant",
+        required: true,
+        index: true
+      },
+      branchId: {
+        type: import_mongoose14.default.Schema.Types.ObjectId,
+        ref: "Branch",
+        required: true,
+        index: true
+      },
+      tableNumber: {
+        type: String,
+        default: ""
+      },
+      orderType: {
+        type: String,
+        enum: ["Dine In", "Self-Pickup", "Delivery", "Takeaway"],
+        default: "Dine In"
+      },
+      serviceType: {
+        type: String,
+        default: "Waiter Table Service"
+      },
+      customerName: {
+        type: String,
+        default: ""
+      },
+      customerPhone: {
+        type: String,
+        default: ""
+      },
+      kitchenStation: {
+        type: String,
+        required: true,
+        default: "Main Kitchen",
+        index: true
+      },
+      items: [kotItemSchema],
+      notes: {
+        type: String,
+        default: ""
+      },
+      isAddon: {
+        type: Boolean,
+        default: false
+      },
+      status: {
+        type: String,
+        enum: ["Pending", "Preparing", "Ready", "Served", "Cancelled"],
+        default: "Pending",
+        index: true
+      },
+      statusHistory: [
+        {
+          status: { type: String, required: true },
+          timestamp: { type: Date, default: Date.now },
+          updatedBy: { type: import_mongoose14.default.Schema.Types.ObjectId, ref: "User" }
+        }
+      ],
+      prepStartTime: {
+        type: Date,
+        default: null
+      },
+      prepReadyTime: {
+        type: Date,
+        default: null
+      },
+      servedTime: {
+        type: Date,
+        default: null
+      },
+      isPrinted: {
+        type: Boolean,
+        default: false
+      },
+      printedAt: {
+        type: Date,
+        default: null
+      },
+      printCount: {
+        type: Number,
+        default: 0
+      },
+      serverName: {
+        type: String,
+        default: "System / Customer"
+      },
+      createdBy: {
+        type: import_mongoose14.default.Schema.Types.ObjectId,
+        ref: "User",
+        default: null
+      }
+    }, { timestamps: true });
+    kotSchema.index({ restaurantId: 1, status: 1, createdAt: -1 });
+    kotSchema.index({ restaurantId: 1, branchId: 1, status: 1 });
+    kotSchema.index({ orderId: 1, createdAt: -1 });
+    KOT = import_mongoose14.default.model("KOT", kotSchema);
+    KOT_default = KOT;
+  }
+});
+
 // models/MenuItem.js
 var MenuItem_exports = {};
 __export(MenuItem_exports, {
@@ -126493,6 +126734,393 @@ var init_Table = __esm({
   }
 });
 
+// models/Expense.js
+var Expense_exports = {};
+__export(Expense_exports, {
+  default: () => Expense_default
+});
+var import_mongoose19, expensePaymentSchema, expenseSchema, Expense, Expense_default;
+var init_Expense = __esm({
+  "models/Expense.js"() {
+    import_mongoose19 = __toESM(require_mongoose2(), 1);
+    expensePaymentSchema = new import_mongoose19.default.Schema({
+      amount: {
+        type: Number,
+        required: true,
+        min: 0
+      },
+      paidDate: {
+        type: Date,
+        default: Date.now,
+        required: true
+      },
+      paymentMethod: {
+        type: String,
+        enum: ["Cash", "Bank Transfer", "UPI", "Card", "Cheque", "Other"],
+        default: "Cash",
+        required: true
+      },
+      reference: {
+        type: String,
+        default: ""
+      },
+      notes: {
+        type: String,
+        default: ""
+      },
+      recordedBy: {
+        type: import_mongoose19.default.Schema.Types.ObjectId,
+        ref: "User"
+      }
+    }, { _id: true, timestamps: true });
+    expenseSchema = new import_mongoose19.default.Schema({
+      category: {
+        type: String,
+        required: true,
+        enum: [
+          "Rent",
+          "Electricity",
+          "Water",
+          "Internet",
+          "Material purchases",
+          "Staff salary",
+          "Equipment maintenance",
+          "Delivery and transport",
+          "Kitchen Supplies",
+          "Utility Bill",
+          "Maintenance",
+          "Staff Welfare",
+          "Marketing",
+          "Other operating expenses",
+          "Others"
+        ],
+        index: true
+      },
+      title: {
+        type: String,
+        default: "",
+        trim: true
+      },
+      amount: {
+        type: Number,
+        required: true,
+        min: 0
+      },
+      description: {
+        type: String,
+        default: "",
+        trim: true
+      },
+      date: {
+        type: Date,
+        required: true,
+        default: Date.now,
+        index: true
+      },
+      dueDate: {
+        type: Date
+      },
+      billingPeriod: {
+        type: String
+        // e.g., "October 2026"
+      },
+      paymentStatus: {
+        type: String,
+        enum: ["Pending", "Partially Paid", "Paid", "Overdue"],
+        default: "Paid",
+        // Default Paid for backward compatibility with existing recorded expenses
+        index: true
+      },
+      paidAmount: {
+        type: Number,
+        default: function() {
+          return this.paymentStatus === "Paid" ? this.amount : 0;
+        }
+      },
+      balanceDue: {
+        type: Number,
+        default: 0
+      },
+      paymentMethod: {
+        type: String,
+        enum: ["Cash", "Bank Transfer", "UPI", "Card", "Cheque", "Other"],
+        default: "Cash"
+      },
+      paymentDate: {
+        type: Date
+      },
+      payments: [expensePaymentSchema],
+      isRecurring: {
+        type: Boolean,
+        default: false
+      },
+      recurringFrequency: {
+        type: String,
+        enum: ["Monthly", "Quarterly", "Yearly"]
+      },
+      recurringKey: {
+        type: String,
+        // format: "category_branchId_YYYY-MM" to prevent duplicate recurring bills
+        sparse: true
+      },
+      receiptUrl: {
+        type: String,
+        default: ""
+      },
+      notes: {
+        type: String,
+        default: ""
+      },
+      source: {
+        type: String,
+        enum: ["Manual", "Material Purchase", "Payroll", "Recurring"],
+        default: "Manual"
+      },
+      sourceId: {
+        type: import_mongoose19.default.Schema.Types.ObjectId
+        // Link to MaterialPurchase or Payroll to prevent double-counting
+      },
+      staff: {
+        type: String,
+        required: true,
+        default: "Staff"
+      },
+      restaurantId: {
+        type: import_mongoose19.default.Schema.Types.ObjectId,
+        ref: "Restaurant",
+        required: true,
+        index: true
+      },
+      branchId: {
+        type: import_mongoose19.default.Schema.Types.ObjectId,
+        ref: "Branch",
+        index: true
+      },
+      createdBy: {
+        type: import_mongoose19.default.Schema.Types.ObjectId,
+        ref: "User"
+      }
+    }, { timestamps: true });
+    expenseSchema.pre("save", function(next) {
+      if (!this.title && this.description) {
+        this.title = this.description;
+      }
+      if (!this.description && this.title) {
+        this.description = this.title;
+      }
+      next();
+    });
+    expenseSchema.index({ restaurantId: 1, date: -1 });
+    expenseSchema.index({ restaurantId: 1, category: 1, date: -1 });
+    Expense = import_mongoose19.default.model("Expense", expenseSchema);
+    Expense_default = Expense;
+  }
+});
+
+// models/Payroll.js
+var Payroll_exports = {};
+__export(Payroll_exports, {
+  default: () => Payroll_default
+});
+var import_mongoose22, payrollPaymentSchema, payrollSchema, Payroll, Payroll_default;
+var init_Payroll = __esm({
+  "models/Payroll.js"() {
+    import_mongoose22 = __toESM(require_mongoose2(), 1);
+    payrollPaymentSchema = new import_mongoose22.default.Schema({
+      amount: {
+        type: Number,
+        required: true,
+        min: 0
+      },
+      paymentDate: {
+        type: Date,
+        default: Date.now,
+        required: true
+      },
+      paymentMethod: {
+        type: String,
+        enum: ["Cash", "Bank Transfer", "UPI", "Cheque"],
+        default: "Bank Transfer",
+        required: true
+      },
+      reference: {
+        type: String,
+        default: ""
+      },
+      notes: {
+        type: String,
+        default: ""
+      },
+      paidBy: {
+        type: import_mongoose22.default.Schema.Types.ObjectId,
+        ref: "User"
+      }
+    }, { _id: true, timestamps: true });
+    payrollSchema = new import_mongoose22.default.Schema({
+      restaurantId: {
+        type: import_mongoose22.default.Schema.Types.ObjectId,
+        ref: "Restaurant",
+        required: true,
+        index: true
+      },
+      branchId: {
+        type: import_mongoose22.default.Schema.Types.ObjectId,
+        ref: "Branch",
+        index: true
+      },
+      employee: {
+        type: import_mongoose22.default.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+        index: true
+      },
+      month: {
+        type: Number,
+        // 1 to 12
+        required: true
+      },
+      year: {
+        type: Number,
+        // e.g., 2026
+        required: true
+      },
+      periodString: {
+        type: String,
+        // e.g., "2026-10"
+        required: true
+      },
+      payPeriod: {
+        startDate: { type: Date, required: true },
+        endDate: { type: Date, required: true }
+      },
+      salaryFrequency: {
+        type: String,
+        enum: ["Monthly", "Daily", "Hourly"],
+        default: "Monthly"
+      },
+      basicSalary: {
+        type: Number,
+        required: true,
+        default: 0
+      },
+      attendanceSummary: {
+        presentDays: { type: Number, default: 0 },
+        absentDays: { type: Number, default: 0 },
+        leaveDays: { type: Number, default: 0 },
+        paidLeaveDays: { type: Number, default: 0 },
+        unpaidLeaveDays: { type: Number, default: 0 },
+        lopDays: { type: Number, default: 0 },
+        halfDays: { type: Number, default: 0 },
+        holidays: { type: Number, default: 0 },
+        overtimeHours: { type: Number, default: 0 },
+        totalWorkingDays: { type: Number, default: 26 }
+      },
+      calculations: {
+        earnedBasic: { type: Number, default: 0 },
+        lopDeduction: { type: Number, default: 0 },
+        overtimePay: { type: Number, default: 0 },
+        bonuses: { type: Number, default: 0 },
+        allowances: { type: Number, default: 0 },
+        grossSalary: { type: Number, default: 0 },
+        deductions: { type: Number, default: 0 },
+        advances: { type: Number, default: 0 },
+        netSalaryPayable: { type: Number, default: 0 }
+      },
+      paidAmount: {
+        type: Number,
+        default: 0
+      },
+      balanceDue: {
+        type: Number,
+        default: 0
+      },
+      paymentStatus: {
+        type: String,
+        enum: ["Pending", "Partially Paid", "Paid"],
+        default: "Pending"
+      },
+      payments: [payrollPaymentSchema],
+      status: {
+        type: String,
+        enum: ["Draft", "Generated", "Approved", "Finalized", "Processed"],
+        default: "Generated"
+      },
+      approvedBy: {
+        type: import_mongoose22.default.Schema.Types.ObjectId,
+        ref: "User"
+      },
+      approvedAt: {
+        type: Date
+      },
+      notes: {
+        type: String,
+        default: ""
+      },
+      auditHistory: [
+        {
+          action: { type: String, required: true },
+          performedBy: { type: import_mongoose22.default.Schema.Types.ObjectId, ref: "User" },
+          performedByName: { type: String, default: "" },
+          timestamp: { type: Date, default: Date.now },
+          notes: { type: String, default: "" },
+          changes: { type: import_mongoose22.default.Schema.Types.Mixed }
+        }
+      ]
+    }, { timestamps: true });
+    payrollSchema.index({ restaurantId: 1, employee: 1, month: 1, year: 1 }, { unique: true });
+    Payroll = import_mongoose22.default.model("Payroll", payrollSchema);
+    Payroll_default = Payroll;
+  }
+});
+
+// models/Payment.js
+var Payment_exports = {};
+__export(Payment_exports, {
+  default: () => Payment_default
+});
+var import_mongoose23, paymentSchema, Payment, Payment_default;
+var init_Payment = __esm({
+  "models/Payment.js"() {
+    import_mongoose23 = __toESM(require_mongoose2(), 1);
+    paymentSchema = new import_mongoose23.default.Schema({
+      order: {
+        type: import_mongoose23.default.Schema.Types.ObjectId,
+        ref: "Order",
+        required: true
+      },
+      branch: {
+        type: import_mongoose23.default.Schema.Types.ObjectId,
+        ref: "Branch",
+        required: true
+      },
+      amount: {
+        type: Number,
+        required: true
+      },
+      paymentMethod: {
+        type: String,
+        enum: ["Cash", "Card", "UPI", "Online"],
+        required: true
+      },
+      transactionId: {
+        type: String
+        // from payment gateway
+      },
+      status: {
+        type: String,
+        enum: ["Pending", "Completed", "Failed", "Refunded"],
+        default: "Completed"
+      },
+      cashier: {
+        type: import_mongoose23.default.Schema.Types.ObjectId,
+        ref: "User"
+      }
+    }, { timestamps: true });
+    Payment = import_mongoose23.default.model("Payment", paymentSchema);
+    Payment_default = Payment;
+  }
+});
+
 // models/Category.js
 var Category_exports = {};
 __export(Category_exports, {
@@ -126525,6 +127153,401 @@ var init_Category = __esm({
     }, { timestamps: true });
     Category = import_mongoose26.default.model("Category", categorySchema);
     Category_default = Category;
+  }
+});
+
+// models/Attendance.js
+var Attendance_exports = {};
+__export(Attendance_exports, {
+  default: () => Attendance_default
+});
+var import_mongoose27, attendanceSchema, Attendance, Attendance_default;
+var init_Attendance = __esm({
+  "models/Attendance.js"() {
+    import_mongoose27 = __toESM(require_mongoose2(), 1);
+    attendanceSchema = new import_mongoose27.default.Schema({
+      restaurantId: {
+        type: import_mongoose27.default.Schema.Types.ObjectId,
+        ref: "Restaurant",
+        required: true,
+        index: true
+      },
+      branchId: {
+        type: import_mongoose27.default.Schema.Types.ObjectId,
+        ref: "Branch",
+        required: true,
+        index: true
+      },
+      employee: {
+        type: import_mongoose27.default.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+        index: true
+      },
+      date: {
+        type: Date,
+        required: true
+      },
+      dateString: {
+        type: String,
+        // YYYY-MM-DD format for timezone-safe grouping and uniqueness
+        required: true
+      },
+      status: {
+        type: String,
+        enum: ["Present", "Absent", "Leave", "Half-day", "Holiday"],
+        required: true,
+        default: "Present"
+      },
+      checkIn: {
+        type: Date
+      },
+      checkOut: {
+        type: Date
+      },
+      lateMinutes: {
+        type: Number,
+        default: 0
+      },
+      overtimeHours: {
+        type: Number,
+        default: 0
+      },
+      workingHours: {
+        type: Number,
+        default: 0
+      },
+      notes: {
+        type: String,
+        default: ""
+      },
+      leaveId: {
+        type: import_mongoose27.default.Schema.Types.ObjectId,
+        ref: "Leave"
+      },
+      leaveType: {
+        type: String,
+        default: ""
+      },
+      isPaidLeave: {
+        type: Boolean,
+        default: true
+      },
+      isLOP: {
+        type: Boolean,
+        default: false
+      },
+      isCorrected: {
+        type: Boolean,
+        default: false
+      },
+      correctionHistory: [
+        {
+          previousStatus: String,
+          newStatus: String,
+          previousCheckIn: Date,
+          newCheckIn: Date,
+          previousCheckOut: Date,
+          newCheckOut: Date,
+          correctedBy: {
+            type: import_mongoose27.default.Schema.Types.ObjectId,
+            ref: "User"
+          },
+          reason: {
+            type: String,
+            required: true
+          },
+          correctedAt: {
+            type: Date,
+            default: Date.now
+          }
+        }
+      ],
+      createdBy: {
+        type: import_mongoose27.default.Schema.Types.ObjectId,
+        ref: "User"
+      }
+    }, { timestamps: true });
+    attendanceSchema.index({ restaurantId: 1, employee: 1, dateString: 1 }, { unique: true });
+    Attendance = import_mongoose27.default.model("Attendance", attendanceSchema);
+    Attendance_default = Attendance;
+  }
+});
+
+// models/Leave.js
+var Leave_exports = {};
+__export(Leave_exports, {
+  default: () => Leave_default
+});
+var import_mongoose28, leaveSchema, Leave, Leave_default;
+var init_Leave = __esm({
+  "models/Leave.js"() {
+    import_mongoose28 = __toESM(require_mongoose2(), 1);
+    leaveSchema = new import_mongoose28.default.Schema({
+      restaurantId: {
+        type: import_mongoose28.default.Schema.Types.ObjectId,
+        ref: "Restaurant",
+        required: true,
+        index: true
+      },
+      branchId: {
+        type: import_mongoose28.default.Schema.Types.ObjectId,
+        ref: "Branch",
+        required: true,
+        index: true
+      },
+      employee: {
+        type: import_mongoose28.default.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+        index: true
+      },
+      leaveType: {
+        type: String,
+        enum: ["Paid Leave", "Casual Leave", "Sick Leave", "Unpaid Leave", "Emergency Leave"],
+        required: true,
+        default: "Casual Leave"
+      },
+      isPaid: {
+        type: Boolean,
+        default: true
+      },
+      startDate: {
+        type: Date,
+        required: true
+      },
+      endDate: {
+        type: Date,
+        required: true
+      },
+      daysCount: {
+        type: Number,
+        required: true,
+        min: 0.5
+      },
+      reason: {
+        type: String,
+        required: [true, "Please provide a reason for the leave request"],
+        trim: true
+      },
+      status: {
+        type: String,
+        enum: ["Pending", "Approved", "Rejected", "Cancelled"],
+        default: "Pending",
+        index: true
+      },
+      appliedAt: {
+        type: Date,
+        default: Date.now
+      },
+      approvedBy: {
+        type: import_mongoose28.default.Schema.Types.ObjectId,
+        ref: "User"
+      },
+      approvalDate: {
+        type: Date
+      },
+      managerRemarks: {
+        type: String,
+        default: "",
+        trim: true
+      },
+      cancelledAt: {
+        type: Date
+      },
+      cancellationReason: {
+        type: String,
+        default: ""
+      }
+    }, { timestamps: true });
+    leaveSchema.index({ restaurantId: 1, employee: 1, status: 1 });
+    leaveSchema.index({ restaurantId: 1, branchId: 1, status: 1 });
+    leaveSchema.index({ restaurantId: 1, startDate: 1, endDate: 1 });
+    Leave = import_mongoose28.default.model("Leave", leaveSchema);
+    Leave_default = Leave;
+  }
+});
+
+// models/Inventory.js
+var Inventory_exports = {};
+__export(Inventory_exports, {
+  default: () => Inventory_default
+});
+var import_mongoose29, inventorySchema, Inventory, Inventory_default;
+var init_Inventory = __esm({
+  "models/Inventory.js"() {
+    import_mongoose29 = __toESM(require_mongoose2(), 1);
+    inventorySchema = new import_mongoose29.default.Schema({
+      restaurantId: {
+        type: import_mongoose29.default.Schema.Types.ObjectId,
+        ref: "Restaurant",
+        index: true
+      },
+      branch: {
+        type: import_mongoose29.default.Schema.Types.ObjectId,
+        ref: "Branch",
+        required: true,
+        index: true
+      },
+      supplier: {
+        type: import_mongoose29.default.Schema.Types.ObjectId,
+        ref: "Supplier"
+      },
+      itemName: {
+        type: String,
+        required: true,
+        trim: true
+      },
+      category: {
+        type: String,
+        // e.g., 'Vegetables', 'Meat', 'Dairy', 'Packaging', 'Spices', 'Beverages'
+        default: "General"
+      },
+      quantity: {
+        type: Number,
+        required: true,
+        default: 0,
+        min: 0
+      },
+      unit: {
+        type: String,
+        // e.g., 'kg', 'g', 'ltr', 'ml', 'pcs', 'box', 'packet'
+        required: true
+      },
+      minStockLevel: {
+        type: Number,
+        default: 10
+      },
+      reorderQuantity: {
+        type: Number,
+        default: 20
+      },
+      pricePerUnit: {
+        type: Number,
+        default: 0
+      },
+      lastPurchasePrice: {
+        type: Number,
+        default: 0
+      },
+      lastPurchaseDate: {
+        type: Date
+      },
+      costingMethod: {
+        type: String,
+        enum: ["Weighted Average", "Latest Price"],
+        default: "Weighted Average"
+      },
+      description: {
+        type: String,
+        default: ""
+      }
+    }, { timestamps: true });
+    inventorySchema.virtual("valuation").get(function() {
+      return (this.quantity || 0) * (this.pricePerUnit || 0);
+    });
+    inventorySchema.set("toJSON", { virtuals: true });
+    inventorySchema.set("toObject", { virtuals: true });
+    Inventory = import_mongoose29.default.model("Inventory", inventorySchema);
+    Inventory_default = Inventory;
+  }
+});
+
+// models/ServiceRequest.js
+var ServiceRequest_exports = {};
+__export(ServiceRequest_exports, {
+  default: () => ServiceRequest_default
+});
+var import_mongoose30, serviceRequestSchema, ServiceRequest, ServiceRequest_default;
+var init_ServiceRequest = __esm({
+  "models/ServiceRequest.js"() {
+    import_mongoose30 = __toESM(require_mongoose2(), 1);
+    serviceRequestSchema = new import_mongoose30.default.Schema({
+      restaurantId: {
+        type: import_mongoose30.default.Schema.Types.ObjectId,
+        ref: "Restaurant",
+        required: true
+      },
+      branchId: {
+        type: import_mongoose30.default.Schema.Types.ObjectId,
+        ref: "Branch",
+        required: true
+      },
+      tableNumber: {
+        type: Number,
+        required: true
+      },
+      requestType: {
+        type: String,
+        enum: ["Call Waiter", "Request Water", "Request Cutlery", "Request Bill"],
+        required: true
+      },
+      status: {
+        type: String,
+        enum: ["Pending", "Completed"],
+        default: "Pending"
+      }
+    }, { timestamps: true });
+    ServiceRequest = import_mongoose30.default.model("ServiceRequest", serviceRequestSchema);
+    ServiceRequest_default = ServiceRequest;
+  }
+});
+
+// models/Reservation.js
+var Reservation_exports = {};
+__export(Reservation_exports, {
+  default: () => Reservation_default
+});
+var import_mongoose31, reservationSchema, Reservation, Reservation_default;
+var init_Reservation = __esm({
+  "models/Reservation.js"() {
+    import_mongoose31 = __toESM(require_mongoose2(), 1);
+    reservationSchema = new import_mongoose31.default.Schema({
+      branch: {
+        type: import_mongoose31.default.Schema.Types.ObjectId,
+        ref: "Branch",
+        required: true
+      },
+      customer: {
+        type: import_mongoose31.default.Schema.Types.ObjectId,
+        ref: "User"
+      },
+      guestName: {
+        type: String,
+        required: true
+      },
+      guestPhone: {
+        type: String,
+        required: true
+      },
+      date: {
+        type: Date,
+        required: true
+      },
+      timeSlot: {
+        type: String,
+        // e.g., '19:00 - 21:00'
+        required: true
+      },
+      guestCount: {
+        type: Number,
+        required: true
+      },
+      table: {
+        type: import_mongoose31.default.Schema.Types.ObjectId,
+        ref: "Table"
+      },
+      status: {
+        type: String,
+        enum: ["Pending", "Confirmed", "Cancelled", "Completed"],
+        default: "Pending"
+      },
+      specialRequests: {
+        type: String
+      }
+    }, { timestamps: true });
+    Reservation = import_mongoose31.default.model("Reservation", reservationSchema);
+    Reservation_default = Reservation;
   }
 });
 
@@ -126860,7 +127883,7 @@ var notFound = (req, res, next) => {
 var errorHandler = (err, req, res, next) => {
   let statusCode = res.statusCode === 200 ? 500 : res.statusCode;
   let message = err.message;
-  const origin = req.headers.origin || "https://f-hms.vercel.app";
+  const origin = req.headers.origin || process.env.FRONTEND_URL || "*";
   res.setHeader("Access-Control-Allow-Origin", origin);
   res.setHeader("Access-Control-Allow-Credentials", "true");
   if (err.name === "CastError" && err.kind === "ObjectId") {
@@ -127064,12 +128087,15 @@ var registerUser = async (req, res) => {
           resolvedCity = parts[0];
         }
       }
+      const rawDietary = req.body.dietaryType || req.body.cuisineType || "Veg & Non-Veg";
       createdRestaurant = await Restaurant_default.create({
         name: restaurantName,
         ownerId: user._id,
         phone: phoneNumber || "",
         address: rawAddress,
         city: resolvedCity,
+        dietaryType: rawDietary,
+        cuisineType: req.body.cuisineType || rawDietary,
         subscription: subData,
         approvalStatus: isPaidUpfront ? "Approved" : "Pending",
         verificationStatus: hasVerificationFiles ? "Under Review" : "Pending",
@@ -128364,63 +129390,7 @@ var import_mongoose13 = __toESM(require_mongoose2(), 1);
 init_Restaurant();
 init_Branch();
 init_Notification();
-
-// models/DeliveryPartner.js
-var import_mongoose12 = __toESM(require_mongoose2(), 1);
-var deliveryPartnerSchema = new import_mongoose12.default.Schema({
-  userId: {
-    type: import_mongoose12.default.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-    unique: true
-  },
-  restaurantId: {
-    type: import_mongoose12.default.Schema.Types.ObjectId,
-    ref: "Restaurant",
-    required: true
-  },
-  status: {
-    type: String,
-    enum: ["Online", "Offline", "Busy", "On Delivery"],
-    default: "Offline"
-  },
-  verificationStatus: {
-    type: String,
-    enum: ["Pending", "Approved", "Rejected", "Suspended"],
-    default: "Pending"
-  },
-  vehicleDetails: {
-    type: { type: String, default: "Bike" },
-    // Bike, Scooter, Car, etc.
-    model: { type: String, default: "" },
-    rcNumber: { type: String, default: "" },
-    licenseNumber: { type: String, default: "" }
-  },
-  documents: {
-    drivingLicense: { type: String, default: "" },
-    aadhaarProof: { type: String, default: "" },
-    vehicleRc: { type: String, default: "" },
-    vehicleInsurance: { type: String, default: "" },
-    profilePhoto: { type: String, default: "" }
-  },
-  walletBalance: {
-    type: Number,
-    default: 0
-  },
-  earnings: {
-    type: Number,
-    default: 0
-  },
-  currentLocation: {
-    latitude: { type: Number, default: 12.9716 },
-    // Defaults to center coordinates
-    longitude: { type: Number, default: 77.5946 }
-  }
-}, { timestamps: true });
-var DeliveryPartner = import_mongoose12.default.model("DeliveryPartner", deliveryPartnerSchema);
-var DeliveryPartner_default = DeliveryPartner;
-
-// controllers/restaurantController.js
+init_DeliveryPartner();
 init_Plan();
 init_User();
 init_RestaurantVerification();
@@ -128481,7 +129451,7 @@ var getRestaurants = async (req, res) => {
         { "subscription.status": { $nin: ["Cancelled", "Frozen", "Expired", "Suspended", "Inactive"] } }
       ]
     };
-    let restaurants = await Restaurant_default.find(filter).select("name badge rating deliveryTime cuisineType cuisine address city state country deliverySettings subscription approvalStatus isActive isDeleted status ownerId createdAt").populate("ownerId", "name email").sort({ createdAt: -1 }).lean();
+    let restaurants = await Restaurant_default.find(filter).select("name badge rating deliveryTime cuisineType dietaryType cuisine address city state country deliverySettings subscription approvalStatus verificationStatus isActive isDeleted status ownerId logo bannerImage showcaseImages createdAt").populate("ownerId", "name email").sort({ createdAt: -1 }).lean();
     if (restaurants.length === 0) {
       return res.json([]);
     }
@@ -128489,7 +129459,7 @@ var getRestaurants = async (req, res) => {
     const [partnerRestIds, allBranches, allVerifs] = await Promise.all([
       DeliveryPartner_default.distinct("restaurantId", { restaurantId: { $in: restIds } }),
       Branch_default.find({ restaurantId: { $in: restIds }, isActive: true }).select("restaurantId name location").lean(),
-      RestaurantVerification_default.find({ restaurantId: { $in: restIds } }).select("restaurantId documents.addressProof.addressText").lean().catch(() => [])
+      RestaurantVerification_default.find({ restaurantId: { $in: restIds } }).select("restaurantId documents.addressProof.addressText documents.images documents.logo").lean().catch(() => [])
     ]);
     const partnerSet = new Set(partnerRestIds.map((id) => String(id)));
     const branchMap = /* @__PURE__ */ new Map();
@@ -128510,6 +129480,16 @@ var getRestaurants = async (req, res) => {
         rest.name = `${ownerName}'s Restaurant`;
         nameFixes.push(Restaurant_default.findByIdAndUpdate(rest._id, { $set: { name: rest.name } }).catch(() => {
         }));
+      } else {
+        rest.name = rest.name.trim();
+      }
+      if (!rest.city && rest.address) {
+        const parts = rest.address.split(",").map((s) => s.trim()).filter(Boolean);
+        if (parts.length > 1) {
+          rest.city = parts[parts.length - 1];
+        } else if (parts.length === 1) {
+          rest.city = parts[0];
+        }
       }
       if (partnerSet.has(restIdStr)) {
         if (!rest.deliverySettings) {
@@ -128536,10 +129516,16 @@ var getRestaurants = async (req, res) => {
       const verif = verifMap.get(restIdStr);
       const verifAddress = verif?.documents?.addressProof?.addressText || "";
       const thumbUrl = `/api/restaurants/${restIdStr}/thumbnail`;
-      rest.image = thumbUrl;
-      rest.bannerImage = thumbUrl;
-      rest.logo = `${thumbUrl}?kind=logo`;
-      rest.showcaseImages = [thumbUrl];
+      let resolvedShowcase = Array.isArray(rest.showcaseImages) && rest.showcaseImages.length > 0 ? rest.showcaseImages.filter((img) => typeof img === "string" && img.trim() && !img.includes("/thumbnail")) : [];
+      if (resolvedShowcase.length === 0 && Array.isArray(verif?.documents?.images) && verif.documents.images.length > 0) {
+        resolvedShowcase = verif.documents.images.map((img) => img?.filePath).filter((p) => typeof p === "string" && p.trim() && !p.includes(".pdf") && !p.includes("/thumbnail"));
+      }
+      let resolvedBanner = typeof rest.bannerImage === "string" && rest.bannerImage.trim() && !rest.bannerImage.includes("/thumbnail") ? rest.bannerImage : resolvedShowcase.length > 0 ? resolvedShowcase[0] : thumbUrl;
+      let resolvedLogo = typeof rest.logo === "string" && rest.logo.trim() && !rest.logo.includes(".pdf") && !rest.logo.includes("/thumbnail") ? rest.logo : typeof verif?.documents?.logo?.filePath === "string" && !verif.documents.logo.filePath.includes(".pdf") ? verif.documents.logo.filePath : `${thumbUrl}?kind=logo`;
+      rest.image = resolvedBanner;
+      rest.bannerImage = resolvedBanner;
+      rest.logo = resolvedLogo;
+      rest.showcaseImages = resolvedShowcase.length > 0 ? resolvedShowcase : [resolvedBanner];
       const branchAddress = primaryBranch?.location?.address && primaryBranch.location.address !== "Primary Location" ? primaryBranch.location.address : "";
       const combinedAddr = rest.address || branchAddress || verifAddress || primaryBranch?.location?.address || "";
       rest.address = combinedAddr;
@@ -129063,7 +130049,7 @@ var getRestaurantPublicConfig = async (req, res) => {
     if (restaurant.isDeleted || restaurant.status === "Deleted") {
       return res.status(404).json({ message: "Restaurant not found" });
     }
-    if (restaurant.status === "Inactive" || restaurant.status === "Suspended" || !restaurant.isActive || restaurant.approvalStatus !== "Approved" && restaurant.approvalStatus !== "Pending") {
+    if (restaurant.status === "Suspended" || restaurant.isActive === false || restaurant.approvalStatus === "Rejected") {
       return res.status(403).json({ message: "This restaurant is currently unavailable or inactive." });
     }
     const config = restaurant.restaurantConfig || {};
@@ -129316,8 +130302,7 @@ var getRestaurantById = async (req, res) => {
       if (restaurant.isDeleted || restaurant.status === "Deleted") {
         return res.status(404).json({ message: "Restaurant not found" });
       }
-      const isSubscribed = restaurant.subscription?.status && !["Cancelled", "Frozen", "Expired", "Suspended", "Inactive"].includes(restaurant.subscription.status) || restaurant.subscription?.trialActive;
-      if (restaurant.status === "Inactive" || restaurant.status === "Suspended" || !restaurant.isActive || !isSubscribed && restaurant.approvalStatus !== "Approved") {
+      if (restaurant.status === "Suspended" || restaurant.isActive === false || restaurant.approvalStatus === "Rejected") {
         return res.status(403).json({ message: "This restaurant is currently unavailable or inactive." });
       }
     }
@@ -129973,170 +130958,14 @@ var import_express4 = __toESM(require_express2(), 1);
 
 // controllers/orderController.js
 init_Order();
-
-// models/KOT.js
-var import_mongoose14 = __toESM(require_mongoose2(), 1);
-var kotItemSchema = new import_mongoose14.default.Schema({
-  name: {
-    type: String,
-    required: true
-  },
-  qty: {
-    type: Number,
-    required: true,
-    min: 1
-  },
-  price: {
-    type: Number,
-    default: 0
-  },
-  notes: {
-    type: String,
-    default: ""
-  },
-  product: {
-    type: import_mongoose14.default.Schema.Types.ObjectId,
-    ref: "MenuItem"
-  },
-  kitchenStation: {
-    type: String,
-    default: "Main Kitchen"
-  },
-  status: {
-    type: String,
-    enum: ["Pending", "Preparing", "Ready", "Served", "Cancelled"],
-    default: "Pending"
-  }
-}, { _id: true });
-var kotSchema = new import_mongoose14.default.Schema({
-  kotNumber: {
-    type: String,
-    required: true,
-    index: true
-  },
-  kotSequence: {
-    type: Number,
-    required: true,
-    index: true
-  },
-  orderId: {
-    type: import_mongoose14.default.Schema.Types.ObjectId,
-    ref: "Order",
-    required: true,
-    index: true
-  },
-  orderNumber: {
-    type: String,
-    default: ""
-  },
-  restaurantId: {
-    type: import_mongoose14.default.Schema.Types.ObjectId,
-    ref: "Restaurant",
-    required: true,
-    index: true
-  },
-  branchId: {
-    type: import_mongoose14.default.Schema.Types.ObjectId,
-    ref: "Branch",
-    required: true,
-    index: true
-  },
-  tableNumber: {
-    type: String,
-    default: ""
-  },
-  orderType: {
-    type: String,
-    enum: ["Dine In", "Self-Pickup", "Delivery", "Takeaway"],
-    default: "Dine In"
-  },
-  serviceType: {
-    type: String,
-    default: "Waiter Table Service"
-  },
-  customerName: {
-    type: String,
-    default: ""
-  },
-  customerPhone: {
-    type: String,
-    default: ""
-  },
-  kitchenStation: {
-    type: String,
-    required: true,
-    default: "Main Kitchen",
-    index: true
-  },
-  items: [kotItemSchema],
-  notes: {
-    type: String,
-    default: ""
-  },
-  isAddon: {
-    type: Boolean,
-    default: false
-  },
-  status: {
-    type: String,
-    enum: ["Pending", "Preparing", "Ready", "Served", "Cancelled"],
-    default: "Pending",
-    index: true
-  },
-  statusHistory: [
-    {
-      status: { type: String, required: true },
-      timestamp: { type: Date, default: Date.now },
-      updatedBy: { type: import_mongoose14.default.Schema.Types.ObjectId, ref: "User" }
-    }
-  ],
-  prepStartTime: {
-    type: Date,
-    default: null
-  },
-  prepReadyTime: {
-    type: Date,
-    default: null
-  },
-  servedTime: {
-    type: Date,
-    default: null
-  },
-  isPrinted: {
-    type: Boolean,
-    default: false
-  },
-  printedAt: {
-    type: Date,
-    default: null
-  },
-  printCount: {
-    type: Number,
-    default: 0
-  },
-  serverName: {
-    type: String,
-    default: "System / Customer"
-  },
-  createdBy: {
-    type: import_mongoose14.default.Schema.Types.ObjectId,
-    ref: "User",
-    default: null
-  }
-}, { timestamps: true });
-kotSchema.index({ restaurantId: 1, status: 1, createdAt: -1 });
-kotSchema.index({ restaurantId: 1, branchId: 1, status: 1 });
-kotSchema.index({ orderId: 1, createdAt: -1 });
-var KOT = import_mongoose14.default.model("KOT", kotSchema);
-var KOT_default = KOT;
-
-// controllers/orderController.js
+init_KOT();
 init_Restaurant();
 init_Branch();
 init_User();
 var import_mongoose18 = __toESM(require_mongoose2(), 1);
 
 // utils/kotHelper.js
+init_KOT();
 init_MenuItem();
 init_Order();
 var determineKitchenStation = (item, menuItem = null) => {
@@ -131304,180 +132133,7 @@ var import_express5 = __toESM(require_express2(), 1);
 var import_mongoose24 = __toESM(require_mongoose2(), 1);
 init_Order();
 init_Branch();
-
-// models/Expense.js
-var import_mongoose19 = __toESM(require_mongoose2(), 1);
-var expensePaymentSchema = new import_mongoose19.default.Schema({
-  amount: {
-    type: Number,
-    required: true,
-    min: 0
-  },
-  paidDate: {
-    type: Date,
-    default: Date.now,
-    required: true
-  },
-  paymentMethod: {
-    type: String,
-    enum: ["Cash", "Bank Transfer", "UPI", "Card", "Cheque", "Other"],
-    default: "Cash",
-    required: true
-  },
-  reference: {
-    type: String,
-    default: ""
-  },
-  notes: {
-    type: String,
-    default: ""
-  },
-  recordedBy: {
-    type: import_mongoose19.default.Schema.Types.ObjectId,
-    ref: "User"
-  }
-}, { _id: true, timestamps: true });
-var expenseSchema = new import_mongoose19.default.Schema({
-  category: {
-    type: String,
-    required: true,
-    enum: [
-      "Rent",
-      "Electricity",
-      "Water",
-      "Internet",
-      "Material purchases",
-      "Staff salary",
-      "Equipment maintenance",
-      "Delivery and transport",
-      "Kitchen Supplies",
-      "Utility Bill",
-      "Maintenance",
-      "Staff Welfare",
-      "Marketing",
-      "Other operating expenses",
-      "Others"
-    ],
-    index: true
-  },
-  title: {
-    type: String,
-    default: "",
-    trim: true
-  },
-  amount: {
-    type: Number,
-    required: true,
-    min: 0
-  },
-  description: {
-    type: String,
-    default: "",
-    trim: true
-  },
-  date: {
-    type: Date,
-    required: true,
-    default: Date.now,
-    index: true
-  },
-  dueDate: {
-    type: Date
-  },
-  billingPeriod: {
-    type: String
-    // e.g., "October 2026"
-  },
-  paymentStatus: {
-    type: String,
-    enum: ["Pending", "Partially Paid", "Paid", "Overdue"],
-    default: "Paid",
-    // Default Paid for backward compatibility with existing recorded expenses
-    index: true
-  },
-  paidAmount: {
-    type: Number,
-    default: function() {
-      return this.paymentStatus === "Paid" ? this.amount : 0;
-    }
-  },
-  balanceDue: {
-    type: Number,
-    default: 0
-  },
-  paymentMethod: {
-    type: String,
-    enum: ["Cash", "Bank Transfer", "UPI", "Card", "Cheque", "Other"],
-    default: "Cash"
-  },
-  paymentDate: {
-    type: Date
-  },
-  payments: [expensePaymentSchema],
-  isRecurring: {
-    type: Boolean,
-    default: false
-  },
-  recurringFrequency: {
-    type: String,
-    enum: ["Monthly", "Quarterly", "Yearly"]
-  },
-  recurringKey: {
-    type: String,
-    // format: "category_branchId_YYYY-MM" to prevent duplicate recurring bills
-    sparse: true
-  },
-  receiptUrl: {
-    type: String,
-    default: ""
-  },
-  notes: {
-    type: String,
-    default: ""
-  },
-  source: {
-    type: String,
-    enum: ["Manual", "Material Purchase", "Payroll", "Recurring"],
-    default: "Manual"
-  },
-  sourceId: {
-    type: import_mongoose19.default.Schema.Types.ObjectId
-    // Link to MaterialPurchase or Payroll to prevent double-counting
-  },
-  staff: {
-    type: String,
-    required: true,
-    default: "Staff"
-  },
-  restaurantId: {
-    type: import_mongoose19.default.Schema.Types.ObjectId,
-    ref: "Restaurant",
-    required: true,
-    index: true
-  },
-  branchId: {
-    type: import_mongoose19.default.Schema.Types.ObjectId,
-    ref: "Branch",
-    index: true
-  },
-  createdBy: {
-    type: import_mongoose19.default.Schema.Types.ObjectId,
-    ref: "User"
-  }
-}, { timestamps: true });
-expenseSchema.pre("save", function(next) {
-  if (!this.title && this.description) {
-    this.title = this.description;
-  }
-  if (!this.description && this.title) {
-    this.description = this.title;
-  }
-  next();
-});
-expenseSchema.index({ restaurantId: 1, date: -1 });
-expenseSchema.index({ restaurantId: 1, category: 1, date: -1 });
-var Expense = import_mongoose19.default.model("Expense", expenseSchema);
-var Expense_default = Expense;
+init_Expense();
 
 // models/MaterialPurchase.js
 var import_mongoose20 = __toESM(require_mongoose2(), 1);
@@ -131711,192 +132367,9 @@ stockMovementSchema.index({ restaurantId: 1, inventoryItem: 1, date: -1 });
 var StockMovement = import_mongoose21.default.model("StockMovement", stockMovementSchema);
 var StockMovement_default = StockMovement;
 
-// models/Payroll.js
-var import_mongoose22 = __toESM(require_mongoose2(), 1);
-var payrollPaymentSchema = new import_mongoose22.default.Schema({
-  amount: {
-    type: Number,
-    required: true,
-    min: 0
-  },
-  paymentDate: {
-    type: Date,
-    default: Date.now,
-    required: true
-  },
-  paymentMethod: {
-    type: String,
-    enum: ["Cash", "Bank Transfer", "UPI", "Cheque"],
-    default: "Bank Transfer",
-    required: true
-  },
-  reference: {
-    type: String,
-    default: ""
-  },
-  notes: {
-    type: String,
-    default: ""
-  },
-  paidBy: {
-    type: import_mongoose22.default.Schema.Types.ObjectId,
-    ref: "User"
-  }
-}, { _id: true, timestamps: true });
-var payrollSchema = new import_mongoose22.default.Schema({
-  restaurantId: {
-    type: import_mongoose22.default.Schema.Types.ObjectId,
-    ref: "Restaurant",
-    required: true,
-    index: true
-  },
-  branchId: {
-    type: import_mongoose22.default.Schema.Types.ObjectId,
-    ref: "Branch",
-    index: true
-  },
-  employee: {
-    type: import_mongoose22.default.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-    index: true
-  },
-  month: {
-    type: Number,
-    // 1 to 12
-    required: true
-  },
-  year: {
-    type: Number,
-    // e.g., 2026
-    required: true
-  },
-  periodString: {
-    type: String,
-    // e.g., "2026-10"
-    required: true
-  },
-  payPeriod: {
-    startDate: { type: Date, required: true },
-    endDate: { type: Date, required: true }
-  },
-  salaryFrequency: {
-    type: String,
-    enum: ["Monthly", "Daily", "Hourly"],
-    default: "Monthly"
-  },
-  basicSalary: {
-    type: Number,
-    required: true,
-    default: 0
-  },
-  attendanceSummary: {
-    presentDays: { type: Number, default: 0 },
-    absentDays: { type: Number, default: 0 },
-    leaveDays: { type: Number, default: 0 },
-    paidLeaveDays: { type: Number, default: 0 },
-    unpaidLeaveDays: { type: Number, default: 0 },
-    lopDays: { type: Number, default: 0 },
-    halfDays: { type: Number, default: 0 },
-    holidays: { type: Number, default: 0 },
-    overtimeHours: { type: Number, default: 0 },
-    totalWorkingDays: { type: Number, default: 26 }
-  },
-  calculations: {
-    earnedBasic: { type: Number, default: 0 },
-    lopDeduction: { type: Number, default: 0 },
-    overtimePay: { type: Number, default: 0 },
-    bonuses: { type: Number, default: 0 },
-    allowances: { type: Number, default: 0 },
-    grossSalary: { type: Number, default: 0 },
-    deductions: { type: Number, default: 0 },
-    advances: { type: Number, default: 0 },
-    netSalaryPayable: { type: Number, default: 0 }
-  },
-  paidAmount: {
-    type: Number,
-    default: 0
-  },
-  balanceDue: {
-    type: Number,
-    default: 0
-  },
-  paymentStatus: {
-    type: String,
-    enum: ["Pending", "Partially Paid", "Paid"],
-    default: "Pending"
-  },
-  payments: [payrollPaymentSchema],
-  status: {
-    type: String,
-    enum: ["Draft", "Generated", "Approved", "Finalized", "Processed"],
-    default: "Generated"
-  },
-  approvedBy: {
-    type: import_mongoose22.default.Schema.Types.ObjectId,
-    ref: "User"
-  },
-  approvedAt: {
-    type: Date
-  },
-  notes: {
-    type: String,
-    default: ""
-  },
-  auditHistory: [
-    {
-      action: { type: String, required: true },
-      performedBy: { type: import_mongoose22.default.Schema.Types.ObjectId, ref: "User" },
-      performedByName: { type: String, default: "" },
-      timestamp: { type: Date, default: Date.now },
-      notes: { type: String, default: "" },
-      changes: { type: import_mongoose22.default.Schema.Types.Mixed }
-    }
-  ]
-}, { timestamps: true });
-payrollSchema.index({ restaurantId: 1, employee: 1, month: 1, year: 1 }, { unique: true });
-var Payroll = import_mongoose22.default.model("Payroll", payrollSchema);
-var Payroll_default = Payroll;
-
-// models/Payment.js
-var import_mongoose23 = __toESM(require_mongoose2(), 1);
-var paymentSchema = new import_mongoose23.default.Schema({
-  order: {
-    type: import_mongoose23.default.Schema.Types.ObjectId,
-    ref: "Order",
-    required: true
-  },
-  branch: {
-    type: import_mongoose23.default.Schema.Types.ObjectId,
-    ref: "Branch",
-    required: true
-  },
-  amount: {
-    type: Number,
-    required: true
-  },
-  paymentMethod: {
-    type: String,
-    enum: ["Cash", "Card", "UPI", "Online"],
-    required: true
-  },
-  transactionId: {
-    type: String
-    // from payment gateway
-  },
-  status: {
-    type: String,
-    enum: ["Pending", "Completed", "Failed", "Refunded"],
-    default: "Completed"
-  },
-  cashier: {
-    type: import_mongoose23.default.Schema.Types.ObjectId,
-    ref: "User"
-  }
-}, { timestamps: true });
-var Payment = import_mongoose23.default.model("Payment", paymentSchema);
-
 // controllers/analyticsController.js
+init_Payroll();
+init_Payment();
 init_Restaurant();
 var getUserRestaurantId = async (user, query = {}) => {
   let rId = user?.restaurantId || user?.restaurant;
@@ -132704,7 +133177,7 @@ var getMenuItems = async (req, res) => {
         ];
       }
     }
-    const items = await MenuItem_default.find(filter).populate("restaurantId", "name approvalStatus subscription isActive isDeleted status").lean();
+    const items = await MenuItem_default.find(filter).populate("restaurantId", "name city address approvalStatus subscription isActive isDeleted status").lean();
     const validItems = items.filter((item) => {
       if (!item.restaurantId) return false;
       if (typeof item.restaurantId === "object") {
@@ -132720,7 +133193,7 @@ var getMenuItems = async (req, res) => {
       }
       return true;
     });
-    menuCache = { data: validItems, expiresAt: now + 3e4, key: cacheKey };
+    menuCache = { data: validItems, expiresAt: now + 15e3, key: cacheKey };
     res.json(validItems);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -132889,6 +133362,8 @@ init_Notification();
 init_Branch();
 var getStats = async (req, res) => {
   try {
+    const activeRestaurantsList = await Restaurant_default.find({ isDeleted: { $ne: true } }).select("_id").lean();
+    const activeRestaurantIds = activeRestaurantsList.map((r) => r._id);
     const [
       totalRestaurants,
       activeRestaurants,
@@ -132909,14 +133384,19 @@ var getStats = async (req, res) => {
       }),
       Restaurant_default.countDocuments({ isDeleted: { $ne: true }, approvalStatus: "Pending" }),
       Restaurant_default.countDocuments({ isDeleted: { $ne: true }, "subscription.status": "Frozen" }),
-      User_default.countDocuments(),
-      Order_default.countDocuments(),
+      User_default.countDocuments({
+        $or: [
+          { role: "SuperAdmin" },
+          { restaurantId: { $in: activeRestaurantIds } }
+        ]
+      }),
+      Order_default.countDocuments({ restaurantId: { $in: activeRestaurantIds } }),
       Restaurant_default.find(
         { approvalStatus: { $ne: "Rejected" }, "subscription.status": { $ne: "Cancelled" }, isDeleted: { $ne: true } },
         "_id subscription"
       ).lean(),
       Restaurant_default.find({ isDeleted: { $ne: true } }, "_id commissionRate").lean(),
-      Order_default.find({ isPaid: true }, "restaurantId totalPrice").lean()
+      Order_default.find({ isPaid: true, restaurantId: { $in: activeRestaurantIds } }, "restaurantId totalPrice").lean()
     ]);
     let totalRevenue = 0;
     activeSubscribedRestaurants.forEach((r) => {
@@ -133110,36 +133590,79 @@ var restoreRestaurant = async (req, res) => {
 var deleteRestaurant = async (req, res) => {
   try {
     const { id } = req.params;
-    const isPermanent = req.query.permanent === "true";
     const restaurant = await Restaurant_default.findById(id);
     if (!restaurant) {
       return res.status(404).json({ message: "Restaurant not found" });
     }
-    if (isPermanent) {
-      const Branch2 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
-      const RestaurantVerification2 = (await Promise.resolve().then(() => (init_RestaurantVerification(), RestaurantVerification_exports))).default;
-      const Menu = (await import("../models/Menu.js")).default;
-      const MenuItem2 = (await Promise.resolve().then(() => (init_MenuItem(), MenuItem_exports))).default;
-      const Table2 = (await Promise.resolve().then(() => (init_Table(), Table_exports))).default;
-      const Category2 = (await Promise.resolve().then(() => (init_Category(), Category_exports))).default;
-      await Branch2.deleteMany({ restaurantId: id });
-      await RestaurantVerification2.deleteMany({ restaurantId: id });
-      await Menu.deleteMany({ restaurantId: id });
-      await MenuItem2.deleteMany({ restaurantId: id });
-      await Table2.deleteMany({ restaurantId: id });
-      await Category2.deleteMany({ restaurantId: id });
-      await Restaurant_default.findByIdAndDelete(id);
-      return res.json({ message: "Restaurant permanently removed." });
-    }
-    restaurant.status = "Deleted";
-    restaurant.isDeleted = true;
-    restaurant.deletedAt = /* @__PURE__ */ new Date();
-    restaurant.deletedBy = req.user._id;
-    restaurant.isActive = false;
-    await restaurant.save();
+    const [
+      { default: Branch2 },
+      { default: RestaurantVerification2 },
+      { default: MenuItem2 },
+      { default: Table2 },
+      { default: Category2 },
+      { default: Order2 },
+      { default: User2 },
+      { default: KOT2 },
+      { default: DeliveryPartner2 },
+      { default: Attendance2 },
+      { default: Leave2 },
+      { default: Payroll2 },
+      { default: Expense2 },
+      { default: Inventory2 },
+      { default: Notification2 },
+      { default: ServiceRequest2 },
+      { default: Reservation2 },
+      { default: Payment2 }
+    ] = await Promise.all([
+      Promise.resolve().then(() => (init_Branch(), Branch_exports)),
+      Promise.resolve().then(() => (init_RestaurantVerification(), RestaurantVerification_exports)),
+      Promise.resolve().then(() => (init_MenuItem(), MenuItem_exports)),
+      Promise.resolve().then(() => (init_Table(), Table_exports)),
+      Promise.resolve().then(() => (init_Category(), Category_exports)),
+      Promise.resolve().then(() => (init_Order(), Order_exports)),
+      Promise.resolve().then(() => (init_User(), User_exports)),
+      Promise.resolve().then(() => (init_KOT(), KOT_exports)),
+      Promise.resolve().then(() => (init_DeliveryPartner(), DeliveryPartner_exports)),
+      Promise.resolve().then(() => (init_Attendance(), Attendance_exports)),
+      Promise.resolve().then(() => (init_Leave(), Leave_exports)),
+      Promise.resolve().then(() => (init_Payroll(), Payroll_exports)),
+      Promise.resolve().then(() => (init_Expense(), Expense_exports)),
+      Promise.resolve().then(() => (init_Inventory(), Inventory_exports)),
+      Promise.resolve().then(() => (init_Notification(), Notification_exports)),
+      Promise.resolve().then(() => (init_ServiceRequest(), ServiceRequest_exports)),
+      Promise.resolve().then(() => (init_Reservation(), Reservation_exports)),
+      Promise.resolve().then(() => (init_Payment(), Payment_exports))
+    ]);
+    await Promise.all([
+      Branch2.deleteMany({ restaurantId: id }),
+      RestaurantVerification2.deleteMany({ restaurantId: id }),
+      MenuItem2.deleteMany({ restaurantId: id }),
+      Table2.deleteMany({ restaurantId: id }),
+      Category2.deleteMany({ restaurantId: id }),
+      Order2.deleteMany({ restaurantId: id }),
+      // Delete employers/staff associated with this restaurant, but preserve SuperAdmin accounts
+      User2.deleteMany({
+        role: { $ne: "SuperAdmin" },
+        $or: [
+          { restaurantId: id },
+          ...restaurant.ownerId ? [{ _id: restaurant.ownerId }] : []
+        ]
+      }),
+      KOT2.deleteMany({ restaurantId: id }),
+      DeliveryPartner2.deleteMany({ restaurantId: id }),
+      Attendance2.deleteMany({ restaurantId: id }),
+      Leave2.deleteMany({ restaurantId: id }),
+      Payroll2.deleteMany({ restaurantId: id }),
+      Expense2.deleteMany({ restaurantId: id }),
+      Inventory2.deleteMany({ restaurantId: id }),
+      Notification2.deleteMany({ restaurantId: id }),
+      ServiceRequest2.deleteMany({ restaurantId: id }),
+      Reservation2.deleteMany({ restaurantId: id }),
+      Payment2.deleteMany({ restaurantId: id })
+    ]);
+    await Restaurant_default.findByIdAndDelete(id);
     res.json({
-      message: "Restaurant safely deactivated and soft-deleted. Historical orders and financial reports preserved.",
-      restaurant
+      message: "Restaurant and all associated employers, orders, menus, and operations deleted successfully."
     });
   } catch (error) {
     console.error("Failed to delete restaurant:", error);
@@ -133511,8 +134034,17 @@ var approveTrialRequest = async (req, res) => {
     restaurant.subscription.rejectionReason = "";
     restaurant.subscription.reminderSent24h = false;
     restaurant.approvalStatus = "Approved";
+    restaurant.verificationStatus = "Verified";
     restaurant.isActive = true;
     await restaurant.save();
+    try {
+      const RestaurantVerification2 = (await Promise.resolve().then(() => (init_RestaurantVerification(), RestaurantVerification_exports))).default;
+      await RestaurantVerification2.findOneAndUpdate(
+        { restaurantId: restaurant._id },
+        { $set: { status: "Verified" } }
+      );
+    } catch (_) {
+    }
     broadcastToRestaurant(restaurant._id, "subscription_updated", {
       restaurantId: String(restaurant._id),
       subscription: restaurant.subscription
@@ -133807,7 +134339,7 @@ var superAdminRoutes_default = router7;
 var import_express8 = __toESM(require_express2(), 1);
 
 // controllers/tableController.js
-var import_mongoose27 = __toESM(require_mongoose2(), 1);
+var import_mongoose32 = __toESM(require_mongoose2(), 1);
 init_Table();
 init_Order();
 var getTables = async (req, res) => {
@@ -133830,7 +134362,7 @@ var createTable = async (req, res) => {
   try {
     let finalBranchId = branchId || req.user.branchId;
     if (!finalBranchId) {
-      const Branch2 = import_mongoose27.default.model("Branch");
+      const Branch2 = import_mongoose32.default.model("Branch");
       const firstBranch = await Branch2.findOne({ restaurantId: req.user.restaurantId });
       if (firstBranch) {
         finalBranchId = firstBranch._id;
@@ -133910,7 +134442,7 @@ var tableRoutes_default = router8;
 var import_express9 = __toESM(require_express2(), 1);
 
 // controllers/customerController.js
-var import_mongoose28 = __toESM(require_mongoose2(), 1);
+var import_mongoose33 = __toESM(require_mongoose2(), 1);
 init_User();
 init_Order();
 var getCustomers = async (req, res) => {
@@ -133920,7 +134452,7 @@ var getCustomers = async (req, res) => {
       return res.json([]);
     }
     const orderCustomerIds = await Order_default.distinct("user", {
-      restaurantId: new import_mongoose28.default.Types.ObjectId(restaurantId),
+      restaurantId: new import_mongoose33.default.Types.ObjectId(restaurantId),
       user: { $exists: true, $ne: null }
     });
     const customers = await User_default.find({
@@ -133931,7 +134463,7 @@ var getCustomers = async (req, res) => {
       ]
     }).select("name email phoneNumber createdAt");
     const orderStats = await Order_default.aggregate([
-      { $match: { restaurantId: new import_mongoose28.default.Types.ObjectId(restaurantId), user: { $exists: true, $ne: null } } },
+      { $match: { restaurantId: new import_mongoose33.default.Types.ObjectId(restaurantId), user: { $exists: true, $ne: null } } },
       {
         $group: {
           _id: "$user",
@@ -134013,207 +134545,16 @@ var import_express10 = __toESM(require_express2(), 1);
 
 // controllers/staffController.js
 init_emailService();
-var import_mongoose31 = __toESM(require_mongoose2(), 1);
+var import_mongoose34 = __toESM(require_mongoose2(), 1);
 init_User();
 init_Branch();
 init_Restaurant();
+init_DeliveryPartner();
 init_Plan();
-
-// models/Attendance.js
-var import_mongoose29 = __toESM(require_mongoose2(), 1);
-var attendanceSchema = new import_mongoose29.default.Schema({
-  restaurantId: {
-    type: import_mongoose29.default.Schema.Types.ObjectId,
-    ref: "Restaurant",
-    required: true,
-    index: true
-  },
-  branchId: {
-    type: import_mongoose29.default.Schema.Types.ObjectId,
-    ref: "Branch",
-    required: true,
-    index: true
-  },
-  employee: {
-    type: import_mongoose29.default.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-    index: true
-  },
-  date: {
-    type: Date,
-    required: true
-  },
-  dateString: {
-    type: String,
-    // YYYY-MM-DD format for timezone-safe grouping and uniqueness
-    required: true
-  },
-  status: {
-    type: String,
-    enum: ["Present", "Absent", "Leave", "Half-day", "Holiday"],
-    required: true,
-    default: "Present"
-  },
-  checkIn: {
-    type: Date
-  },
-  checkOut: {
-    type: Date
-  },
-  lateMinutes: {
-    type: Number,
-    default: 0
-  },
-  overtimeHours: {
-    type: Number,
-    default: 0
-  },
-  workingHours: {
-    type: Number,
-    default: 0
-  },
-  notes: {
-    type: String,
-    default: ""
-  },
-  leaveId: {
-    type: import_mongoose29.default.Schema.Types.ObjectId,
-    ref: "Leave"
-  },
-  leaveType: {
-    type: String,
-    default: ""
-  },
-  isPaidLeave: {
-    type: Boolean,
-    default: true
-  },
-  isLOP: {
-    type: Boolean,
-    default: false
-  },
-  isCorrected: {
-    type: Boolean,
-    default: false
-  },
-  correctionHistory: [
-    {
-      previousStatus: String,
-      newStatus: String,
-      previousCheckIn: Date,
-      newCheckIn: Date,
-      previousCheckOut: Date,
-      newCheckOut: Date,
-      correctedBy: {
-        type: import_mongoose29.default.Schema.Types.ObjectId,
-        ref: "User"
-      },
-      reason: {
-        type: String,
-        required: true
-      },
-      correctedAt: {
-        type: Date,
-        default: Date.now
-      }
-    }
-  ],
-  createdBy: {
-    type: import_mongoose29.default.Schema.Types.ObjectId,
-    ref: "User"
-  }
-}, { timestamps: true });
-attendanceSchema.index({ restaurantId: 1, employee: 1, dateString: 1 }, { unique: true });
-var Attendance = import_mongoose29.default.model("Attendance", attendanceSchema);
-var Attendance_default = Attendance;
-
-// models/Leave.js
-var import_mongoose30 = __toESM(require_mongoose2(), 1);
-var leaveSchema = new import_mongoose30.default.Schema({
-  restaurantId: {
-    type: import_mongoose30.default.Schema.Types.ObjectId,
-    ref: "Restaurant",
-    required: true,
-    index: true
-  },
-  branchId: {
-    type: import_mongoose30.default.Schema.Types.ObjectId,
-    ref: "Branch",
-    required: true,
-    index: true
-  },
-  employee: {
-    type: import_mongoose30.default.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-    index: true
-  },
-  leaveType: {
-    type: String,
-    enum: ["Paid Leave", "Casual Leave", "Sick Leave", "Unpaid Leave", "Emergency Leave"],
-    required: true,
-    default: "Casual Leave"
-  },
-  isPaid: {
-    type: Boolean,
-    default: true
-  },
-  startDate: {
-    type: Date,
-    required: true
-  },
-  endDate: {
-    type: Date,
-    required: true
-  },
-  daysCount: {
-    type: Number,
-    required: true,
-    min: 0.5
-  },
-  reason: {
-    type: String,
-    required: [true, "Please provide a reason for the leave request"],
-    trim: true
-  },
-  status: {
-    type: String,
-    enum: ["Pending", "Approved", "Rejected", "Cancelled"],
-    default: "Pending",
-    index: true
-  },
-  appliedAt: {
-    type: Date,
-    default: Date.now
-  },
-  approvedBy: {
-    type: import_mongoose30.default.Schema.Types.ObjectId,
-    ref: "User"
-  },
-  approvalDate: {
-    type: Date
-  },
-  managerRemarks: {
-    type: String,
-    default: "",
-    trim: true
-  },
-  cancelledAt: {
-    type: Date
-  },
-  cancellationReason: {
-    type: String,
-    default: ""
-  }
-}, { timestamps: true });
-leaveSchema.index({ restaurantId: 1, employee: 1, status: 1 });
-leaveSchema.index({ restaurantId: 1, branchId: 1, status: 1 });
-leaveSchema.index({ restaurantId: 1, startDate: 1, endDate: 1 });
-var Leave = import_mongoose30.default.model("Leave", leaveSchema);
-var Leave_default = Leave;
-
-// controllers/staffController.js
+init_Attendance();
+init_Payroll();
+init_Expense();
+init_Leave();
 var getUserRestaurantId2 = async (user, queryOrBody = {}) => {
   let rId = user?.restaurantId || user?.restaurant;
   if (!rId && user?.branchId) {
@@ -134650,11 +134991,11 @@ var getAttendanceSummary = async (req, res) => {
   try {
     const restaurantId = await getUserRestaurantId2(req.user);
     const { startDate, endDate, branchId } = req.query;
-    const matchFilter = { restaurantId: new import_mongoose31.default.Types.ObjectId(restaurantId) };
+    const matchFilter = { restaurantId: new import_mongoose34.default.Types.ObjectId(restaurantId) };
     if (branchId && branchId !== "All") {
-      matchFilter.branchId = new import_mongoose31.default.Types.ObjectId(branchId);
+      matchFilter.branchId = new import_mongoose34.default.Types.ObjectId(branchId);
     } else if (req.user.role === "BranchManager" && req.user.branchId) {
-      matchFilter.branchId = new import_mongoose31.default.Types.ObjectId(req.user.branchId);
+      matchFilter.branchId = new import_mongoose34.default.Types.ObjectId(req.user.branchId);
     }
     if (startDate || endDate) {
       matchFilter.date = {};
@@ -135692,10 +136033,11 @@ var getMyAttendanceToday = async (req, res) => {
 var router10 = import_express10.default.Router();
 router10.use(protect);
 router10.use(checkSubscription);
-router10.use(checkBillingModule("staffManagement"));
 router10.post("/clock-in", clockIn);
 router10.post("/clock-out", clockOut);
+router10.post("/attendance", clockIn);
 router10.get("/my-attendance-today", getMyAttendanceToday);
+router10.use(checkBillingModule("staffManagement"));
 router10.post("/attendance/bulk", authorize("RestaurantAdmin", "BranchManager"), bulkMarkAttendance);
 router10.get("/attendance", authorize("RestaurantAdmin", "BranchManager"), getAttendance);
 router10.put("/attendance/:id/correct", authorize("RestaurantAdmin", "BranchManager"), correctAttendance);
@@ -135985,56 +136327,8 @@ var roleRoutes_default = router12;
 // routes/reservationRoutes.js
 var import_express13 = __toESM(require_express2(), 1);
 
-// models/Reservation.js
-var import_mongoose32 = __toESM(require_mongoose2(), 1);
-var reservationSchema = new import_mongoose32.default.Schema({
-  branch: {
-    type: import_mongoose32.default.Schema.Types.ObjectId,
-    ref: "Branch",
-    required: true
-  },
-  customer: {
-    type: import_mongoose32.default.Schema.Types.ObjectId,
-    ref: "User"
-  },
-  guestName: {
-    type: String,
-    required: true
-  },
-  guestPhone: {
-    type: String,
-    required: true
-  },
-  date: {
-    type: Date,
-    required: true
-  },
-  timeSlot: {
-    type: String,
-    // e.g., '19:00 - 21:00'
-    required: true
-  },
-  guestCount: {
-    type: Number,
-    required: true
-  },
-  table: {
-    type: import_mongoose32.default.Schema.Types.ObjectId,
-    ref: "Table"
-  },
-  status: {
-    type: String,
-    enum: ["Pending", "Confirmed", "Cancelled", "Completed"],
-    default: "Pending"
-  },
-  specialRequests: {
-    type: String
-  }
-}, { timestamps: true });
-var Reservation = import_mongoose32.default.model("Reservation", reservationSchema);
-var Reservation_default = Reservation;
-
 // controllers/reservationController.js
+init_Reservation();
 var getReservations = async (req, res) => {
   try {
     if (!req.user || !req.user.restaurantId && req.user.role !== "SuperAdmin") {
@@ -136189,87 +136483,12 @@ var categoryRoutes_default = router14;
 var import_express15 = __toESM(require_express2(), 1);
 
 // controllers/inventoryController.js
-var import_mongoose35 = __toESM(require_mongoose2(), 1);
-
-// models/Inventory.js
-var import_mongoose33 = __toESM(require_mongoose2(), 1);
-var inventorySchema = new import_mongoose33.default.Schema({
-  restaurantId: {
-    type: import_mongoose33.default.Schema.Types.ObjectId,
-    ref: "Restaurant",
-    index: true
-  },
-  branch: {
-    type: import_mongoose33.default.Schema.Types.ObjectId,
-    ref: "Branch",
-    required: true,
-    index: true
-  },
-  supplier: {
-    type: import_mongoose33.default.Schema.Types.ObjectId,
-    ref: "Supplier"
-  },
-  itemName: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  category: {
-    type: String,
-    // e.g., 'Vegetables', 'Meat', 'Dairy', 'Packaging', 'Spices', 'Beverages'
-    default: "General"
-  },
-  quantity: {
-    type: Number,
-    required: true,
-    default: 0,
-    min: 0
-  },
-  unit: {
-    type: String,
-    // e.g., 'kg', 'g', 'ltr', 'ml', 'pcs', 'box', 'packet'
-    required: true
-  },
-  minStockLevel: {
-    type: Number,
-    default: 10
-  },
-  reorderQuantity: {
-    type: Number,
-    default: 20
-  },
-  pricePerUnit: {
-    type: Number,
-    default: 0
-  },
-  lastPurchasePrice: {
-    type: Number,
-    default: 0
-  },
-  lastPurchaseDate: {
-    type: Date
-  },
-  costingMethod: {
-    type: String,
-    enum: ["Weighted Average", "Latest Price"],
-    default: "Weighted Average"
-  },
-  description: {
-    type: String,
-    default: ""
-  }
-}, { timestamps: true });
-inventorySchema.virtual("valuation").get(function() {
-  return (this.quantity || 0) * (this.pricePerUnit || 0);
-});
-inventorySchema.set("toJSON", { virtuals: true });
-inventorySchema.set("toObject", { virtuals: true });
-var Inventory = import_mongoose33.default.model("Inventory", inventorySchema);
-var Inventory_default = Inventory;
+var import_mongoose36 = __toESM(require_mongoose2(), 1);
+init_Inventory();
 
 // models/WastageLog.js
-var import_mongoose34 = __toESM(require_mongoose2(), 1);
-var wastageLogSchema = new import_mongoose34.default.Schema({
+var import_mongoose35 = __toESM(require_mongoose2(), 1);
+var wastageLogSchema = new import_mongoose35.default.Schema({
   ingredientName: {
     type: String,
     required: true
@@ -136287,21 +136506,22 @@ var wastageLogSchema = new import_mongoose34.default.Schema({
     required: true
   },
   restaurantId: {
-    type: import_mongoose34.default.Schema.Types.ObjectId,
+    type: import_mongoose35.default.Schema.Types.ObjectId,
     ref: "Restaurant",
     required: true
   },
   branchId: {
-    type: import_mongoose34.default.Schema.Types.ObjectId,
+    type: import_mongoose35.default.Schema.Types.ObjectId,
     ref: "Branch"
   }
 }, { timestamps: true });
-var WastageLog = import_mongoose34.default.model("WastageLog", wastageLogSchema);
+var WastageLog = import_mongoose35.default.model("WastageLog", wastageLogSchema);
 var WastageLog_default = WastageLog;
 
 // controllers/inventoryController.js
 init_Notification();
 init_Branch();
+init_Expense();
 init_Restaurant();
 var getUserRestaurantId3 = async (user, queryOrBody = {}) => {
   let rId = user?.restaurantId || user?.restaurant;
@@ -136544,9 +136764,9 @@ var recordMaterialPurchase = async (req, res) => {
     const paid = Number(paidAmount !== void 0 ? paidAmount : req.body.amountPaid) || 0;
     const balance = Math.max(0, tot - paid);
     let finalPaymentStatus = paymentStatus || (paid >= tot ? "Paid" : paid > 0 ? "Partially Paid" : "Unpaid");
-    const sName = supplierName || req.body.supplier?.name || (typeof supplier === "string" && !import_mongoose35.default.Types.ObjectId.isValid(supplier) ? supplier : "General Supplier");
+    const sName = supplierName || req.body.supplier?.name || (typeof supplier === "string" && !import_mongoose36.default.Types.ObjectId.isValid(supplier) ? supplier : "General Supplier");
     const sPhone = req.body.supplierPhone || req.body.supplier?.phone || "";
-    const sId = supplier && import_mongoose35.default.Types.ObjectId.isValid(supplier) ? supplier : void 0;
+    const sId = supplier && import_mongoose36.default.Types.ObjectId.isValid(supplier) ? supplier : void 0;
     const normalizedItems = (items || []).map((i) => {
       const matId = i.material || i.materialId;
       const name = i.itemName || i.name || "Raw Material";
@@ -136554,7 +136774,7 @@ var recordMaterialPurchase = async (req, res) => {
       const price = Number(i.unitPrice) || 0;
       const total = Number(i.totalCost || i.total || qty * price);
       return {
-        material: matId && import_mongoose35.default.Types.ObjectId.isValid(matId) ? matId : void 0,
+        material: matId && import_mongoose36.default.Types.ObjectId.isValid(matId) ? matId : void 0,
         itemName: name,
         category: i.category || "General",
         quantity: qty,
@@ -136881,7 +137101,7 @@ var getInventoryValuation = async (req, res) => {
       filter.branch = { $in: branches.map((b) => b._id) };
     }
     if (req.query.branchId && req.query.branchId !== "All") {
-      filter.branch = new import_mongoose35.default.Types.ObjectId(req.query.branchId);
+      filter.branch = new import_mongoose36.default.Types.ObjectId(req.query.branchId);
     }
     const items = await Inventory_default.find(filter);
     let totalValuation = 0;
@@ -136937,10 +137157,10 @@ var inventoryRoutes_default = router15;
 var import_express16 = __toESM(require_express2(), 1);
 
 // models/Supplier.js
-var import_mongoose36 = __toESM(require_mongoose2(), 1);
-var supplierSchema = new import_mongoose36.default.Schema({
+var import_mongoose37 = __toESM(require_mongoose2(), 1);
+var supplierSchema = new import_mongoose37.default.Schema({
   branch: {
-    type: import_mongoose36.default.Schema.Types.ObjectId,
+    type: import_mongoose37.default.Schema.Types.ObjectId,
     ref: "Branch",
     required: true
   },
@@ -136970,7 +137190,7 @@ var supplierSchema = new import_mongoose36.default.Schema({
     default: true
   }
 }, { timestamps: true });
-var Supplier = import_mongoose36.default.model("Supplier", supplierSchema);
+var Supplier = import_mongoose37.default.model("Supplier", supplierSchema);
 var Supplier_default = Supplier;
 
 // controllers/supplierController.js
@@ -137071,11 +137291,11 @@ var supplierRoutes_default = router16;
 var import_express17 = __toESM(require_express2(), 1);
 
 // controllers/offerController.js
-var import_mongoose38 = __toESM(require_mongoose2(), 1);
+var import_mongoose39 = __toESM(require_mongoose2(), 1);
 
 // models/Offer.js
-var import_mongoose37 = __toESM(require_mongoose2(), 1);
-var offerSchema = new import_mongoose37.default.Schema({
+var import_mongoose38 = __toESM(require_mongoose2(), 1);
+var offerSchema = new import_mongoose38.default.Schema({
   code: {
     type: String,
     required: true,
@@ -137113,7 +137333,7 @@ var offerSchema = new import_mongoose37.default.Schema({
     default: true
   }
 }, { timestamps: true });
-var Offer = import_mongoose37.default.model("Offer", offerSchema);
+var Offer = import_mongoose38.default.model("Offer", offerSchema);
 var Offer_default = Offer;
 
 // controllers/offerController.js
@@ -137194,7 +137414,7 @@ var deleteOffer = async (req, res) => {
       return res.status(400).json({ message: "Offer ID or code is required" });
     }
     let offer = null;
-    if (import_mongoose38.default.Types.ObjectId.isValid(id)) {
+    if (import_mongoose39.default.Types.ObjectId.isValid(id)) {
       offer = await Offer_default.findById(id);
     }
     if (!offer) {
@@ -137224,8 +137444,8 @@ var offerRoutes_default = router17;
 var import_express18 = __toESM(require_express2(), 1);
 
 // models/Tax.js
-var import_mongoose39 = __toESM(require_mongoose2(), 1);
-var taxSchema = new import_mongoose39.default.Schema({
+var import_mongoose40 = __toESM(require_mongoose2(), 1);
+var taxSchema = new import_mongoose40.default.Schema({
   name: {
     type: String,
     required: true,
@@ -137251,7 +137471,7 @@ var taxSchema = new import_mongoose39.default.Schema({
     default: true
   }
 }, { timestamps: true });
-var Tax = import_mongoose39.default.model("Tax", taxSchema);
+var Tax = import_mongoose40.default.model("Tax", taxSchema);
 var Tax_default = Tax;
 
 // controllers/taxController.js
@@ -137317,10 +137537,13 @@ var taxRoutes_default = router18;
 var import_express19 = __toESM(require_express2(), 1);
 
 // controllers/reportController.js
-var import_mongoose40 = __toESM(require_mongoose2(), 1);
+var import_mongoose41 = __toESM(require_mongoose2(), 1);
 init_Order();
 init_Restaurant();
 init_Plan();
+init_Expense();
+init_Attendance();
+init_Payroll();
 init_Branch();
 init_User();
 var getUserRestaurantId4 = async (user, queryOrBody = {}) => {
@@ -137398,7 +137621,7 @@ var generateReport = async (req, res) => {
   } = req.body;
   try {
     const restaurantId = await getUserRestaurantId4(req.user, { ...req.query, ...req.body });
-    const restObjId = restaurantId ? new import_mongoose40.default.Types.ObjectId(restaurantId) : null;
+    const restObjId = restaurantId ? new import_mongoose41.default.Types.ObjectId(restaurantId) : null;
     if (!restObjId && req.user.role !== "SuperAdmin") {
       return res.json({
         reportType,
@@ -137426,7 +137649,7 @@ var generateReport = async (req, res) => {
         restaurantId: restObjId,
         createdAt: { $gte: start, $lte: end }
       };
-      if (effectiveBranchId) matchStage.branchId = new import_mongoose40.default.Types.ObjectId(effectiveBranchId);
+      if (effectiveBranchId) matchStage.branchId = new import_mongoose41.default.Types.ObjectId(effectiveBranchId);
       const dailyOrders = await Order_default.aggregate([
         { $match: matchStage },
         {
@@ -137463,7 +137686,7 @@ var generateReport = async (req, res) => {
         restaurantId: restObjId,
         date: { $gte: start, $lte: end }
       };
-      if (effectiveBranchId) expenseMatch.branchId = new import_mongoose40.default.Types.ObjectId(effectiveBranchId);
+      if (effectiveBranchId) expenseMatch.branchId = new import_mongoose41.default.Types.ObjectId(effectiveBranchId);
       const dailyExpenses = await Expense_default.aggregate([
         { $match: expenseMatch },
         {
@@ -137507,7 +137730,7 @@ var generateReport = async (req, res) => {
         createdAt: { $gte: start, $lte: end },
         status: { $ne: "Cancelled" }
       };
-      if (effectiveBranchId) matchStage.branchId = new import_mongoose40.default.Types.ObjectId(effectiveBranchId);
+      if (effectiveBranchId) matchStage.branchId = new import_mongoose41.default.Types.ObjectId(effectiveBranchId);
       reportData = await Order_default.aggregate([
         { $match: matchStage },
         {
@@ -137552,7 +137775,7 @@ var generateReport = async (req, res) => {
         restaurantId: restObjId,
         createdAt: { $gte: start, $lte: end }
       };
-      if (effectiveBranchId) matchOrders.branchId = new import_mongoose40.default.Types.ObjectId(effectiveBranchId);
+      if (effectiveBranchId) matchOrders.branchId = new import_mongoose41.default.Types.ObjectId(effectiveBranchId);
       const monthlyOrders = await Order_default.aggregate([
         { $match: matchOrders },
         {
@@ -137572,7 +137795,7 @@ var generateReport = async (req, res) => {
         restaurantId: restObjId,
         date: { $gte: start, $lte: end }
       };
-      if (effectiveBranchId) matchExpenses.branchId = new import_mongoose40.default.Types.ObjectId(effectiveBranchId);
+      if (effectiveBranchId) matchExpenses.branchId = new import_mongoose41.default.Types.ObjectId(effectiveBranchId);
       const monthlyExpenses = await Expense_default.aggregate([
         { $match: matchExpenses },
         {
@@ -137804,8 +138027,8 @@ var generateReport = async (req, res) => {
         restaurantId: restObjId,
         createdAt: { $gte: start, $lte: end }
       };
-      if (effectiveBranchId && import_mongoose40.default.Types.ObjectId.isValid(effectiveBranchId)) {
-        matchStage.branchId = new import_mongoose40.default.Types.ObjectId(effectiveBranchId);
+      if (effectiveBranchId && import_mongoose41.default.Types.ObjectId.isValid(effectiveBranchId)) {
+        matchStage.branchId = new import_mongoose41.default.Types.ObjectId(effectiveBranchId);
       }
       reportData = await Order_default.aggregate([
         { $match: matchStage },
@@ -137826,8 +138049,8 @@ var generateReport = async (req, res) => {
         restaurantId: restObjId,
         createdAt: { $gte: start, $lte: end }
       };
-      if (effectiveBranchId && import_mongoose40.default.Types.ObjectId.isValid(effectiveBranchId)) {
-        matchStage.branchId = new import_mongoose40.default.Types.ObjectId(effectiveBranchId);
+      if (effectiveBranchId && import_mongoose41.default.Types.ObjectId.isValid(effectiveBranchId)) {
+        matchStage.branchId = new import_mongoose41.default.Types.ObjectId(effectiveBranchId);
       }
       reportData = await Order_default.aggregate([
         { $match: matchStage },
@@ -137861,8 +138084,8 @@ var generateReport = async (req, res) => {
         restaurantId: restObjId,
         createdAt: { $gte: start, $lte: end }
       };
-      if (effectiveBranchId && import_mongoose40.default.Types.ObjectId.isValid(effectiveBranchId)) {
-        matchStage.branchId = new import_mongoose40.default.Types.ObjectId(effectiveBranchId);
+      if (effectiveBranchId && import_mongoose41.default.Types.ObjectId.isValid(effectiveBranchId)) {
+        matchStage.branchId = new import_mongoose41.default.Types.ObjectId(effectiveBranchId);
       }
       reportData = await Order_default.aggregate([
         { $match: matchStage },
@@ -137913,6 +138136,7 @@ var import_express20 = __toESM(require_express2(), 1);
 
 // controllers/notificationController.js
 init_Notification();
+init_Inventory();
 init_Branch();
 var resolveUserRestaurantId = async (user) => {
   if (user?.restaurantId) return user.restaurantId;
@@ -138343,7 +138567,7 @@ var import_express21 = __toESM(require_express2(), 1);
 
 // controllers/planController.js
 var import_crypto2 = __toESM(require("crypto"), 1);
-var import_mongoose41 = __toESM(require_mongoose2(), 1);
+var import_mongoose42 = __toESM(require_mongoose2(), 1);
 init_Plan();
 init_Restaurant();
 init_Notification();
@@ -138355,7 +138579,7 @@ var getPublicFallbackPlans = () => [
 ];
 var getPublicPlans = async (req, res) => {
   try {
-    if (import_mongoose41.default.connection.readyState !== 1) {
+    if (import_mongoose42.default.connection.readyState !== 1) {
       return res.json(getPublicFallbackPlans());
     }
     const plans = await Plan_default.find({ isActive: { $ne: false } }).sort({ monthlyPrice: 1, createdAt: 1 }).maxTimeMS(3e3).lean();
@@ -138474,38 +138698,8 @@ var planRoutes_default = router21;
 // routes/serviceRequestRoutes.js
 var import_express22 = __toESM(require_express2(), 1);
 
-// models/ServiceRequest.js
-var import_mongoose42 = __toESM(require_mongoose2(), 1);
-var serviceRequestSchema = new import_mongoose42.default.Schema({
-  restaurantId: {
-    type: import_mongoose42.default.Schema.Types.ObjectId,
-    ref: "Restaurant",
-    required: true
-  },
-  branchId: {
-    type: import_mongoose42.default.Schema.Types.ObjectId,
-    ref: "Branch",
-    required: true
-  },
-  tableNumber: {
-    type: Number,
-    required: true
-  },
-  requestType: {
-    type: String,
-    enum: ["Call Waiter", "Request Water", "Request Cutlery", "Request Bill"],
-    required: true
-  },
-  status: {
-    type: String,
-    enum: ["Pending", "Completed"],
-    default: "Pending"
-  }
-}, { timestamps: true });
-var ServiceRequest = import_mongoose42.default.model("ServiceRequest", serviceRequestSchema);
-var ServiceRequest_default = ServiceRequest;
-
 // controllers/serviceRequestController.js
+init_ServiceRequest();
 var import_mongoose43 = __toESM(require_mongoose2(), 1);
 var createServiceRequest = async (req, res) => {
   const { restaurantId, branchId, tableNumber, requestType } = req.body;
@@ -138570,6 +138764,7 @@ var import_express23 = __toESM(require_express2(), 1);
 
 // controllers/expenseController.js
 var import_mongoose44 = __toESM(require_mongoose2(), 1);
+init_Expense();
 init_Branch();
 init_Restaurant();
 var getUserRestaurantId5 = async (user, queryOrBody = {}) => {
@@ -139881,6 +140076,7 @@ var import_express25 = __toESM(require_express2(), 1);
 
 // controllers/deliveryController.js
 init_User();
+init_DeliveryPartner();
 
 // models/DeliveryWithdrawal.js
 var import_mongoose50 = __toESM(require_mongoose2(), 1);
@@ -139973,16 +140169,16 @@ var verifyOtp = async (req, res) => {
 };
 var getDeliveryProfile = async (req, res) => {
   try {
-    let partner = await DeliveryPartner_default.findOne({ userId: req.user._id }).populate("userId", "name email phoneNumber");
+    let partner = await DeliveryPartner_default.findOne({ userId: req.user._id }).populate("userId", "name email phoneNumber").populate("restaurantId", "name address phone");
     if (!partner) {
       partner = await DeliveryPartner_default.create({
         userId: req.user._id,
         restaurantId: req.user.restaurantId || null,
-        vehicleDetails: { vehicleType: "Bike", registrationNumber: "MH-01-AB-1234" },
+        vehicleDetails: { vehicleType: "Bike", registrationNumber: req.user.phoneNumber ? `TN-${req.user.phoneNumber.slice(-4)}` : "KA-01-DP-2024" },
         verificationStatus: "Approved",
         status: "Online"
       });
-      partner = await DeliveryPartner_default.findById(partner._id).populate("userId", "name email phoneNumber");
+      partner = await DeliveryPartner_default.findById(partner._id).populate("userId", "name email phoneNumber").populate("restaurantId", "name address phone");
     }
     res.json(partner);
   } catch (error) {
@@ -140125,7 +140321,7 @@ var getWithdrawalRequests = async (req, res) => {
       partner = await DeliveryPartner_default.create({
         userId: req.user._id,
         restaurantId: req.user.restaurantId || null,
-        vehicleDetails: { vehicleType: "Bike", registrationNumber: "MH-01-AB-1234" },
+        vehicleDetails: { vehicleType: "Bike", registrationNumber: req.user.phoneNumber ? `TN-${req.user.phoneNumber.slice(-4)}` : "KA-01-DP-2024" },
         verificationStatus: "Approved",
         status: "Online"
       });
@@ -140143,7 +140339,7 @@ var getEarningsHistory = async (req, res) => {
       partner = await DeliveryPartner_default.create({
         userId: req.user._id,
         restaurantId: req.user.restaurantId || null,
-        vehicleDetails: { vehicleType: "Bike", registrationNumber: "MH-01-AB-1234" },
+        vehicleDetails: { vehicleType: "Bike", registrationNumber: req.user.phoneNumber ? `TN-${req.user.phoneNumber.slice(-4)}` : "KA-01-DP-2024" },
         verificationStatus: "Approved",
         status: "Online"
       });
@@ -141406,7 +141602,7 @@ var activateBillingDemo = async (req, res) => {
       activatedAt: /* @__PURE__ */ new Date()
     };
     await request.save();
-    const portalBase = process.env.RESTAURANT_FRONTEND_URL || process.env.FRONTEND_URL || "https://f-hms-restaurant.vercel.app";
+    const portalBase = process.env.RESTAURANT_FRONTEND_URL || process.env.FRONTEND_URL || "";
     const activationUrl = `${portalBase}/activate-account?token=${activationToken}`;
     if (providedPassword && ownerUser?.email) {
       sendWelcomeEmail({
@@ -141720,6 +141916,7 @@ var billingDemoRoutes_default = router27;
 var import_express28 = __toESM(require_express2(), 1);
 
 // controllers/kotController.js
+init_KOT();
 init_Order();
 init_Restaurant();
 init_Branch();
@@ -142735,6 +142932,12 @@ var customerReviewRoutes_default = router31;
 // index.js
 init_Plan();
 import_dotenv.default.config();
+process.on("uncaughtException", (err) => {
+  console.error("[Backend Uncaught Exception]:", err.message);
+});
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("[Backend Unhandled Rejection]:", reason);
+});
 var app = (0, import_express32.default)();
 app.use((req, res, next) => {
   const origin = req.headers.origin || "*";
