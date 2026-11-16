@@ -12,6 +12,7 @@ import WishlistDrawer from '../components/WishlistDrawer';
 import CustomerNavDrawer, { CUSTOMER_DASHBOARD_TABS } from '../components/CustomerNavDrawer';
 import LocationPickerModal from '../components/LocationPickerModal';
 import { getSavedLocation, EVENT_LOCATION_UPDATED } from '../utils/locationHelper';
+import defaultApi from '../utils/axiosInstance';
 
 const CustomerLayout = () => {
     const { user, api } = useCustomerAuth();
@@ -89,13 +90,14 @@ const CustomerLayout = () => {
         };
     }, []);
 
-    // Load restaurant cities once when location picker is opened
+    // Load restaurant cities once when component mounts or location picker is opened
     useEffect(() => {
-        if (!isLocationPickerOpen || restaurants.length > 0 || !api) return;
-        api.get('/restaurants').then(res => {
+        if (restaurants.length > 0) return;
+        const client = api || defaultApi;
+        client.get('/restaurants').then(res => {
             if (Array.isArray(res.data)) setRestaurants(res.data);
         }).catch(() => { });
-    }, [isLocationPickerOpen, restaurants.length, api]);
+    }, [restaurants.length, api]);
 
     return (
         <div className="min-h-screen flex flex-col font-sans relative bg-white text-slate-800">
@@ -115,22 +117,9 @@ const CustomerLayout = () => {
             />
 
             {!isLandingPage && (
-                <header className="bg-white/95 backdrop-blur-md border-b border-slate-100 sticky top-0 z-40 shadow-[0_2px_12px_rgba(0,0,0,0.03)]">
+                <header className="bg-white/95 backdrop-blur-md border-b border-slate-100 fixed top-0 left-0 right-0 z-40 shadow-[0_2px_12px_rgba(0,0,0,0.03)]">
                     <div className="max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8 h-14 sm:h-[76px] flex items-center justify-between gap-1.5 sm:gap-4">
                         <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 min-w-0">
-                            {/* Hamburger Menu Navigation Drawer Button (Hidden on Customer Profile) */}
-                            {!location.pathname.startsWith('/profile') && !location.pathname.startsWith('/dashboard') && (
-                                <button
-                                    type="button"
-                                    onClick={() => setIsNavDrawerOpen(true)}
-                                    className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-100 hover:bg-orange-50 active:bg-orange-100 text-slate-700 hover:text-[#FF5A1F] transition-colors shrink-0 flex items-center justify-center border border-slate-200 shadow-xs cursor-pointer"
-                                    aria-label="Open Navigation Drawer"
-                                    title="Customer Menu & Sections"
-                                >
-                                    <Menu size={18} className="stroke-[2.2]" />
-                                </button>
-                            )}
-
                             {/* Back Button */}
                             <button
                                 type="button"
@@ -326,7 +315,7 @@ const CustomerLayout = () => {
                 </header>
             )}
 
-            <main className="flex-grow pb-20 md:pb-0">
+            <main className={`flex-grow ${isLandingPage ? 'pt-0 pb-20 md:pb-0' : 'pt-[68px] sm:pt-[92px] pb-20 md:pb-8'}`}>
                 <Outlet />
             </main>
 

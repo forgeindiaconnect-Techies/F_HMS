@@ -7,17 +7,7 @@ export const getApiUrl = () => {
         if (customUrl) return customUrl;
     }
 
-    // 2. Use configured environment variable VITE_API_URL if provided
-    if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) {
-        let envUrl = import.meta.env.VITE_API_URL.trim();
-        if (envUrl) {
-            if (envUrl.endsWith('/')) envUrl = envUrl.slice(0, -1);
-            if (!envUrl.endsWith('/api')) envUrl += '/api';
-            return envUrl;
-        }
-    }
-
-    // 3. In browser environments without explicit VITE_API_URL, infer from window.location
+    // 2. In browser environments on localhost or local network, connect directly to local backend on port 5000
     if (typeof window !== 'undefined' && window.location) {
         const host = window.location.hostname;
         if (host === 'localhost' || host === '127.0.0.1') {
@@ -25,6 +15,16 @@ export const getApiUrl = () => {
         }
         if (/^(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.)/.test(host)) {
             return `http://${host}:5000/api`;
+        }
+    }
+
+    // 3. When deployed (e.g. on Vercel or cloud), use VITE_API_URL
+    if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) {
+        let envUrl = import.meta.env.VITE_API_URL.trim();
+        if (envUrl) {
+            if (envUrl.endsWith('/')) envUrl = envUrl.slice(0, -1);
+            if (!envUrl.endsWith('/api')) envUrl += '/api';
+            return envUrl;
         }
     }
 

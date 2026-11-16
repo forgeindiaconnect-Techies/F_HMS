@@ -8,7 +8,7 @@ import {
     Bike, Store, BellRing, Menu, X, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
-import { getApiUrl } from '../../utils/axiosInstance';
+import defaultApi, { getApiUrl } from '../../utils/axiosInstance';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import CustomerNavDrawer, { CUSTOMER_DASHBOARD_TABS } from '../../components/CustomerNavDrawer';
 import { useCart } from '../../context/CartContext';
@@ -179,50 +179,68 @@ const CustomerDashboard = () => {
 
     const [liveMenuItems, setLiveMenuItems] = useState(() => {
         try {
-            const cached = sessionStorage.getItem('restosys_live_menu_cache');
-            return cached ? JSON.parse(cached) : [];
+            const cached = sessionStorage.getItem('restosys_live_menu_cache') || sessionStorage.getItem('foodnest_menu_cache');
+            const parsed = cached ? JSON.parse(cached) : [];
+            return Array.isArray(parsed) && parsed.length > 0 ? parsed : [];
         } catch { return []; }
     });
     const [loadingMenuItems, setLoadingMenuItems] = useState(() => {
         try {
-            return !sessionStorage.getItem('restosys_live_menu_cache');
+            const cached = sessionStorage.getItem('restosys_live_menu_cache') || sessionStorage.getItem('foodnest_menu_cache');
+            const parsed = cached ? JSON.parse(cached) : [];
+            return !(Array.isArray(parsed) && parsed.length > 0);
         } catch { return true; }
     });
 
     useEffect(() => {
+        let isMounted = true;
+        const client = api || defaultApi;
+
         const fetchRegisteredRestaurants = async () => {
             try {
-                const { data } = await api.get('/restaurants');
-                if (Array.isArray(data)) {
+                const { data } = await client.get('/restaurants');
+                if (isMounted && Array.isArray(data)) {
                     setRegisteredRestaurants(data);
                     try { sessionStorage.setItem('restosys_reg_rests_cache', JSON.stringify(data)); } catch {}
                 }
             } catch (err) {
                 console.error('Failed to load registered restaurants for menu page', err);
-                setRegisteredRestaurants([]);
             }
         };
 
         const fetchLiveMenu = async () => {
-            const capTimer = setTimeout(() => setLoadingMenuItems(false), 1500);
+            setLoadingMenuItems(true);
             try {
-                const { data } = await api.get('/menu');
-                if (Array.isArray(data)) {
+                const { data } = await client.get('/menu');
+                if (isMounted && Array.isArray(data) && data.length > 0) {
                     setLiveMenuItems(data);
-                    try { sessionStorage.setItem('restosys_live_menu_cache', JSON.stringify(data)); } catch {}
+                    try { 
+                        sessionStorage.setItem('restosys_live_menu_cache', JSON.stringify(data)); 
+                        sessionStorage.setItem('foodnest_menu_cache', JSON.stringify(data)); 
+                    } catch {}
+                } else if (isMounted && Array.isArray(data)) {
+                    setLiveMenuItems(data);
                 }
             } catch (err) {
                 console.error('Failed to load live menu in dashboard', err);
-                setLiveMenuItems([]);
+                try {
+                    const fallback = sessionStorage.getItem('foodnest_menu_cache') || sessionStorage.getItem('restosys_live_menu_cache');
+                    if (fallback) {
+                        const parsed = JSON.parse(fallback);
+                        if (isMounted && Array.isArray(parsed) && parsed.length > 0) {
+                            setLiveMenuItems(parsed);
+                        }
+                    }
+                } catch (_) {}
             } finally {
-                clearTimeout(capTimer);
-                setLoadingMenuItems(false);
+                if (isMounted) setLoadingMenuItems(false);
             }
         };
 
         fetchRegisteredRestaurants();
         fetchLiveMenu();
-    }, []);
+        return () => { isMounted = false; };
+    }, [api]);
 
     // Safe short ID helper
     const getShortId = (id) => {
@@ -581,7 +599,7 @@ const CustomerDashboard = () => {
     const ActiveTabIcon = activeTabObj?.icon || LayoutGrid;
 
     return (
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-2 sm:pt-4 pb-0 h-[calc(100vh-140px)] md:h-[calc(100vh-80px)] flex flex-col overflow-hidden animate-in fade-in duration-300 text-slate-800">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-3 sm:pt-4 pb-0 h-[calc(100vh-155px)] md:h-[calc(100vh-115px)] flex flex-col overflow-hidden animate-in fade-in duration-300 text-slate-800">
             {/* Slide-out Navigation Drawer for Dashboard Sections */}
             <CustomerNavDrawer
                 isOpen={isNavDrawerOpen}
@@ -592,6 +610,70 @@ const CustomerDashboard = () => {
                     navigate(`/profile?tab=${tabId}`, { replace: true });
                 }}
             />
+
+            {/* Dashboard Sub-Header Navigation Toolbar with Hamburger Menu */}
+            <div className="shrink-0 mb-3 z-30">
+                <div className="bg-white/95 backdrop-blur-md rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 border border-slate-200/90 shadow-xs flex items-center justify-between gap-3">
+                    {/* Left: Hamburger Button + Current Active Section */}
+                    <div className="flex items-center gap-2.5 min-w-0">
+                        <button
+                            type="button"
+                            onClick={() => setIsNavDrawerOpen(true)}
+                            className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-black text-slate-800 hover:text-[#FF5A1F] bg-slate-100 hover:bg-orange-50 active:bg-orange-100 border border-slate-200 hover:border-orange-200 transition-all cursor-pointer shrink-0 shadow-2xs"
+                            title="Open Customer Dashboard Navigation Menu"
+                            aria-label="Open Navigation Menu"
+                        >
+                            <Menu size={18} className="text-slate-800 stroke-[2.2]" />
+                            <span className="font-bold">Menu</span>
+                        </button>
+
+                        <div className="h-6 w-px bg-slate-200 shrink-0" />
+
+                        {/* Current Active Section Name & Icon */}
+                        {activeTabObj && (
+                            <div className="flex items-center gap-2 min-w-0">
+                                <div className="w-7 h-7 rounded-lg bg-orange-50 text-[#FF5A1F] border border-orange-200/60 flex items-center justify-center shrink-0">
+                                    <ActiveTabIcon size={15} />
+                                </div>
+                                <div className="min-w-0 text-left">
+                                    <span className="text-xs sm:text-sm font-black text-slate-900 truncate block leading-tight">
+                                        {activeTabObj.name}
+                                    </span>
+                                    <span className="text-[10px] text-slate-400 font-medium truncate hidden sm:block">
+                                        {activeTabObj.desc}
+                                    </span>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Right: Quick Tab Pills for Faster Navigation (Tablet/Desktop) */}
+                    <div className="hidden md:flex items-center gap-1 overflow-x-auto no-scrollbar">
+                        {CUSTOMER_DASHBOARD_TABS.slice(0, 5).map(tab => {
+                            const isTabActive = activeTab === tab.id;
+                            const TabIcon = tab.icon;
+                            return (
+                                <button
+                                    key={tab.id}
+                                    type="button"
+                                    onClick={() => {
+                                        setActiveTab(tab.id);
+                                        navigate(`/profile?tab=${tab.id}`, { replace: true });
+                                    }}
+                                    className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                                        isTabActive 
+                                            ? 'bg-[#FF5A1F] text-white shadow-xs' 
+                                            : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                                    }`}
+                                >
+                                    <TabIcon size={13} />
+                                    <span>{tab.name}</span>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+            </div>
 
             {/* Independent Scrollable Content Container */}
             <div 
@@ -1038,7 +1120,8 @@ const CustomerDashboard = () => {
                                              type="button"
                                              onClick={() => {
                                                  setLoadingMenuItems(true);
-                                                 api.get('/menu').then(res => {
+                                                 const client = api || defaultApi;
+                                                 client.get('/menu').then(res => {
                                                      if (Array.isArray(res.data)) setLiveMenuItems(res.data);
                                                  }).finally(() => setLoadingMenuItems(false));
                                              }}
@@ -1067,7 +1150,8 @@ const CustomerDashboard = () => {
 
                                                  const restName = (food.restaurantId?.name || food.restaurantName || '').trim().toLowerCase();
                                                  const filterName = selectedRestaurantFilter.trim().toLowerCase();
-                                                 const matchesRest = selectedRestaurantFilter === 'All' || restName === filterName;
+                                                 const restId = (food.restaurantId?._id || food.restaurantId || '').toString();
+                                                  const matchesRest = selectedRestaurantFilter === 'All' || restName === filterName || restId === selectedRestaurantFilter;
 
                                                  return matchesCat && matchesRest;
                                              })

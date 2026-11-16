@@ -510,11 +510,9 @@ html.dark .hover\:bg-gray-100:hover {
    ======================================================== */
 @media (max-width: 768px) {
   /* Eliminate heavy padding from layout mains */
-  main.overflow-y-auto,
-  main {
+  main.overflow-y-auto {
     padding-left: 0.625rem !important;
     padding-right: 0.625rem !important;
-    padding-top: 0.75rem !important;
   }
 
   /* Reset inner page wrappers that have extra p-8/p-6 gutters */
