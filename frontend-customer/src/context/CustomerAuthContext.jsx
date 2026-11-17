@@ -50,11 +50,11 @@ api.interceptors.response.use(
         const isNetworkDown = !error.response || error.code === 'ERR_NETWORK';
         const isColdStart = status === 502 || status === 503 || status === 504 || isNetworkDown;
 
-        // If local backend on port 5000 is not reachable, failover to production API
+        // If backend is unreachable or timed out, failover to fast production Vercel API
         if (config && isNetworkDown) {
             const currentBase = config.baseURL || '';
-            if (currentBase.includes(':5000') || currentBase.includes('localhost') || currentBase.includes('127.0.0.1')) {
-                console.warn('Local port 5000 is unreachable, automatically switching to production API:', PROD_API_URL);
+            if (currentBase !== PROD_API_URL) {
+                console.warn('Backend is unreachable, automatically switching to production API:', PROD_API_URL);
                 config.baseURL = PROD_API_URL;
                 if (typeof window !== 'undefined' && window.sessionStorage) {
                     window.sessionStorage.setItem('foodnest_api_failover', PROD_API_URL);

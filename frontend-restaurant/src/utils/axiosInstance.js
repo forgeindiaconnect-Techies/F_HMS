@@ -6,7 +6,7 @@ export const getApiUrl = () => {
     // 1. Check custom localStorage override first
     if (typeof window !== 'undefined' && window.localStorage) {
         const customUrl = window.localStorage.getItem('restosys_api_url') || window.localStorage.getItem('foodnest_api_url');
-        if (customUrl) return customUrl;
+        if (customUrl && !customUrl.includes('onrender.com')) return customUrl;
 
         // If developer explicitly opted into local port 5000 backend:
         if (window.localStorage.getItem('use_local_backend') === 'true') {
@@ -18,7 +18,7 @@ export const getApiUrl = () => {
     // 2. When deployed with VITE_API_URL
     if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) {
         let envUrl = String(import.meta.env.VITE_API_URL).trim();
-        if (envUrl && !envUrl.includes('localhost') && !envUrl.includes('127.0.0.1')) {
+        if (envUrl && !envUrl.includes('localhost') && !envUrl.includes('127.0.0.1') && !envUrl.includes('onrender.com')) {
             if (envUrl.endsWith('/')) envUrl = envUrl.slice(0, -1);
             if (!envUrl.endsWith('/api')) envUrl += '/api';
             return envUrl;
@@ -31,7 +31,7 @@ export const getApiUrl = () => {
 
 const api = axios.create({
     baseURL: getApiUrl(),
-    timeout: 30000,
+    timeout: 15000,
     withCredentials: true,
     headers: {
         'Content-Type': 'application/json',
@@ -74,11 +74,11 @@ api.interceptors.response.use(
         const isNetworkDown = !error.response || error.code === 'ERR_NETWORK' || isTimeout;
         const isColdStart = status === 502 || status === 503 || status === 504 || isNetworkDown;
 
-        // If local backend on port 5000 is not reachable, failover to production API
+        // If backend is unreachable or timed out, automatically failover to production Vercel API
         if (config && (isNetworkDown || isTimeout)) {
             const currentBase = config.baseURL || '';
-            if (currentBase.includes(':5000') || currentBase.includes('localhost') || currentBase.includes('127.0.0.1')) {
-                console.warn('Local port 5000 is unreachable, automatically switching to production API:', PROD_API_URL);
+            if (currentBase !== PROD_API_URL) {
+                console.warn('Backend is unreachable or timed out, automatically switching to production API:', PROD_API_URL);
                 config.baseURL = PROD_API_URL;
                 if (typeof window !== 'undefined' && window.sessionStorage) {
                     window.sessionStorage.setItem('foodnest_api_failover', PROD_API_URL);

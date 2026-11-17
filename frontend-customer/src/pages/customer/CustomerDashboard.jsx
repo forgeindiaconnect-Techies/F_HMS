@@ -198,10 +198,10 @@ useEffect(() => {
     let isMounted = true;
     const client = api || defaultApi;
 
-    // Failsafe timeout so dashboard menu items never hang loading
+    // Safety timeout so dashboard menu items never hang loading
     const safetyTimer = setTimeout(() => {
         if (isMounted) setLoadingMenuItems(false);
-    }, 3000);
+    }, 8000);
 
     const fetchRegisteredRestaurants = async () => {
         try {

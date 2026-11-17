@@ -84,10 +84,10 @@ const Menu = () => {
         let isMounted = true;
         const client = api || defaultApi;
 
-        // 3500ms failsafe timer so loading skeleton/spinner NEVER hangs
+        // 8000ms safety timer so loading skeleton/spinner NEVER hangs indefinitely
         const safetyTimer = setTimeout(() => {
             if (isMounted) setLoading(false);
-        }, 3500);
+        }, 8000);
 
         const fetchMenu = async () => {
             try {
@@ -101,7 +101,7 @@ const Menu = () => {
                     return;
                 }
             } catch (error) {
-                console.warn('Initial menu fetch warning:', error?.message || error);
+                console.warn('Initial menu fetch notice:', error?.message || error);
             }
 
             // Direct reliable failover to live backend endpoint
@@ -307,7 +307,7 @@ const Menu = () => {
                         <h3 className="text-base font-bold text-slate-900">No dishes match your search</h3>
                         <p className="text-xs text-slate-500 mt-1">Try searching with a different keyword or category.</p>
                         <button
-                            onClick={() => { setSearchQuery(''); setActiveCategory('All'); }}
+                            onClick={() => { setSearchQuery(''); setActiveCategory('All'); setRestaurantFilter(''); }}
                             className="mt-4 text-xs font-bold text-[#FF5A1F] hover:underline cursor-pointer"
                         >
                             Reset filters
