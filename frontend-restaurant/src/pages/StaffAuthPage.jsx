@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { 
-    Eye, EyeOff, UtensilsCrossed, ArrowRight, Mail, Lock, User as UserIcon, 
-    AlertCircle, Phone, CheckCircle2, QrCode, Loader2, ShieldCheck, X, Truck, 
-    Sparkles, Clock, Check, Building2, HelpCircle 
+import {
+    Eye, EyeOff, UtensilsCrossed, ArrowRight, Mail, Lock, User as UserIcon,
+    AlertCircle, Phone, CheckCircle2, QrCode, Loader2, ShieldCheck, X, Truck,
+    Sparkles, Clock, Check, Building2, HelpCircle
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api, { getApiUrl } from '../utils/axiosInstance';
@@ -13,28 +13,28 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 
 const DEFAULT_PLANS = [
-    { 
-        _id: 'p1', 
-        name: 'Starter', 
+    {
+        _id: 'p1',
+        name: 'Starter',
         badge: 'Single Outlet',
         description: 'Essential cloud POS billing and QR table ordering for single cafes and food trucks.',
-        monthlyPrice: 49, 
-        yearlyPrice: 39, 
+        monthlyPrice: 49,
+        yearlyPrice: 39,
         features: [
             '1 Restaurant Branch Outlet',
             'Full POS Billing & KOT Generation',
             'QR Code Table Dine-In Ordering',
             'Real-Time Menu & Catalog Control',
             'Email & Chat Technical Support'
-        ] 
+        ]
     },
-    { 
-        _id: 'p2', 
-        name: 'Professional', 
+    {
+        _id: 'p2',
+        name: 'Professional',
         badge: 'Most Popular',
         description: 'Complete operations suite with Kitchen Display Systems, shifts & advanced reports.',
-        monthlyPrice: 99, 
-        yearlyPrice: 79, 
+        monthlyPrice: 99,
+        yearlyPrice: 79,
         features: [
             'Up to 3 Restaurant Outlets',
             'Interactive Kitchen Display System (KDS)',
@@ -42,22 +42,22 @@ const DEFAULT_PLANS = [
             'Recipe Stock Depletion & Low Stock Alerts',
             'Executive Sales & Profit Analytics',
             '24/7 Priority Support'
-        ] 
+        ]
     },
-    { 
-        _id: 'p3', 
-        name: 'Enterprise', 
+    {
+        _id: 'p3',
+        name: 'Enterprise',
         badge: 'All-Inclusive',
         description: 'Full multi-outlet enterprise management with AI demand predictions & custom integrations.',
-        monthlyPrice: 199, 
-        yearlyPrice: 159, 
+        monthlyPrice: 199,
+        yearlyPrice: 159,
         features: [
             'Unlimited Restaurant Outlets & Franchises',
             'AI-Powered Sales & Inventory Demand Forecasting',
             'Centralized Multi-Outlet Stock Transfer',
             'Dedicated Account Manager & 99.9% Uptime SLA',
             'Custom Webhooks & External API Access'
-        ] 
+        ]
     }
 ];
 
@@ -65,12 +65,12 @@ const StaffAuthPage = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const location = useLocation();
-    
+
     // Determine initial mode from path or URL params
     const initialMode = location.pathname.includes('register') || searchParams.get('mode') === 'register' ? 'register' : 'login';
     const [mode, setMode] = useState(initialMode); // 'login' | 'register'
     const [step, setStep] = useState(1); // 1: Plan, 2: Account, 3: KYC, 4: Payment, 5: Processing, 6: Success/Pending, 7: Error
-    
+
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -91,9 +91,9 @@ const StaffAuthPage = () => {
     const [logoFile, setLogoFile] = useState(null);
     const [menuFile, setMenuFile] = useState(null);
     const [imagesFiles, setImagesFiles] = useState([]);
-    
+
     const { login } = useAuth() || {};
-    
+
     const urlPlan = searchParams.get('plan');
     const initialPlan = (!urlPlan || urlPlan.toLowerCase().includes('trial') || urlPlan.toLowerCase().includes('free'))
         ? 'Free Trial'
@@ -118,8 +118,9 @@ const StaffAuthPage = () => {
         document.documentElement.classList.remove('dark');
     }, []);
 
-    // Fetch plans from API asynchronously in background
+    // Fetch plans from API asynchronously in background (only when registering)
     useEffect(() => {
+        if (mode !== 'register') return;
         const fetchPlans = async () => {
             try {
                 setPlansLoading(true);
@@ -135,13 +136,13 @@ const StaffAuthPage = () => {
                     }
                 }
             } catch (err) {
-                console.error('Background fetch for plans failed, using default plans', err);
+                console.warn('Background fetch for plans notice:', err?.message || err);
             } finally {
                 setPlansLoading(false);
             }
         };
         fetchPlans();
-    }, [searchParams, setValue]);
+    }, [mode, searchParams, setValue]);
 
     const [dietaryType, setDietaryType] = useState('Veg & Non-Veg');
     const selectedPlan = watch('plan') || 'Free Trial';
@@ -153,7 +154,7 @@ const StaffAuthPage = () => {
         setAuthError('');
         const result = await login(data.email, data.password);
         setLoading(false);
-        
+
         if (result.success) {
             const role = (result.data?.role || '').toLowerCase();
             let route = '/admin';
@@ -203,7 +204,7 @@ const StaffAuthPage = () => {
         setRegStatusMessage('Uploading KYC documents & restaurant information...');
         const data = getValues();
         const effectivePlan = isTrialSelected ? 'Basic' : (data.plan || selectedPlan || 'Basic');
-        
+
         const formData = new FormData();
         formData.append('name', data.name);
         formData.append('email', data.email);
@@ -351,7 +352,7 @@ const StaffAuthPage = () => {
             toast.error("Please upload your Bank Account Proof (Required).");
             return;
         }
-        
+
         if (isTrialSelected) {
             // Free trial does not require payment QR step! Submit directly
             setStep(5);
@@ -375,7 +376,7 @@ const StaffAuthPage = () => {
                     <input
                         type="text"
                         placeholder="Email Address"
-                        {...register('email', { 
+                        {...register('email', {
                             required: 'Email is required',
                             validate: (val) => !/[A-Z]/.test(val) || 'Only lowercase letters allowed in email'
                         })}
@@ -453,13 +454,12 @@ const StaffAuthPage = () => {
             </div>
 
             {/* DEDICATED 7-DAY FREE TRIAL CARD */}
-            <div 
+            <div
                 onClick={() => setValue('plan', 'Free Trial')}
-                className={`relative p-5 rounded-2xl border-2 cursor-pointer transition-all ${
-                    isTrialSelected 
-                        ? 'border-[#FF5A1F] bg-gradient-to-br from-orange-50/80 via-white to-amber-50/40 shadow-lg shadow-orange-500/10 ring-2 ring-orange-500/20' 
-                        : 'border-slate-200 bg-white hover:border-orange-200'
-                }`}
+                className={`relative p-5 rounded-2xl border-2 cursor-pointer transition-all ${isTrialSelected
+                    ? 'border-[#FF5A1F] bg-gradient-to-br from-orange-50/80 via-white to-amber-50/40 shadow-lg shadow-orange-500/10 ring-2 ring-orange-500/20'
+                    : 'border-slate-200 bg-white hover:border-orange-200'
+                    }`}
             >
                 <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                     <div className="flex items-center gap-2">
@@ -518,16 +518,16 @@ const StaffAuthPage = () => {
 
             {/* Billing Cycle Toggle */}
             <div className="flex bg-slate-100 p-1 rounded-xl">
-                <button 
-                    type="button" 
-                    onClick={() => setValue('billingCycle', 'monthly')} 
+                <button
+                    type="button"
+                    onClick={() => setValue('billingCycle', 'monthly')}
                     className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${!isYearly ? 'bg-white shadow-xs text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}
                 >
                     Monthly
                 </button>
-                <button 
-                    type="button" 
-                    onClick={() => setValue('billingCycle', 'yearly')} 
+                <button
+                    type="button"
+                    onClick={() => setValue('billingCycle', 'yearly')}
                     className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${isYearly ? 'bg-white shadow-xs text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}
                 >
                     Yearly <span className="text-[#FF5A1F] text-[10px] font-extrabold">(Save 20%)</span>
@@ -550,17 +550,15 @@ const StaffAuthPage = () => {
                         <div
                             key={plan._id || idx}
                             onClick={() => setValue('plan', plan.name)}
-                            className={`p-4 border-2 rounded-2xl cursor-pointer transition-all ${
-                                isSelected 
-                                    ? 'border-[#FF5A1F] bg-gradient-to-br from-orange-50/70 via-white to-amber-50/30 shadow-md ring-2 ring-orange-500/15' 
-                                    : 'border-slate-200 bg-white hover:border-orange-200'
-                            }`}
+                            className={`p-4 border-2 rounded-2xl cursor-pointer transition-all ${isSelected
+                                ? 'border-[#FF5A1F] bg-gradient-to-br from-orange-50/70 via-white to-amber-50/30 shadow-md ring-2 ring-orange-500/15'
+                                : 'border-slate-200 bg-white hover:border-orange-200'
+                                }`}
                         >
                             <div className="flex items-start justify-between gap-3">
                                 <div className="flex items-start gap-3">
-                                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 shrink-0 ${
-                                        isSelected ? 'border-[#FF5A1F] bg-[#FF5A1F]' : 'border-slate-300'
-                                    }`}>
+                                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 shrink-0 ${isSelected ? 'border-[#FF5A1F] bg-[#FF5A1F]' : 'border-slate-300'
+                                        }`}>
                                         {isSelected && <Check size={12} className="text-white" strokeWidth={3} />}
                                     </div>
                                     <div>
@@ -633,9 +631,9 @@ const StaffAuthPage = () => {
                 </div>
 
                 <div className="flex items-center justify-between">
-                    <button 
+                    <button
                         type="button"
-                        onClick={() => setStep(1)} 
+                        onClick={() => setStep(1)}
                         className="text-xs font-bold text-slate-500 hover:text-slate-900 inline-flex items-center gap-1 cursor-pointer"
                     >
                         &larr; Change Plan
@@ -646,7 +644,7 @@ const StaffAuthPage = () => {
                 </div>
 
                 <h2 className="text-xl font-bold text-slate-900 mb-2">Create Restaurant Account</h2>
-                
+
                 {/* Restaurant Name */}
                 <div className="relative group">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#FF5A1F]">
@@ -683,7 +681,7 @@ const StaffAuthPage = () => {
                     <input
                         type="email"
                         placeholder="Owner Email Address"
-                        {...register('email', { 
+                        {...register('email', {
                             required: 'Email is required',
                             pattern: { value: /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/, message: 'Invalid lowercase email address' },
                             validate: (val) => !/[A-Z]/.test(val) || 'Only lowercase letters allowed in email'
@@ -713,15 +711,15 @@ const StaffAuthPage = () => {
                     <input
                         type="tel"
                         placeholder="Mobile Number (10 digits, starts with 6-9)"
-                        {...register('phoneNumber', { 
+                        {...register('phoneNumber', {
                             required: 'Phone number is required',
                             pattern: { value: /^[6-9]\d{9}$/, message: 'Phone number must be exactly 10 digits starting with 6, 7, 8, or 9' }
                         })}
                         onInput={(e) => {
-                        let v = e.target.value.replace(/\D/g, '').slice(0, 10);
-                        if (v.length > 0 && !/^[6-9]/.test(v)) v = '';
-                        e.target.value = v;
-                    }}
+                            let v = e.target.value.replace(/\D/g, '').slice(0, 10);
+                            if (v.length > 0 && !/^[6-9]/.test(v)) v = '';
+                            e.target.value = v;
+                        }}
                         className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#FF5A1F] focus:bg-white focus:ring-4 focus:ring-orange-100 transition-all"
                     />
                     {errors.phoneNumber && <p className="text-xs text-red-500 mt-1 pl-1">{errors.phoneNumber.message}</p>}
@@ -742,11 +740,10 @@ const StaffAuthPage = () => {
                                 key={item.id}
                                 type="button"
                                 onClick={() => setDietaryType(item.id)}
-                                className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
-                                    dietaryType === item.id
-                                        ? 'border-[#FF5A1F] bg-orange-50/70 text-slate-900 ring-2 ring-orange-500/15 shadow-xs'
-                                        : 'border-slate-200 bg-slate-50 hover:bg-white text-slate-600'
-                                }`}
+                                className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${dietaryType === item.id
+                                    ? 'border-[#FF5A1F] bg-orange-50/70 text-slate-900 ring-2 ring-orange-500/15 shadow-xs'
+                                    : 'border-slate-200 bg-slate-50 hover:bg-white text-slate-600'
+                                    }`}
                             >
                                 <div className="flex items-center gap-1.5">
                                     <span className="text-xs">{item.icon}</span>
@@ -767,9 +764,9 @@ const StaffAuthPage = () => {
                         <input
                             type={showPassword ? 'text' : 'password'}
                             placeholder="Create Password"
-                            {...register('password', { 
-                                required: 'Password is required', 
-                                minLength: { value: 6, message: 'Password must be at least 6 characters long' } 
+                            {...register('password', {
+                                required: 'Password is required',
+                                minLength: { value: 6, message: 'Password must be at least 6 characters long' }
                             })}
                             className="w-full pl-11 pr-11 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#FF5A1F] focus:bg-white focus:ring-4 focus:ring-orange-100 transition-all"
                         />
@@ -793,7 +790,7 @@ const StaffAuthPage = () => {
                         <input
                             type={showConfirm ? 'text' : 'password'}
                             placeholder="Confirm Password"
-                            {...register('confirmPassword', { 
+                            {...register('confirmPassword', {
                                 required: 'Please confirm password',
                                 validate: val => val === watch('password') || 'Passwords do not match'
                             })}
@@ -838,7 +835,7 @@ const StaffAuthPage = () => {
             <button onClick={() => setStep(2)} className="text-xs font-bold text-slate-500 hover:text-slate-900 inline-flex items-center gap-1 cursor-pointer">
                 &larr; Back to Account Details
             </button>
-            
+
             <div className="flex items-center gap-2 mb-1">
                 <div className="bg-emerald-100 text-emerald-700 p-1.5 rounded-lg">
                     <ShieldCheck size={20} />
@@ -1204,7 +1201,7 @@ const StaffAuthPage = () => {
             <h2 className="text-2xl font-bold text-slate-900 mb-2">Registration Failed</h2>
             <p className="text-red-500 font-medium mb-6 px-4 text-xs">{authError}</p>
             <p className="text-slate-500 text-xs mb-8">Please check your details and try again. Each restaurant account must use a unique email address.</p>
-            <button 
+            <button
                 onClick={() => setStep(1)}
                 className="bg-slate-900 text-white font-bold py-3 px-8 rounded-xl hover:bg-black transition-colors text-sm cursor-pointer"
             >
@@ -1228,7 +1225,7 @@ const StaffAuthPage = () => {
 
             {/* Glass Card - Dynamically wider for plan selection & KYC */}
             <div className={`relative z-10 w-full ${mode === 'register' && (step === 1 || step === 3 || step === 6) ? 'max-w-xl' : 'max-w-md'} bg-white rounded-[2rem] shadow-2xl overflow-hidden border border-orange-100/80 transition-all duration-300`}>
-                
+
                 {/* Branding Header with Warm Vibrant FoodNest Orange */}
                 <div className="bg-gradient-to-br from-[#FF5A1F] to-[#E04812] p-7 text-center relative overflow-hidden shadow-md shadow-orange-500/20">
                     <Link to="/" className="absolute top-4 right-4 text-white/80 hover:text-white bg-black/10 hover:bg-black/20 p-2 rounded-full transition-all z-20 cursor-pointer">
@@ -1292,8 +1289,8 @@ const StaffAuthPage = () => {
                     <div className="mt-6 pt-4 border-t border-slate-100 text-center space-y-2">
                         <p className="text-[11px] text-slate-400 font-medium">Looking for another portal?</p>
                         <div className="flex flex-wrap gap-2 justify-center">
-                            <Link 
-                                to="/delivery/login" 
+                            <Link
+                                to="/delivery/login"
                                 className="inline-flex items-center justify-center gap-1.5 text-xs font-bold text-slate-700 hover:text-[#FF5A1F] bg-slate-50 hover:bg-orange-50/60 px-4 py-2 rounded-xl transition-all border border-slate-200 hover:border-orange-200 shadow-2xs"
                             >
                                 <Truck size={14} className="text-[#FF5A1F]" /> Delivery Partner Portal

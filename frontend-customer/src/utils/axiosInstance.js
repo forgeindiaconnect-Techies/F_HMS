@@ -4,30 +4,19 @@ import { Capacitor } from '@capacitor/core';
 export const PROD_API_URL = 'https://backend-ochre-five-29.vercel.app/api';
 
 export const getApiUrl = () => {
-    // 0. Active failover check
-    if (typeof window !== 'undefined' && window.sessionStorage) {
-        const failoverUrl = window.sessionStorage.getItem('foodnest_api_failover');
-        if (failoverUrl) return failoverUrl;
-    }
-
     // 1. Check custom localStorage override first (useful for manual setting or testing on physical devices)
     if (typeof window !== 'undefined' && window.localStorage) {
-        const customUrl = window.localStorage.getItem('foodnest_api_url');
+        const customUrl = window.localStorage.getItem('foodnest_api_url') || window.localStorage.getItem('restosys_api_url');
         if (customUrl) return customUrl;
-    }
 
-    // 2. In browser environments on localhost or local network, connect directly to local backend on port 5000
-    if (typeof window !== 'undefined' && window.location && !Capacitor.isNativePlatform()) {
-        const host = window.location.hostname;
-        if (host === 'localhost' || host === '127.0.0.1') {
-            return `http://${host}:5000/api`;
-        }
-        if (/^(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.)/.test(host)) {
+        // If developer explicitly opted into local port 5000 backend:
+        if (window.localStorage.getItem('use_local_backend') === 'true') {
+            const host = window.location.hostname || 'localhost';
             return `http://${host}:5000/api`;
         }
     }
 
-    // 3. Environment variable if available and valid
+    // 2. Environment variable if available and valid
     if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) {
         let envUrl = String(import.meta.env.VITE_API_URL).trim();
         if (envUrl && !envUrl.includes('localhost') && !envUrl.includes('127.0.0.1')) {
@@ -37,7 +26,7 @@ export const getApiUrl = () => {
         }
     }
 
-    // 4. Default fallback for deployed production web (Vercel/Render) and native mobile apps
+    // 3. Default fast direct connection to live production cloud API
     return PROD_API_URL;
 };
 

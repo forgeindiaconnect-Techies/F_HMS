@@ -121,8 +121,8 @@ const Menu = () => {
             }
         };
         fetchMenu();
-        return () => { 
-            isMounted = false; 
+        return () => {
+            isMounted = false;
             clearTimeout(safetyTimer);
         };
     }, [api]);
@@ -190,243 +190,243 @@ const Menu = () => {
         <div className="bg-white min-h-screen pb-20 font-sans selection:bg-[#FF5A1F] selection:text-white">
             {/* 1. Warm Hero Banner Matching Landing Page */}
             <div className="relative w-full overflow-hidden bg-gradient-to-r from-white via-[#FCF9F5] to-[#F8F5EE] border-b border-slate-100 pt-3 pb-6 sm:py-14">
-                    {/* Soft Organic Background Glow */}
-                    <div className="absolute top-0 left-0 w-72 h-72 bg-gradient-to-br from-emerald-100/40 via-orange-100/20 to-transparent rounded-full blur-3xl pointer-events-none" />
+                {/* Soft Organic Background Glow */}
+                <div className="absolute top-0 left-0 w-72 h-72 bg-gradient-to-br from-emerald-100/40 via-orange-100/20 to-transparent rounded-full blur-3xl pointer-events-none" />
 
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                        <div className="max-w-2xl text-left space-y-3">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 border border-orange-200/80 text-[#FF5A1F] text-xs font-bold shadow-xs">
-                                <span className="w-2 h-2 rounded-full bg-[#FF5A1F] animate-pulse" />
-                                <span>Fresh Daily Menu</span>
-                            </div>
-                            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight leading-tight">
-                                Explore Delicious Food,<br />
-                                <span className="text-[#FF5A1F]">Crafted with Passion.</span>
-                            </h1>
-                            <p className="text-xs sm:text-sm text-slate-500 font-medium leading-relaxed">
-                                Order mouthwatering biryanis, hand-stretched pizzas, sizzling burgers, and fresh desserts prepared by top chefs and delivered hot.
-                            </p>
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                    <div className="max-w-2xl text-left space-y-3">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 border border-orange-200/80 text-[#FF5A1F] text-xs font-bold shadow-xs">
+                            <span className="w-2 h-2 rounded-full bg-[#FF5A1F] animate-pulse" />
+                            <span>Fresh Daily Menu</span>
                         </div>
+                        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight leading-tight">
+                            Explore Delicious Food,<br />
+                            <span className="text-[#FF5A1F]">Crafted with Passion.</span>
+                        </h1>
+                        <p className="text-xs sm:text-sm text-slate-500 font-medium leading-relaxed">
+                            Order mouthwatering biryanis, hand-stretched pizzas, sizzling burgers, and fresh desserts prepared by top chefs and delivered hot.
+                        </p>
+                    </div>
 
-                        {/* Integrated Search Bar inside Hero */}
-                        <div className="mt-6 max-w-xl">
-                            <div className="relative flex items-center bg-white rounded-full border border-slate-200/90 shadow-sm focus-within:border-[#FF5A1F] focus-within:ring-2 focus-within:ring-orange-100 transition-all p-1">
-                                <Search className="text-slate-400 ml-3.5 shrink-0" size={18} />
-                                <input
-                                    type="text"
-                                    placeholder="Search dishes, ingredients, or cuisines..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full px-3 py-2 text-xs sm:text-sm font-medium bg-transparent outline-none text-slate-800 placeholder-slate-400"
-                                />
-                                {searchQuery && (
-                                    <button
-                                        type="button"
-                                        onClick={() => setSearchQuery('')}
-                                        className="text-xs text-slate-400 hover:text-slate-600 px-2 py-1 cursor-pointer"
-                                    >
-                                        Clear
-                                    </button>
-                                )}
+                    {/* Integrated Search Bar inside Hero */}
+                    <div className="mt-6 max-w-xl">
+                        <div className="relative flex items-center bg-white rounded-full border border-slate-200/90 shadow-sm focus-within:border-[#FF5A1F] focus-within:ring-2 focus-within:ring-orange-100 transition-all p-1">
+                            <Search className="text-slate-400 ml-3.5 shrink-0" size={18} />
+                            <input
+                                type="text"
+                                placeholder="Search dishes, ingredients, or cuisines..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full px-3 py-2 text-xs sm:text-sm font-medium bg-transparent outline-none text-slate-800 placeholder-slate-400"
+                            />
+                            {searchQuery && (
                                 <button
                                     type="button"
-                                    className="bg-[#FF5A1F] hover:bg-[#e04f1a] text-white text-xs font-bold px-4 py-2 rounded-full transition-colors shrink-0 shadow-xs cursor-pointer"
+                                    onClick={() => setSearchQuery('')}
+                                    className="text-xs text-slate-400 hover:text-slate-600 px-2 py-1 cursor-pointer"
                                 >
-                                    Search
+                                    Clear
                                 </button>
-                            </div>
+                            )}
+                            <button
+                                type="button"
+                                className="bg-[#FF5A1F] hover:bg-[#e04f1a] text-white text-xs font-bold px-4 py-2 rounded-full transition-colors shrink-0 shadow-xs cursor-pointer"
+                            >
+                                Search
+                            </button>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                {/* 2. Main Content Container */}
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            {/* 2. Main Content Container */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
-                    {/* Category Filter Pills (Matching Landing Page Style) */}
-                    <div className="flex items-center gap-2 overflow-x-auto pb-4 pt-1 no-scrollbar select-none">
-                        {categories.map(cat => {
-                            const isActive = activeCategory === cat;
+                {/* Category Filter Pills (Matching Landing Page Style) */}
+                <div className="flex items-center gap-2 overflow-x-auto pb-4 pt-1 no-scrollbar select-none">
+                    {categories.map(cat => {
+                        const isActive = activeCategory === cat;
+                        return (
+                            <button
+                                key={cat}
+                                onClick={() => setActiveCategory(cat)}
+                                className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-200 cursor-pointer ${isActive
+                                    ? 'bg-[#FF5A1F] text-white shadow-xs shadow-[#FF5A1F]/30 scale-102'
+                                    : 'bg-slate-100 hover:bg-orange-50 text-slate-700 hover:text-[#FF5A1F] border border-transparent'
+                                    }`}
+                            >
+                                {cat}
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {/* Section Header Count */}
+                {restaurantFilter && (
+                    <div className="flex flex-wrap items-center gap-2 mb-3">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-50 border border-orange-200 text-[#FF5A1F] text-xs font-bold">
+                            <span>Filtered by Outlet</span>
+                            <button
+                                type="button"
+                                onClick={() => setRestaurantFilter('')}
+                                className="text-slate-400 hover:text-red-500 font-black ml-1 cursor-pointer"
+                                title="Clear restaurant filter"
+                            >
+                                ✕
+                            </button>
+                        </span>
+                        {!hasRestaurantMatches && (
+                            <span className="text-xs text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
+                                No dishes specific to this outlet. Showing all menu items.
+                            </span>
+                        )}
+                    </div>
+                )}
+                <div className="flex items-center justify-between mb-5 mt-2">
+                    <div className="text-left">
+                        <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+                            {activeCategory === 'All' ? 'All Dishes' : activeCategory}
+                        </h2>
+                        <p className="text-xs text-slate-500 font-medium">
+                            {loading ? 'Fetching fresh culinary delights...' : `Showing ${filteredMenu.length} delicious ${filteredMenu.length === 1 ? 'item' : 'items'}`}
+                        </p>
+                    </div>
+                </div>
+
+                {/* Dishes Grid */}
+                {loading ? (
+                    <div className="flex justify-center items-center py-32">
+                        <svg className="animate-spin h-8 w-8 text-[#FF5A1F]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                        </svg>
+                    </div>
+                ) : filteredMenu.length === 0 ? (
+                    <div className="text-center py-20 bg-slate-50/60 rounded-3xl border border-slate-100 max-w-lg mx-auto">
+                        <Search size={40} className="mx-auto text-slate-300 mb-3" />
+                        <h3 className="text-base font-bold text-slate-900">No dishes match your search</h3>
+                        <p className="text-xs text-slate-500 mt-1">Try searching with a different keyword or category.</p>
+                        <button
+                            onClick={() => { setSearchQuery(''); setActiveCategory('All'); }}
+                            className="mt-4 text-xs font-bold text-[#FF5A1F] hover:underline cursor-pointer"
+                        >
+                            Reset filters
+                        </button>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-4">
+                        {filteredMenu.map(item => {
+                            const isFav = wishlist?.some(w => (w._id || w.id) === (item._id || item.id));
+                            const discountBadge = item.discount || (item.tags?.includes('Popular') ? '20% OFF' : null);
+
                             return (
-                                <button
-                                    key={cat}
-                                    onClick={() => setActiveCategory(cat)}
-                                    className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-200 cursor-pointer ${isActive
-                                        ? 'bg-[#FF5A1F] text-white shadow-xs shadow-[#FF5A1F]/30 scale-102'
-                                        : 'bg-slate-100 hover:bg-orange-50 text-slate-700 hover:text-[#FF5A1F] border border-transparent'
-                                        }`}
+                                <div
+                                    key={item._id || item.id}
+                                    onClick={() => setSelectedDish(item)}
+                                    className="bg-white rounded-xl border border-slate-200/80 p-3 shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between text-left group cursor-pointer"
                                 >
-                                    {cat}
-                                </button>
+                                    <div>
+                                        {/* Square Image with Badges & Heart Button */}
+                                        <div className="relative aspect-square rounded-lg overflow-hidden bg-slate-50 mb-2.5 flex items-center justify-center">
+                                            {getItemImage(item) ? (
+                                                <img
+                                                    src={getItemImage(item)}
+                                                    alt={item.name}
+                                                    onError={(e) => {
+                                                        e.target.style.display = 'none';
+                                                    }}
+                                                    className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-300"
+                                                    loading="lazy"
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full flex flex-col items-center justify-center bg-orange-50/40 text-[#FF5A1F]">
+                                                    <ShoppingBag size={28} className="opacity-40" />
+                                                    <span className="text-[10px] font-bold text-slate-400 mt-1">{item.category || 'Dish'}</span>
+                                                </div>
+                                            )}
+                                            {discountBadge && (
+                                                <div className="absolute top-2 left-2 bg-[#10B981] text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-xs">
+                                                    {discountBadge}
+                                                </div>
+                                            )}
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    toggleWishlist(item);
+                                                }}
+                                                className={`absolute top-2 right-2 p-1.5 rounded-full backdrop-blur-xs transition-colors cursor-pointer ${isFav ? 'bg-red-500 text-white shadow-xs' : 'bg-white/90 text-slate-600 hover:text-red-500 shadow-xs'
+                                                    }`}
+                                                aria-label="Wishlist"
+                                            >
+                                                <Heart size={12} className={isFav ? 'fill-white' : ''} />
+                                            </button>
+                                        </div>
+
+                                        {/* Dish Details */}
+                                        <div className="space-y-0.5">
+                                            <h4 className="text-[13px] sm:text-sm font-bold text-slate-900 line-clamp-1 group-hover:text-[#FF5A1F] transition-colors">
+                                                {item.name}
+                                            </h4>
+
+                                            <div className="flex items-center gap-1 text-xs text-slate-600 font-semibold">
+                                                <Star size={11} className="fill-amber-400 text-amber-400" />
+                                                <span>{item.rating || '4.5'}</span>
+                                                {item.category && (
+                                                    <span className="text-[11px] text-slate-400 font-normal ml-1">
+                                                        • {item.category}
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            <div className="flex items-baseline gap-1.5 pt-1">
+                                                <span className="text-base font-extrabold text-slate-900">
+                                                    ₹{item.price}
+                                                </span>
+                                                {item.originalPrice && (
+                                                    <span className="text-xs font-semibold text-slate-400 line-through">
+                                                        ₹{item.originalPrice}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Compact Orange Add to Cart Button (opens dish description before adding) */}
+                                    <button
+                                        type="button"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setSelectedDish(item);
+                                        }}
+                                        className="w-full mt-3 bg-[#FF5A1F] hover:bg-[#e04f1a] active:scale-98 text-white font-bold py-2 px-3 rounded-lg text-xs transition-colors shadow-xs cursor-pointer flex items-center justify-center gap-1.5"
+                                    >
+                                        <ShoppingBag size={13} />
+                                        <span>Add to Cart</span>
+                                    </button>
+                                </div>
                             );
                         })}
                     </div>
-
-                    {/* Section Header Count */}
-                    {restaurantFilter && (
-                        <div className="flex flex-wrap items-center gap-2 mb-3">
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-50 border border-orange-200 text-[#FF5A1F] text-xs font-bold">
-                                <span>Filtered by Outlet</span>
-                                <button
-                                    type="button"
-                                    onClick={() => setRestaurantFilter('')}
-                                    className="text-slate-400 hover:text-red-500 font-black ml-1 cursor-pointer"
-                                    title="Clear restaurant filter"
-                                >
-                                    ✕
-                                </button>
-                            </span>
-                            {!hasRestaurantMatches && (
-                                <span className="text-xs text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
-                                    No dishes specific to this outlet. Showing all menu items.
-                                </span>
-                            )}
-                        </div>
-                    )}
-                    <div className="flex items-center justify-between mb-5 mt-2">
-                        <div className="text-left">
-                            <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
-                                {activeCategory === 'All' ? 'All Dishes' : activeCategory}
-                            </h2>
-                            <p className="text-xs text-slate-500 font-medium">
-                                {loading ? 'Fetching fresh culinary delights...' : `Showing ${filteredMenu.length} delicious ${filteredMenu.length === 1 ? 'item' : 'items'}`}
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Dishes Grid */}
-                    {loading ? (
-                        <div className="flex justify-center items-center py-32">
-                            <svg className="animate-spin h-8 w-8 text-[#FF5A1F]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                            </svg>
-                        </div>
-                    ) : filteredMenu.length === 0 ? (
-                        <div className="text-center py-20 bg-slate-50/60 rounded-3xl border border-slate-100 max-w-lg mx-auto">
-                            <Search size={40} className="mx-auto text-slate-300 mb-3" />
-                            <h3 className="text-base font-bold text-slate-900">No dishes match your search</h3>
-                            <p className="text-xs text-slate-500 mt-1">Try searching with a different keyword or category.</p>
-                            <button
-                                onClick={() => { setSearchQuery(''); setActiveCategory('All'); }}
-                                className="mt-4 text-xs font-bold text-[#FF5A1F] hover:underline cursor-pointer"
-                            >
-                                Reset filters
-                            </button>
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-4">
-                            {filteredMenu.map(item => {
-                                const isFav = wishlist?.some(w => (w._id || w.id) === (item._id || item.id));
-                                const discountBadge = item.discount || (item.tags?.includes('Popular') ? '20% OFF' : null);
-
-                                return (
-                                    <div
-                                        key={item._id || item.id}
-                                        onClick={() => setSelectedDish(item)}
-                                        className="bg-white rounded-xl border border-slate-200/80 p-3 shadow-[0_1px_4px_rgba(0,0,0,0.03)] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between text-left group cursor-pointer"
-                                    >
-                                        <div>
-                                            {/* Square Image with Badges & Heart Button */}
-                                            <div className="relative aspect-square rounded-lg overflow-hidden bg-slate-50 mb-2.5 flex items-center justify-center">
-                                                {getItemImage(item) ? (
-                                                    <img
-                                                        src={getItemImage(item)}
-                                                        alt={item.name}
-                                                        onError={(e) => {
-                                                            e.target.style.display = 'none';
-                                                        }}
-                                                        className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-300"
-                                                        loading="lazy"
-                                                    />
-                                                ) : (
-                                                    <div className="w-full h-full flex flex-col items-center justify-center bg-orange-50/40 text-[#FF5A1F]">
-                                                        <ShoppingBag size={28} className="opacity-40" />
-                                                        <span className="text-[10px] font-bold text-slate-400 mt-1">{item.category || 'Dish'}</span>
-                                                    </div>
-                                                )}
-                                                {discountBadge && (
-                                                    <div className="absolute top-2 left-2 bg-[#10B981] text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-xs">
-                                                        {discountBadge}
-                                                    </div>
-                                                )}
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        toggleWishlist(item);
-                                                    }}
-                                                    className={`absolute top-2 right-2 p-1.5 rounded-full backdrop-blur-xs transition-colors cursor-pointer ${isFav ? 'bg-red-500 text-white shadow-xs' : 'bg-white/90 text-slate-600 hover:text-red-500 shadow-xs'
-                                                        }`}
-                                                    aria-label="Wishlist"
-                                                >
-                                                    <Heart size={12} className={isFav ? 'fill-white' : ''} />
-                                                </button>
-                                            </div>
-
-                                            {/* Dish Details */}
-                                            <div className="space-y-0.5">
-                                                <h4 className="text-[13px] sm:text-sm font-bold text-slate-900 line-clamp-1 group-hover:text-[#FF5A1F] transition-colors">
-                                                    {item.name}
-                                                </h4>
-
-                                                <div className="flex items-center gap-1 text-xs text-slate-600 font-semibold">
-                                                    <Star size={11} className="fill-amber-400 text-amber-400" />
-                                                    <span>{item.rating || '4.5'}</span>
-                                                    {item.category && (
-                                                        <span className="text-[11px] text-slate-400 font-normal ml-1">
-                                                            • {item.category}
-                                                        </span>
-                                                    )}
-                                                </div>
-
-                                                <div className="flex items-baseline gap-1.5 pt-1">
-                                                    <span className="text-base font-extrabold text-slate-900">
-                                                        ₹{item.price}
-                                                    </span>
-                                                    {item.originalPrice && (
-                                                        <span className="text-xs font-semibold text-slate-400 line-through">
-                                                            ₹{item.originalPrice}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Compact Orange Add to Cart Button (opens dish description before adding) */}
-                                        <button
-                                            type="button"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setSelectedDish(item);
-                                            }}
-                                            className="w-full mt-3 bg-[#FF5A1F] hover:bg-[#e04f1a] active:scale-98 text-white font-bold py-2 px-3 rounded-lg text-xs transition-colors shadow-xs cursor-pointer flex items-center justify-center gap-1.5"
-                                        >
-                                            <ShoppingBag size={13} />
-                                            <span>Add to Cart</span>
-                                        </button>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    )}
-                </div>
-
-                <DishDetailModal
-                    dish={selectedDish}
-                    isOpen={Boolean(selectedDish)}
-                    onClose={() => setSelectedDish(null)}
-                    onAddToCart={(d, qty) => {
-                        addToCart(d, qty);
-                        toast.success(`Added ${qty > 1 ? `${qty}x ` : ''}${d.name} to cart!`);
-                    }}
-                    isWishlisted={Boolean(selectedDish && wishlist?.some(w => (w._id || w.id) === (selectedDish._id || selectedDish.id)))}
-                    onToggleWishlist={(d) => {
-                        const isFavNow = wishlist?.some(w => (w._id || w.id) === (d._id || d.id));
-                        toggleWishlist(d);
-                        toast.success(isFavNow ? 'Removed from wishlist' : 'Added to wishlist!');
-                    }}
-                />
+                )}
             </div>
-            );
+
+            <DishDetailModal
+                dish={selectedDish}
+                isOpen={Boolean(selectedDish)}
+                onClose={() => setSelectedDish(null)}
+                onAddToCart={(d, qty) => {
+                    addToCart(d, qty);
+                    toast.success(`Added ${qty > 1 ? `${qty}x ` : ''}${d.name} to cart!`);
+                }}
+                isWishlisted={Boolean(selectedDish && wishlist?.some(w => (w._id || w.id) === (selectedDish._id || selectedDish.id)))}
+                onToggleWishlist={(d) => {
+                    const isFavNow = wishlist?.some(w => (w._id || w.id) === (d._id || d.id));
+                    toggleWishlist(d);
+                    toast.success(isFavNow ? 'Removed from wishlist' : 'Added to wishlist!');
+                }}
+            />
+        </div>
+    );
 };
 
-            export default Menu;
+export default Menu;
