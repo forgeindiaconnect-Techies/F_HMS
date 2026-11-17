@@ -1,5 +1,9 @@
 {
   "appId": "com.restosys.hms",
   "appName": "FoodNest",
-  "webDir": "dist"
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https",
+    "cleartext": true
+  }
 }
