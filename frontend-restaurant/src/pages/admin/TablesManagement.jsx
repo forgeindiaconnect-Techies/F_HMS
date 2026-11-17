@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { 
+import {
     Plus, Search, Trash2, Store, QrCode, X, Printer, Download, Users,
     ExternalLink, RefreshCw, CheckCircle2, AlertCircle,
     Smartphone, Laptop, Image as ImageIcon
@@ -144,11 +144,10 @@ const TablesManagement = () => {
         setIsQrModalOpen(true);
     };
 
-    const PROD_CUSTOMER_APP_URL = 'https://f-hms-customer-two.vercel.app';
-
     const getQrUrl = (table) => {
         if (!table) return '';
-        let baseUrl = PROD_CUSTOMER_APP_URL;
+        let baseUrl = import.meta.env.VITE_CUSTOMER_URL || (typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:5174` : 'http://localhost:5174');
+        if (baseUrl.endsWith('/')) baseUrl = baseUrl.slice(0, -1);
 
         if (isLocalhost) {
             if (qrMode === 'localhost') {
@@ -157,18 +156,9 @@ const TablesManagement = () => {
                 const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
                 baseUrl = `http://${host}:5174`;
             } else {
-                baseUrl = PROD_CUSTOMER_APP_URL;
-            }
-        } else {
-            const envUrl = import.meta.env.VITE_CUSTOMER_URL;
-            if (envUrl && typeof envUrl === 'string' && !envUrl.includes('localhost') && !envUrl.includes(':5174') && !envUrl.includes('restaurant')) {
-                baseUrl = envUrl;
-            } else {
-                baseUrl = PROD_CUSTOMER_APP_URL;
+                baseUrl = import.meta.env.VITE_CUSTOMER_URL || `http://${window.location.hostname}:5174`;
             }
         }
-
-        if (baseUrl.endsWith('/')) baseUrl = baseUrl.slice(0, -1);
 
         const bId = table.branchId?._id || table.branchId || '';
         const rId = restaurant?._id || table.restaurantId?._id || table.restaurantId || (table.branchId?.restaurantId?._id || table.branchId?.restaurantId) || '';
@@ -293,7 +283,7 @@ const TablesManagement = () => {
                         Table Management &amp; QR Digital Menu
                     </h2>
                     <p className="text-gray-500 text-sm mt-1">
-                        Manage dining tables, scan QR codes with live camera, and generate contactless menus.
+                        Manage dining tables, generate table QR codes, and enable contactless customer ordering.
                     </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
@@ -427,18 +417,6 @@ const TablesManagement = () => {
                                         title="View Table QR Code"
                                     >
                                         <QrCode size={14} /> View QR
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            setScannedTable(table);
-                                            setIsScannerOpen(true);
-                                            setScannerMode('select');
-                                        }}
-                                        className="py-2.5 px-3 bg-slate-900 hover:bg-black text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1 shadow-sm cursor-pointer"
-                                        title="Test Scan Table"
-                                    >
-                                        <ScanLine size={14} className="text-emerald-400" />
-                                        <span>Scan</span>
                                     </button>
                                     <button
                                         onClick={() => handleDeleteClick(table)}
