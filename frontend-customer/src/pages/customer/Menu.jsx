@@ -93,9 +93,10 @@ const Menu = () => {
         const fetchMenu = async () => {
             // 1. Direct reliable fetch from live production cloud API (no staff auth interference)
             try {
-                const directRes = await axios.get(`${PROD_API_URL}/menu`, { timeout: 12000 });
+                const directRes = await axios.get(`${PROD_API_URL}/menu`, { timeout: 8000 });
                 if (isMounted && Array.isArray(directRes.data) && directRes.data.length > 0) {
                     setMenuItems(directRes.data);
+                    if (isMounted) setLoading(false);
                     try {
                         sessionStorage.setItem('foodnest_menu_cache', JSON.stringify(directRes.data));
                         sessionStorage.setItem('restosys_live_menu_cache', JSON.stringify(directRes.data));
@@ -106,7 +107,21 @@ const Menu = () => {
                 console.warn('Direct production menu fetch notice:', directErr?.message || directErr);
             }
 
-            // 2. Fallback to client instance
+            // 2. Same-origin fallback
+            try {
+                const sameOriginRes = await axios.get('/api/menu', { timeout: 8000 });
+                if (isMounted && Array.isArray(sameOriginRes.data) && sameOriginRes.data.length > 0) {
+                    setMenuItems(sameOriginRes.data);
+                    if (isMounted) setLoading(false);
+                    try {
+                        sessionStorage.setItem('foodnest_menu_cache', JSON.stringify(sameOriginRes.data));
+                        sessionStorage.setItem('restosys_live_menu_cache', JSON.stringify(sameOriginRes.data));
+                    } catch { }
+                    return;
+                }
+            } catch (_) { }
+
+            // 3. Fallback to client instance
             try {
                 const { data } = await client.get('/menu');
                 if (isMounted && Array.isArray(data) && data.length > 0) {
@@ -128,6 +143,22 @@ const Menu = () => {
             clearTimeout(safetyTimer);
         };
     }, [api]);
+
+    // Safety auto-retry if initial menu array resolved empty
+    useEffect(() => {
+        if (!loading && menuItems.length === 0) {
+            const retryTimer = setTimeout(() => {
+                axios.get(`${PROD_API_URL}/menu`, { timeout: 8000 })
+                    .then(res => {
+                        if (Array.isArray(res.data) && res.data.length > 0) {
+                            setMenuItems(res.data);
+                        }
+                    })
+                    .catch(() => {});
+            }, 1000);
+            return () => clearTimeout(retryTimer);
+        }
+    }, [loading, menuItems.length]);
 
     // Check if there are dishes matching restaurantFilter (by _id or by name)
     const hasRestaurantMatches = useMemo(() => {

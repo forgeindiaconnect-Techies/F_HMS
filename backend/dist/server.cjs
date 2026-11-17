@@ -129522,10 +129522,16 @@ var getRestaurants = async (req, res) => {
       }
       let resolvedBanner = typeof rest.bannerImage === "string" && rest.bannerImage.trim() && !rest.bannerImage.includes("/thumbnail") ? rest.bannerImage : resolvedShowcase.length > 0 ? resolvedShowcase[0] : thumbUrl;
       let resolvedLogo = typeof rest.logo === "string" && rest.logo.trim() && !rest.logo.includes(".pdf") && !rest.logo.includes("/thumbnail") ? rest.logo : typeof verif?.documents?.logo?.filePath === "string" && !verif.documents.logo.filePath.includes(".pdf") ? verif.documents.logo.filePath : `${thumbUrl}?kind=logo`;
+      if (typeof resolvedBanner === "string" && resolvedBanner.length > 5e3) {
+        resolvedBanner = `${thumbUrl}?kind=banner`;
+      }
+      if (typeof resolvedLogo === "string" && resolvedLogo.length > 5e3) {
+        resolvedLogo = `${thumbUrl}?kind=logo`;
+      }
       rest.image = resolvedBanner;
       rest.bannerImage = resolvedBanner;
       rest.logo = resolvedLogo;
-      rest.showcaseImages = resolvedShowcase.length > 0 ? resolvedShowcase : [resolvedBanner];
+      rest.showcaseImages = [resolvedBanner];
       const branchAddress = primaryBranch?.location?.address && primaryBranch.location.address !== "Primary Location" ? primaryBranch.location.address : "";
       const combinedAddr = rest.address || branchAddress || verifAddress || primaryBranch?.location?.address || "";
       rest.address = combinedAddr;
@@ -133158,6 +133164,7 @@ var getMenuItems = async (req, res) => {
       return res.json(menuCache.data);
     }
     const filter = { isActive: true };
+    const isStaffPortal = req.query.forStaff === "true" || req.headers["x-staff-portal"] === "true" || Boolean(req.headers.referer && (req.headers.referer.includes("/admin") || req.headers.referer.includes("/staff") || req.headers.referer.includes("/manager") || req.headers.referer.includes("/chef") || req.headers.referer.includes("/cashier") || req.headers.referer.includes("/waiter") || req.headers.referer.includes("frontend-restaurant")));
     if (req.query.restaurantId && req.query.restaurantId !== "null" && req.query.restaurantId !== "undefined") {
       filter.restaurantId = req.query.restaurantId;
       if (req.query.branchId && req.query.branchId !== "null" && req.query.branchId !== "undefined") {
@@ -133167,7 +133174,7 @@ var getMenuItems = async (req, res) => {
           { branchId: null }
         ];
       }
-    } else if (req.user && req.user.restaurantId) {
+    } else if (isStaffPortal && req.user && req.user.restaurantId && req.user.role !== "Customer") {
       filter.restaurantId = req.user.restaurantId;
       if (req.user.branchId) {
         filter.$or = [
@@ -133177,7 +133184,11 @@ var getMenuItems = async (req, res) => {
         ];
       }
     }
-    const items = await MenuItem_default.find(filter).populate("restaurantId", "name city address approvalStatus subscription isActive isDeleted status").lean();
+    let items = await MenuItem_default.find(filter).populate("restaurantId", "name city address approvalStatus subscription isActive isDeleted status").lean();
+    if (items.length === 0 && filter.$or) {
+      delete filter.$or;
+      items = await MenuItem_default.find(filter).populate("restaurantId", "name city address approvalStatus subscription isActive isDeleted status").lean();
+    }
     const validItems = items.filter((item) => {
       if (!item.restaurantId) return false;
       if (typeof item.restaurantId === "object") {

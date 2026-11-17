@@ -206,7 +206,7 @@ useEffect(() => {
     const fetchRegisteredRestaurants = async () => {
         // Direct reliable fetch to live production cloud API first
         try {
-            const directRes = await axios.get(`${PROD_API_URL}/restaurants`, { timeout: 12000 });
+            const directRes = await axios.get(`${PROD_API_URL}/restaurants`, { timeout: 8000 });
             if (isMounted && Array.isArray(directRes.data) && directRes.data.length > 0) {
                 setRegisteredRestaurants(directRes.data);
                 try { sessionStorage.setItem('restosys_reg_rests_cache', JSON.stringify(directRes.data)); } catch { }
@@ -215,6 +215,16 @@ useEffect(() => {
         } catch (failoverErr) {
             console.warn('Direct production restaurants fetch notice:', failoverErr?.message || failoverErr);
         }
+
+        // Same-origin rewrite fallback
+        try {
+            const sameOriginRes = await axios.get('/api/restaurants', { timeout: 8000 });
+            if (isMounted && Array.isArray(sameOriginRes.data) && sameOriginRes.data.length > 0) {
+                setRegisteredRestaurants(sameOriginRes.data);
+                try { sessionStorage.setItem('restosys_reg_rests_cache', JSON.stringify(sameOriginRes.data)); } catch { }
+                return;
+            }
+        } catch (_) { }
 
         try {
             const { data } = await client.get('/restaurants');
@@ -231,9 +241,10 @@ useEffect(() => {
         setLoadingMenuItems(true);
         // Direct reliable fetch from live production cloud API first
         try {
-            const directRes = await axios.get(`${PROD_API_URL}/menu`, { timeout: 12000 });
+            const directRes = await axios.get(`${PROD_API_URL}/menu`, { timeout: 8000 });
             if (isMounted && Array.isArray(directRes.data) && directRes.data.length > 0) {
                 setLiveMenuItems(directRes.data);
+                if (isMounted) setLoadingMenuItems(false);
                 try {
                     sessionStorage.setItem('restosys_live_menu_cache', JSON.stringify(directRes.data));
                     sessionStorage.setItem('foodnest_menu_cache', JSON.stringify(directRes.data));
@@ -243,6 +254,20 @@ useEffect(() => {
         } catch (failoverErr) {
             console.warn('Direct production menu fetch notice:', failoverErr?.message || failoverErr);
         }
+
+        // Same-origin rewrite fallback
+        try {
+            const sameOriginRes = await axios.get('/api/menu', { timeout: 8000 });
+            if (isMounted && Array.isArray(sameOriginRes.data) && sameOriginRes.data.length > 0) {
+                setLiveMenuItems(sameOriginRes.data);
+                if (isMounted) setLoadingMenuItems(false);
+                try {
+                    sessionStorage.setItem('restosys_live_menu_cache', JSON.stringify(sameOriginRes.data));
+                    sessionStorage.setItem('foodnest_menu_cache', JSON.stringify(sameOriginRes.data));
+                } catch { }
+                return;
+            }
+        } catch (_) { }
 
         try {
             const { data } = await client.get('/menu');
@@ -267,6 +292,33 @@ useEffect(() => {
             clearTimeout(safetyTimer);
         };
     }, [api]);
+
+    // Safety auto-retry if menu items or restaurants were initially empty
+    useEffect(() => {
+        if (!loadingMenuItems && liveMenuItems.length === 0) {
+            const timer = setTimeout(() => {
+                axios.get(`${PROD_API_URL}/menu`, { timeout: 8000 })
+                    .then(res => {
+                        if (Array.isArray(res.data) && res.data.length > 0) setLiveMenuItems(res.data);
+                    })
+                    .catch(() => {});
+            }, 1200);
+            return () => clearTimeout(timer);
+        }
+    }, [loadingMenuItems, liveMenuItems.length]);
+
+    useEffect(() => {
+        if (registeredRestaurants.length === 0) {
+            const timer = setTimeout(() => {
+                axios.get(`${PROD_API_URL}/restaurants`, { timeout: 8000 })
+                    .then(res => {
+                        if (Array.isArray(res.data) && res.data.length > 0) setRegisteredRestaurants(res.data);
+                    })
+                    .catch(() => {});
+            }, 1200);
+            return () => clearTimeout(timer);
+        }
+    }, [registeredRestaurants.length]);
 
 // Safe short ID helper
 const getShortId = (id) => {
@@ -998,70 +1050,74 @@ return (
                             {activeTab === 'overview' && (
                                 <div className="space-y-5 min-w-0 pr-0.5 flex-1 text-left">
                                     {/* 1. Top Compact Cards Grid (Loyalty Points & Customer Wallet) */}
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 items-stretch">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-stretch">
                                         {/* Loyalty Points Card */}
-                                        <div className="bg-gradient-to-br from-[#181818] via-[#1f1f1f] to-[#111111] rounded-2xl p-3.5 sm:p-4 text-white shadow-xs border border-[#d4af37]/30 flex flex-col justify-between relative overflow-hidden group">
+                                        <div className="bg-gradient-to-br from-[#181818] via-[#1f1f1f] to-[#111111] rounded-2xl p-3 sm:p-3.5 text-white shadow-xs border border-[#d4af37]/30 flex flex-col justify-between relative overflow-hidden group">
                                             <div className="absolute top-0 right-0 w-24 h-24 bg-[#d4af37]/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
                                             <div className="relative z-10 flex items-center justify-between">
                                                 <div className="flex items-center gap-2">
-                                                    <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-[#ffe07d] to-[#f3c056] text-black flex items-center justify-center shrink-0 shadow-xs">
-                                                        <Crown size={14} className="fill-black" />
+                                                    <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-[#ffe07d] to-[#f3c056] text-black flex items-center justify-center shrink-0 shadow-xs">
+                                                        <Crown size={12} className="fill-black" />
                                                     </div>
                                                     <div>
-                                                        <span className="block font-black text-xs text-[#ffe07d] tracking-wide">{tierName}</span>
-                                                        <span className="block text-[8px] text-gray-400 uppercase tracking-wider font-bold">Resto Loyalty Points</span>
+                                                        <span className="block font-black text-xs text-[#ffe07d] tracking-wide leading-tight">{tierName}</span>
+                                                        <span className="block text-[8px] text-gray-400 uppercase tracking-wider font-bold">Loyalty Points</span>
                                                     </div>
                                                 </div>
-                                                <Sparkles size={14} className="text-[#ffe07d] animate-pulse" />
+                                                <span className="inline-flex items-center gap-1 text-[9px] font-bold text-[#ffe07d] bg-[#ffe07d]/10 px-2 py-0.5 rounded-full border border-[#ffe07d]/20">
+                                                    <Sparkles size={11} className="text-[#ffe07d] animate-pulse" />
+                                                    VIP Tier
+                                                </span>
                                             </div>
 
-                                            <div className="relative z-10 my-2.5">
+                                            <div className="relative z-10 my-2">
                                                 <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider block">Points Balance</span>
                                                 <div className="flex items-baseline gap-1.5 mt-0.5">
-                                                    <h2 className="text-2xl sm:text-3xl font-black font-sans text-white tracking-tight">{userPoints.toLocaleString()}</h2>
+                                                    <h2 className="text-xl sm:text-2xl font-black font-sans text-white tracking-tight">{userPoints.toLocaleString()}</h2>
                                                     <span className="text-[10px] text-[#ffe07d] font-bold">pts</span>
                                                 </div>
-                                                <p className="text-gray-400 text-[10px] mt-0.5">Convert points to cash discount at checkout</p>
+                                                <p className="text-gray-400 text-[10px] mt-0.5 truncate">Convert points to cash discounts at checkout</p>
                                             </div>
 
-                                            <div className="relative z-10">
-                                                <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                                            <div className="relative z-10 pt-1 flex items-center justify-between gap-2 border-t border-white/5">
+                                                <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
                                                     <div className="h-full bg-gradient-to-r from-[#f3c056] to-[#ffe07d] w-[80%] rounded-full shadow-xs" />
                                                 </div>
+                                                <span className="text-[9px] font-bold text-[#ffe07d] shrink-0">Redeemable</span>
                                             </div>
                                         </div>
 
                                         {/* Customer Wallet Card */}
-                                        <div className="bg-white rounded-2xl p-3.5 sm:p-4 shadow-xs border border-slate-200/90 flex flex-col justify-between relative overflow-hidden group">
+                                        <div className="bg-white rounded-2xl p-3 sm:p-3.5 shadow-xs border border-slate-200/90 flex flex-col justify-between relative overflow-hidden group">
                                             <div className="absolute top-0 right-0 w-24 h-24 bg-orange-100/40 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
                                             <div className="relative z-10 flex items-center justify-between">
                                                 <div className="flex items-center gap-2">
-                                                    <div className="w-7 h-7 rounded-lg bg-orange-50 border border-orange-200 text-[#FF5A1F] flex items-center justify-center shrink-0 shadow-xs">
-                                                        <Wallet size={15} />
+                                                    <div className="w-6 h-6 rounded-lg bg-orange-50 border border-orange-200 text-[#FF5A1F] flex items-center justify-center shrink-0 shadow-xs">
+                                                        <Wallet size={12} />
                                                     </div>
                                                     <div>
-                                                        <h3 className="font-bold text-slate-900 text-xs">Customer Wallet</h3>
+                                                        <h3 className="font-bold text-slate-900 text-xs leading-tight">Customer Wallet</h3>
                                                         <p className="text-[8px] font-semibold text-slate-400 uppercase tracking-wider">Fast &amp; Secure Payments</p>
                                                     </div>
                                                 </div>
                                                 <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">Active</span>
                                             </div>
 
-                                            <div className="relative z-10 my-2.5">
+                                            <div className="relative z-10 my-2">
                                                 <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Wallet Balance</span>
                                                 <div className="flex items-baseline gap-1.5 mt-0.5">
-                                                    <h2 className="text-2xl sm:text-3xl font-black font-sans text-slate-900 tracking-tight">₹{walletBalance.toFixed(2)}</h2>
+                                                    <h2 className="text-xl sm:text-2xl font-black font-sans text-slate-900 tracking-tight">₹{walletBalance.toFixed(2)}</h2>
                                                 </div>
-                                                <p className="text-slate-500 text-[10px] mt-0.5">Skip cards &amp; settle food orders in 1-click</p>
+                                                <p className="text-slate-500 text-[10px] mt-0.5 truncate">Skip cards &amp; settle food orders in 1-click</p>
                                             </div>
 
-                                            <div className="relative z-10">
+                                            <div className="relative z-10 pt-1 flex items-center justify-end border-t border-slate-100">
                                                 <button
                                                     type="button"
                                                     onClick={handleAddFunds}
-                                                    className="w-full py-1.5 sm:py-2 bg-[#FF5A1F] hover:bg-[#e04f1a] active:scale-98 text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                                                    className="px-3.5 py-1 bg-[#FF5A1F] hover:bg-[#e04f1a] active:scale-98 text-white font-bold text-xs rounded-lg shadow-xs transition-all flex items-center gap-1 cursor-pointer"
                                                 >
-                                                    <Plus size={13} /> Add Funds
+                                                    <Plus size={12} /> Add Funds
                                                 </button>
                                             </div>
                                         </div>

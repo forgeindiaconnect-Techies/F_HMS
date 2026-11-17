@@ -20,7 +20,20 @@ export const getMenuItems = async (req, res) => {
 
         const filter = { isActive: true };
         
-        // If explicit restaurantId is supplied in query (e.g. from customer QR scan),
+        // Determine if request is explicitly from staff dashboard management
+        const isStaffPortal = req.query.forStaff === 'true' || 
+            req.headers['x-staff-portal'] === 'true' || 
+            Boolean(req.headers.referer && (
+                req.headers.referer.includes('/admin') || 
+                req.headers.referer.includes('/staff') || 
+                req.headers.referer.includes('/manager') || 
+                req.headers.referer.includes('/chef') || 
+                req.headers.referer.includes('/cashier') || 
+                req.headers.referer.includes('/waiter') ||
+                req.headers.referer.includes('frontend-restaurant')
+            ));
+
+        // If explicit restaurantId is supplied in query (e.g. from customer QR scan or outlet filter),
         // it must strictly take precedence over any residual staff/admin JWT in headers/cookies!
         if (req.query.restaurantId && req.query.restaurantId !== 'null' && req.query.restaurantId !== 'undefined') {
             filter.restaurantId = req.query.restaurantId;
@@ -31,8 +44,8 @@ export const getMenuItems = async (req, res) => {
                     { branchId: null }
                 ];
             }
-        } else if (req.user && req.user.restaurantId) {
-            // Staff/Admin is logged in and viewing their own dashboard menu without explicit query params
+        } else if (isStaffPortal && req.user && req.user.restaurantId && req.user.role !== 'Customer') {
+            // ONLY staff/admin logged into restaurant dashboard viewing their own internal menu
             filter.restaurantId = req.user.restaurantId;
             
             // If they belong to a specific branch, allow global items OR branch-specific items
@@ -44,13 +57,14 @@ export const getMenuItems = async (req, res) => {
                 ];
             }
         }
+        // Otherwise, it is a public customer view: do NOT restrict by restaurantId! Show all active dishes across registered outlets.
 
         let items = await MenuItem.find(filter)
             .populate('restaurantId', 'name city address approvalStatus subscription isActive isDeleted status')
             .lean();
 
         // If filtering by branchId yielded 0 items, fallback to all active dishes for this restaurant
-        if (items.length === 0 && filter.$or && req.query.restaurantId) {
+        if (items.length === 0 && filter.$or) {
             delete filter.$or;
             items = await MenuItem.find(filter)
                 .populate('restaurantId', 'name city address approvalStatus subscription isActive isDeleted status')

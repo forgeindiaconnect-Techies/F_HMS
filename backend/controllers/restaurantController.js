@@ -191,10 +191,18 @@ export const getRestaurants = async (req, res) => {
                     ? verif.documents.logo.filePath 
                     : `${thumbUrl}?kind=logo`);
 
+            // Prevent multi-megabyte base64 strings from bloating list API and crashing client storage / timing out
+            if (typeof resolvedBanner === 'string' && resolvedBanner.length > 5000) {
+                resolvedBanner = `${thumbUrl}?kind=banner`;
+            }
+            if (typeof resolvedLogo === 'string' && resolvedLogo.length > 5000) {
+                resolvedLogo = `${thumbUrl}?kind=logo`;
+            }
+
             rest.image = resolvedBanner;
             rest.bannerImage = resolvedBanner;
             rest.logo = resolvedLogo;
-            rest.showcaseImages = resolvedShowcase.length > 0 ? resolvedShowcase : [resolvedBanner];
+            rest.showcaseImages = [resolvedBanner];
 
             const branchAddress = primaryBranch?.location?.address && primaryBranch.location.address !== 'Primary Location' 
                 ? primaryBranch.location.address 
