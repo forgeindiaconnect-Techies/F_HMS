@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { 
     Plus, Search, Trash2, Store, QrCode, X, Printer, Download, Users,
-    ScanLine, Camera, ExternalLink, RefreshCw, CheckCircle2, AlertCircle,
+    ExternalLink, RefreshCw, CheckCircle2, AlertCircle,
     Smartphone, Laptop, Image as ImageIcon
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
@@ -44,15 +44,6 @@ const TablesManagement = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isQrModalOpen, setIsQrModalOpen] = useState(false);
     const [selectedTable, setSelectedTable] = useState(null);
-
-    // Live Table Scanner Modal state
-    const [isScannerOpen, setIsScannerOpen] = useState(false);
-    const [scannerMode, setScannerMode] = useState('camera'); // 'camera' | 'select'
-    const [cameraActive, setCameraActive] = useState(false);
-    const [cameraError, setCameraError] = useState('');
-    const [scannedTable, setScannedTable] = useState(null);
-    const videoRef = useRef(null);
-    const streamRef = useRef(null);
 
     const [formData, setFormData] = useState({
         tableNumber: '',
@@ -98,57 +89,6 @@ const TablesManagement = () => {
         const interval = setInterval(fetchData, 15000); // Refresh tables state every 15s
         return () => clearInterval(interval);
     }, []);
-
-    // Stop camera video stream when scanner closes
-    const stopCamera = () => {
-        if (streamRef.current) {
-            try {
-                streamRef.current.getTracks().forEach(track => track.stop());
-            } catch (_) { }
-            streamRef.current = null;
-        }
-        setCameraActive(false);
-    };
-
-    // Start camera video stream
-    const startCamera = async () => {
-        setCameraError('');
-        stopCamera();
-        try {
-            if (!navigator?.mediaDevices?.getUserMedia) {
-                throw new Error('Camera access is not supported by your browser.');
-            }
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
-            });
-            streamRef.current = stream;
-            if (videoRef.current) {
-                videoRef.current.srcObject = stream;
-                await videoRef.current.play();
-            }
-            setCameraActive(true);
-        } catch (err) {
-            console.warn('Camera start notice:', err?.message || err);
-            setCameraError(err?.message || 'Unable to access camera. Please check camera permissions or select a table below.');
-            setCameraActive(false);
-            setScannerMode('select');
-        }
-    };
-
-    useEffect(() => {
-        if (isScannerOpen && scannerMode === 'camera') {
-            startCamera();
-        } else {
-            stopCamera();
-        }
-        return () => stopCamera();
-    }, [isScannerOpen, scannerMode]);
-
-    const handleOpenScanner = () => {
-        setScannedTable(tables[0] || null);
-        setIsScannerOpen(true);
-        setScannerMode('camera');
-    };
 
     const handleAddClick = () => {
         setFormData({
@@ -204,10 +144,11 @@ const TablesManagement = () => {
         setIsQrModalOpen(true);
     };
 
+    const PROD_CUSTOMER_APP_URL = 'https://f-hms-customer-two.vercel.app';
+
     const getQrUrl = (table) => {
         if (!table) return '';
-        let baseUrl = import.meta.env.VITE_CUSTOMER_URL || (typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:5174` : 'http://localhost:5174');
-        if (baseUrl.endsWith('/')) baseUrl = baseUrl.slice(0, -1);
+        let baseUrl = PROD_CUSTOMER_APP_URL;
 
         if (isLocalhost) {
             if (qrMode === 'localhost') {
@@ -216,9 +157,18 @@ const TablesManagement = () => {
                 const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
                 baseUrl = `http://${host}:5174`;
             } else {
-                baseUrl = import.meta.env.VITE_CUSTOMER_URL || `http://${window.location.hostname}:5174`;
+                baseUrl = PROD_CUSTOMER_APP_URL;
+            }
+        } else {
+            const envUrl = import.meta.env.VITE_CUSTOMER_URL;
+            if (envUrl && typeof envUrl === 'string' && !envUrl.includes('localhost') && !envUrl.includes(':5174') && !envUrl.includes('restaurant')) {
+                baseUrl = envUrl;
+            } else {
+                baseUrl = PROD_CUSTOMER_APP_URL;
             }
         }
+
+        if (baseUrl.endsWith('/')) baseUrl = baseUrl.slice(0, -1);
 
         const bId = table.branchId?._id || table.branchId || '';
         const rId = restaurant?._id || table.restaurantId?._id || table.restaurantId || (table.branchId?.restaurantId?._id || table.branchId?.restaurantId) || '';
@@ -365,17 +315,6 @@ const TablesManagement = () => {
                             <QrCode size={14} /> QR Digital Menu
                         </button>
                     </div>
-
-                    {/* Table Scanner Trigger Button */}
-                    <button
-                        type="button"
-                        onClick={handleOpenScanner}
-                        className="bg-slate-900 hover:bg-black text-white px-3.5 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 text-xs sm:text-sm shadow-sm cursor-pointer"
-                        title="Scan Table QR with Camera or Test Digital Ordering"
-                    >
-                        <ScanLine size={16} className="text-emerald-400" />
-                        <span>Table Scanner</span>
-                    </button>
 
                     <button
                         onClick={handleAddClick}
@@ -698,178 +637,6 @@ const TablesManagement = () => {
                             >
                                 <Download size={14} /> Download
                             </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* LIVE TABLE SCANNER MODAL */}
-            {isScannerOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
-                    <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setIsScannerOpen(false)}></div>
-                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg relative z-10 overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col">
-                        
-                        {/* Header */}
-                        <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-900 text-white shrink-0">
-                            <div className="flex items-center gap-2.5">
-                                <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-400">
-                                    <ScanLine size={18} />
-                                </div>
-                                <div>
-                                    <h3 className="font-bold text-sm sm:text-base leading-tight">Live Table QR Scanner</h3>
-                                    <p className="text-[10px] text-slate-400">Scan physical table codes or test ordering instantly</p>
-                                </div>
-                            </div>
-                            <button
-                                onClick={() => setIsScannerOpen(false)}
-                                className="text-slate-400 hover:text-white transition-colors p-1 rounded-lg hover:bg-slate-800 cursor-pointer"
-                            >
-                                <X size={20} />
-                            </button>
-                        </div>
-
-                        {/* Scanner Body */}
-                        <div className="p-5 space-y-4">
-                            {/* Mode Tabs */}
-                            <div className="flex p-1 bg-slate-100 rounded-xl border border-slate-200 text-xs font-bold">
-                                <button
-                                    type="button"
-                                    onClick={() => setScannerMode('camera')}
-                                    className={`flex-1 py-1.5 rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                                        scannerMode === 'camera' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'
-                                    }`}
-                                >
-                                    <Camera size={14} />
-                                    <span>Camera Scanner</span>
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setScannerMode('select')}
-                                    className={`flex-1 py-1.5 rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                                        scannerMode === 'select' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'
-                                    }`}
-                                >
-                                    <QrCode size={14} />
-                                    <span>Select Table</span>
-                                </button>
-                            </div>
-
-                            {/* Camera Viewport */}
-                            {scannerMode === 'camera' && (
-                                <div className="space-y-3">
-                                    <div className="relative aspect-video w-full rounded-2xl bg-black overflow-hidden flex items-center justify-center border border-slate-800 shadow-inner">
-                                        <video
-                                            ref={videoRef}
-                                            autoPlay
-                                            playsInline
-                                            muted
-                                            className="w-full h-full object-cover"
-                                        />
-                                        
-                                        {/* Scanning Crosshair Overlay */}
-                                        <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-                                            <div className="w-48 h-48 sm:w-56 sm:h-56 border-2 border-emerald-400/80 rounded-2xl relative shadow-[0_0_0_9999px_rgba(0,0,0,0.5)]">
-                                                {/* Corner Accent Markers */}
-                                                <div className="absolute -top-1 -left-1 w-5 h-5 border-t-4 border-l-4 border-emerald-400 rounded-tl-lg" />
-                                                <div className="absolute -top-1 -right-1 w-5 h-5 border-t-4 border-r-4 border-emerald-400 rounded-tr-lg" />
-                                                <div className="absolute -bottom-1 -left-1 w-5 h-5 border-b-4 border-l-4 border-emerald-400 rounded-bl-lg" />
-                                                <div className="absolute -bottom-1 -right-1 w-5 h-5 border-b-4 border-r-4 border-emerald-400 rounded-br-lg" />
-                                                
-                                                {/* Animated Laser Scanning Line */}
-                                                <div className="w-full h-0.5 bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_8px_#34d399] animate-pulse absolute top-1/2 -translate-y-1/2" />
-                                            </div>
-                                        </div>
-
-                                        {!cameraActive && (
-                                            <div className="absolute inset-0 bg-slate-900/90 flex flex-col items-center justify-center p-4 text-center text-white space-y-2">
-                                                <Camera size={32} className="text-slate-500 animate-bounce" />
-                                                <p className="text-xs font-semibold text-slate-300">
-                                                    {cameraError || 'Starting camera sensor...'}
-                                                </p>
-                                                <button
-                                                    type="button"
-                                                    onClick={startCamera}
-                                                    className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-xs cursor-pointer"
-                                                >
-                                                    Enable Camera
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
-                                    <p className="text-[11px] text-center text-slate-500 font-medium">
-                                        Align table QR code within the frame to scan automatically, or choose a table below:
-                                    </p>
-                                </div>
-                            )}
-
-                            {/* Quick Table Selector */}
-                            <div className="space-y-2">
-                                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-                                    Quick Select Table to Test Scan
-                                </label>
-                                <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar select-none">
-                                    {tables.map(tbl => {
-                                        const isSelected = scannedTable?._id === tbl._id;
-                                        return (
-                                            <button
-                                                key={tbl._id}
-                                                type="button"
-                                                onClick={() => setScannedTable(tbl)}
-                                                className={`px-3 py-2 rounded-xl text-xs font-bold border transition-all shrink-0 cursor-pointer ${
-                                                    isSelected
-                                                        ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
-                                                        : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
-                                                }`}
-                                            >
-                                                Table {tbl.tableNumber}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-
-                            {/* Scanned Result Card */}
-                            {scannedTable && (
-                                <div className="p-4 bg-emerald-50/80 border border-emerald-200 rounded-2xl space-y-3 animate-in fade-in duration-200">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                            <CheckCircle2 size={16} className="text-emerald-600" />
-                                            <span className="text-xs font-black text-emerald-950 uppercase tracking-wide">
-                                                Table {scannedTable.tableNumber} Connected
-                                            </span>
-                                        </div>
-                                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
-                                            {scannedTable.capacity} Seats · {scannedTable.status}
-                                        </span>
-                                    </div>
-
-                                    <div className="p-2.5 bg-white rounded-xl border border-emerald-200 text-slate-700 font-mono text-[10px] sm:text-[11px] truncate select-all">
-                                        {getQrUrl(scannedTable)}
-                                    </div>
-
-                                    <div className="flex gap-2">
-                                        <a
-                                            href={getQrUrl(scannedTable)}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
-                                        >
-                                            <ExternalLink size={14} />
-                                            <span>Open Live Table Menu</span>
-                                        </a>
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                navigator.clipboard.writeText(getQrUrl(scannedTable));
-                                                toast.success(`Table ${scannedTable.tableNumber} ordering link copied!`);
-                                            }}
-                                            className="px-3.5 py-2.5 bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold rounded-xl transition-colors cursor-pointer"
-                                        >
-                                            Copy Link
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
                         </div>
                     </div>
                 </div>

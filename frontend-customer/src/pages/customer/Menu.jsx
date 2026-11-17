@@ -85,15 +85,15 @@ const Menu = () => {
         let isMounted = true;
         const client = api || defaultApi;
 
-        // 8000ms safety timer so loading skeleton/spinner NEVER hangs indefinitely
+        // 12000ms safety timer so loading skeleton/spinner NEVER hangs indefinitely
         const safetyTimer = setTimeout(() => {
             if (isMounted) setLoading(false);
-        }, 8000);
+        }, 12000);
 
         const fetchMenu = async () => {
             // 1. Direct reliable fetch from live production cloud API (no staff auth interference)
             try {
-                const directRes = await axios.get(`${PROD_API_URL}/menu`, { timeout: 8000 });
+                const directRes = await axios.get(`${PROD_API_URL}/menu`, { timeout: 15000 });
                 if (isMounted && Array.isArray(directRes.data) && directRes.data.length > 0) {
                     setMenuItems(directRes.data);
                     if (isMounted) setLoading(false);
@@ -109,7 +109,7 @@ const Menu = () => {
 
             // 2. Same-origin fallback
             try {
-                const sameOriginRes = await axios.get('/api/menu', { timeout: 8000 });
+                const sameOriginRes = await axios.get('/api/menu', { timeout: 12000 });
                 if (isMounted && Array.isArray(sameOriginRes.data) && sameOriginRes.data.length > 0) {
                     setMenuItems(sameOriginRes.data);
                     if (isMounted) setLoading(false);
@@ -148,25 +148,26 @@ const Menu = () => {
     useEffect(() => {
         if (!loading && menuItems.length === 0) {
             const retryTimer = setTimeout(() => {
-                axios.get(`${PROD_API_URL}/menu`, { timeout: 8000 })
+                axios.get(`${PROD_API_URL}/menu`, { timeout: 15000 })
                     .then(res => {
                         if (Array.isArray(res.data) && res.data.length > 0) {
                             setMenuItems(res.data);
                         }
                     })
                     .catch(() => {});
-            }, 1000);
+            }, 800);
             return () => clearTimeout(retryTimer);
         }
     }, [loading, menuItems.length]);
 
-    // Check if there are dishes matching restaurantFilter (by _id or by name)
+    // Check if there are dishes matching restaurantFilter (by _id, branchId or name)
     const hasRestaurantMatches = useMemo(() => {
         if (!restaurantFilter) return false;
         return menuItems.some(i => {
-            const id = String(i.restaurantId?._id || i.restaurantId);
+            const id = String(i.restaurantId?._id || i.restaurantId || '');
+            const branch = String(i.branchId?._id || i.branchId || '');
             const name = (i.restaurantId?.name || '').toLowerCase();
-            return id === String(restaurantFilter) || name === String(restaurantFilter).toLowerCase();
+            return id === String(restaurantFilter) || branch === String(restaurantFilter) || name === String(restaurantFilter).toLowerCase();
         });
     }, [restaurantFilter, menuItems]);
 
@@ -176,9 +177,10 @@ const Menu = () => {
         return menuItems.filter(item => {
             // If restaurant filter is set and matches exist, filter by restaurant
             if (restaurantFilter && hasRestaurantMatches) {
-                const itemRestId = String(item.restaurantId?._id || item.restaurantId);
+                const itemRestId = String(item.restaurantId?._id || item.restaurantId || '');
+                const itemBranchId = String(item.branchId?._id || item.branchId || '');
                 const itemRestName = (item.restaurantId?.name || '').toLowerCase();
-                if (itemRestId !== String(restaurantFilter) && itemRestName !== String(restaurantFilter).toLowerCase()) {
+                if (itemRestId !== String(restaurantFilter) && itemBranchId !== String(restaurantFilter) && itemRestName !== String(restaurantFilter).toLowerCase()) {
                     return false;
                 }
             }

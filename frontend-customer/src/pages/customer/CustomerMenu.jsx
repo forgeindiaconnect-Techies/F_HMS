@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import api, { getApiUrl } from '../../utils/axiosInstance';
+import axios from 'axios';
+import api, { getApiUrl, PROD_API_URL } from '../../utils/axiosInstance';
 import {
     ShoppingBag, ChevronRight, Plus, Minus, Send, MessageSquare,
     BookOpen, Clock, Heart, User, UtensilsCrossed, CheckCircle2,
@@ -141,9 +142,23 @@ const CustomerMenu = () => {
                 // If branch filter produced 0 items, fallback to all dishes for this restaurant
                 if (items.length === 0) {
                     try {
-                        const fallbackMenu = await axios.get(`${PROD_API_URL}/menu?restaurantId=${restaurantId}`, { timeout: 8000 });
+                        const fallbackMenu = await axios.get(`${PROD_API_URL}/menu?restaurantId=${restaurantId}`, { timeout: 15000 });
                         if (Array.isArray(fallbackMenu.data) && fallbackMenu.data.length > 0) {
                             items = fallbackMenu.data;
+                        }
+                    } catch (_) {}
+                }
+
+                // If still 0 items, fetch full active menu from production API and match
+                if (items.length === 0) {
+                    try {
+                        const allMenuRes = await axios.get(`${PROD_API_URL}/menu`, { timeout: 15000 });
+                        if (Array.isArray(allMenuRes.data) && allMenuRes.data.length > 0) {
+                            const matched = allMenuRes.data.filter(i => {
+                                const id = String(i.restaurantId?._id || i.restaurantId);
+                                return id === String(restaurantId);
+                            });
+                            items = matched.length > 0 ? matched : allMenuRes.data;
                         }
                     } catch (_) {}
                 }
@@ -158,9 +173,12 @@ const CustomerMenu = () => {
                 }
 
                 let finalName = restaurantName;
-                if (restRes && restRes.data) {
+                if (restRes && restRes.data && restRes.data.name) {
                     finalName = restRes.data.name;
                     setRestaurantName(restRes.data.name);
+                } else if (items[0]?.restaurantId?.name) {
+                    finalName = items[0].restaurantId.name;
+                    setRestaurantName(items[0].restaurantId.name);
                 }
 
                 setMenuItems(items);
