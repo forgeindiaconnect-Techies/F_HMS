@@ -11,7 +11,7 @@ import ConfirmModal from '../../components/ConfirmModal';
 import { useAuth } from '../../context/AuthContext';
 
 const TablesManagement = () => {
-    const { api, restaurant } = useAuth();
+    const { api, restaurant, user } = useAuth();
     const location = useLocation();
     const [activeTab, setActiveTab] = useState(() =>
         new URLSearchParams(location.search).get('tab') === 'qr' ? 'qr' : 'tables'
@@ -144,24 +144,34 @@ const TablesManagement = () => {
         setIsQrModalOpen(true);
     };
 
+    const PROD_CUSTOMER_APP_URL = 'https://f-hms-customer-two.vercel.app';
+
     const getQrUrl = (table) => {
         if (!table) return '';
-        let baseUrl = import.meta.env.VITE_CUSTOMER_URL || (typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:5174` : 'http://localhost:5174');
-        if (baseUrl.endsWith('/')) baseUrl = baseUrl.slice(0, -1);
 
-        if (isLocalhost) {
-            if (qrMode === 'localhost') {
-                baseUrl = 'http://localhost:5174';
-            } else if (qrMode === 'network') {
-                const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
-                baseUrl = `http://${host}:5174`;
+        let baseUrl = PROD_CUSTOMER_APP_URL;
+
+        if (typeof window !== 'undefined') {
+            const host = window.location.hostname;
+            // ONLY use localhost if explicitly running on a local development server
+            if (host === 'localhost' || host === '127.0.0.1') {
+                if (qrMode === 'network') {
+                    baseUrl = `http://${host}:5174`;
+                } else if (qrMode === 'localhost') {
+                    baseUrl = 'http://localhost:5174';
+                } else {
+                    baseUrl = PROD_CUSTOMER_APP_URL;
+                }
             } else {
-                baseUrl = import.meta.env.VITE_CUSTOMER_URL || `http://${window.location.hostname}:5174`;
+                // In production cloud / Vercel, ALWAYS point to the customer ordering app
+                baseUrl = PROD_CUSTOMER_APP_URL;
             }
         }
 
-        const bId = table.branchId?._id || table.branchId || '';
-        const rId = restaurant?._id || table.restaurantId?._id || table.restaurantId || (table.branchId?.restaurantId?._id || table.branchId?.restaurantId) || '';
+        if (baseUrl.endsWith('/')) baseUrl = baseUrl.slice(0, -1);
+
+        const bId = table.branchId?._id || table.branchId || user?.branchId?._id || user?.branchId || '';
+        const rId = restaurant?._id || table.restaurantId?._id || table.restaurantId || (table.branchId?.restaurantId?._id || table.branchId?.restaurantId) || user?.restaurantId?._id || user?.restaurantId || '';
         return `${baseUrl}/customer/menu?restaurantId=${rId}&branchId=${bId}&tableNumber=${table.tableNumber}`;
     };
 
@@ -615,6 +625,175 @@ const TablesManagement = () => {
                             >
                                 <Download size={14} /> Download
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* LIVE TABLE SCANNER MODAL */}
+            {isScannerOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
+                    <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setIsScannerOpen(false)}></div>
+                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg relative z-10 overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col">
+
+                        {/* Header */}
+                        <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-900 text-white shrink-0">
+                            <div className="flex items-center gap-2.5">
+                                <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-400">
+                                    <ScanLine size={18} />
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-sm sm:text-base leading-tight">Live Table QR Scanner</h3>
+                                    <p className="text-[10px] text-slate-400">Scan physical table codes or test ordering instantly</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setIsScannerOpen(false)}
+                                className="text-slate-400 hover:text-white transition-colors p-1 rounded-lg hover:bg-slate-800 cursor-pointer"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        {/* Scanner Body */}
+                        <div className="p-5 space-y-4">
+                            {/* Mode Tabs */}
+                            <div className="flex p-1 bg-slate-100 rounded-xl border border-slate-200 text-xs font-bold">
+                                <button
+                                    type="button"
+                                    onClick={() => setScannerMode('camera')}
+                                    className={`flex-1 py-1.5 rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${scannerMode === 'camera' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                                        }`}
+                                >
+                                    <Camera size={14} />
+                                    <span>Camera Scanner</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setScannerMode('select')}
+                                    className={`flex-1 py-1.5 rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${scannerMode === 'select' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                                        }`}
+                                >
+                                    <QrCode size={14} />
+                                    <span>Select Table</span>
+                                </button>
+                            </div>
+
+                            {/* Camera Viewport */}
+                            {scannerMode === 'camera' && (
+                                <div className="space-y-3">
+                                    <div className="relative aspect-video w-full rounded-2xl bg-black overflow-hidden flex items-center justify-center border border-slate-800 shadow-inner">
+                                        <video
+                                            ref={videoRef}
+                                            autoPlay
+                                            playsInline
+                                            muted
+                                            className="w-full h-full object-cover"
+                                        />
+
+                                        {/* Scanning Crosshair Overlay */}
+                                        <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                                            <div className="w-48 h-48 sm:w-56 sm:h-56 border-2 border-emerald-400/80 rounded-2xl relative shadow-[0_0_0_9999px_rgba(0,0,0,0.5)]">
+                                                {/* Corner Accent Markers */}
+                                                <div className="absolute -top-1 -left-1 w-5 h-5 border-t-4 border-l-4 border-emerald-400 rounded-tl-lg" />
+                                                <div className="absolute -top-1 -right-1 w-5 h-5 border-t-4 border-r-4 border-emerald-400 rounded-tr-lg" />
+                                                <div className="absolute -bottom-1 -left-1 w-5 h-5 border-b-4 border-l-4 border-emerald-400 rounded-bl-lg" />
+                                                <div className="absolute -bottom-1 -right-1 w-5 h-5 border-b-4 border-r-4 border-emerald-400 rounded-br-lg" />
+
+                                                {/* Animated Laser Scanning Line */}
+                                                <div className="w-full h-0.5 bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_8px_#34d399] animate-pulse absolute top-1/2 -translate-y-1/2" />
+                                            </div>
+                                        </div>
+
+                                        {!cameraActive && (
+                                            <div className="absolute inset-0 bg-slate-900/90 flex flex-col items-center justify-center p-4 text-center text-white space-y-2">
+                                                <Camera size={32} className="text-slate-500 animate-bounce" />
+                                                <p className="text-xs font-semibold text-slate-300">
+                                                    {cameraError || 'Starting camera sensor...'}
+                                                </p>
+                                                <button
+                                                    type="button"
+                                                    onClick={startCamera}
+                                                    className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-xs cursor-pointer"
+                                                >
+                                                    Enable Camera
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <p className="text-[11px] text-center text-slate-500 font-medium">
+                                        Align table QR code within the frame to scan automatically, or choose a table below:
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* Quick Table Selector */}
+                            <div className="space-y-2">
+                                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
+                                    Quick Select Table to Test Scan
+                                </label>
+                                <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar select-none">
+                                    {tables.map(tbl => {
+                                        const isSelected = scannedTable?._id === tbl._id;
+                                        return (
+                                            <button
+                                                key={tbl._id}
+                                                type="button"
+                                                onClick={() => setScannedTable(tbl)}
+                                                className={`px-3 py-2 rounded-xl text-xs font-bold border transition-all shrink-0 cursor-pointer ${isSelected
+                                                    ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                                                    : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                                                    }`}
+                                            >
+                                                Table {tbl.tableNumber}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            {/* Scanned Result Card */}
+                            {scannedTable && (
+                                <div className="p-4 bg-emerald-50/80 border border-emerald-200 rounded-2xl space-y-3 animate-in fade-in duration-200">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <CheckCircle2 size={16} className="text-emerald-600" />
+                                            <span className="text-xs font-black text-emerald-950 uppercase tracking-wide">
+                                                Table {scannedTable.tableNumber} Connected
+                                            </span>
+                                        </div>
+                                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                            {scannedTable.capacity} Seats · {scannedTable.status}
+                                        </span>
+                                    </div>
+
+                                    <div className="p-2.5 bg-white rounded-xl border border-emerald-200 text-slate-700 font-mono text-[10px] sm:text-[11px] truncate select-all">
+                                        {getQrUrl(scannedTable)}
+                                    </div>
+
+                                    <div className="flex gap-2">
+                                        <a
+                                            href={getQrUrl(scannedTable)}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                                        >
+                                            <ExternalLink size={14} />
+                                            <span>Open Live Table Menu</span>
+                                        </a>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(getQrUrl(scannedTable));
+                                                toast.success(`Table ${scannedTable.tableNumber} ordering link copied!`);
+                                            }}
+                                            className="px-3.5 py-2.5 bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold rounded-xl transition-colors cursor-pointer"
+                                        >
+                                            Copy Link
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

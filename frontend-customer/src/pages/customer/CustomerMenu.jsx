@@ -19,10 +19,33 @@ const CustomerMenu = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
 
-    const restaurantId = searchParams.get('restaurantId');
-    const branchId = searchParams.get('branchId');
-    const tableNumber = searchParams.get('tableNumber');
+    const [restaurantId, setRestaurantId] = useState(() => {
+        return searchParams.get('restaurantId') || localStorage.getItem('restosys_last_restaurantId') || '';
+    });
+    const branchId = searchParams.get('branchId') || '';
+    const tableNumber = searchParams.get('tableNumber') || '';
     const activeOrderId = searchParams.get('activeOrderId');
+
+    useEffect(() => {
+        const paramId = searchParams.get('restaurantId');
+        if (paramId && paramId !== restaurantId) {
+            setRestaurantId(paramId);
+            try { localStorage.setItem('restosys_last_restaurantId', paramId); } catch {}
+        }
+    }, [searchParams]);
+
+    useEffect(() => {
+        if (!restaurantId) {
+            axios.get(`${PROD_API_URL}/restaurants`, { timeout: 8000 })
+                .then(res => {
+                    if (Array.isArray(res.data) && res.data.length > 0) {
+                        setRestaurantId(res.data[0]._id);
+                        try { localStorage.setItem('restosys_last_restaurantId', res.data[0]._id); } catch {}
+                    }
+                })
+                .catch(() => {});
+        }
+    }, [restaurantId]);
 
     const qrCacheKey = `restosys_qr_menu_${restaurantId || ''}_${branchId || ''}`;
     const qrNameCacheKey = `restosys_qr_name_${restaurantId || ''}`;
@@ -98,7 +121,6 @@ const CustomerMenu = () => {
 
     useEffect(() => {
         if (!restaurantId) {
-            toast.error("Invalid QR Code: Restaurant ID is missing.");
             return;
         }
 
@@ -360,18 +382,35 @@ const CustomerMenu = () => {
         try {
             let targetOrderId = activeOrderId;
             if (activeOrderId) {
-                await api.put(`/orders/${activeOrderId}/items`, orderData);
+                try {
+                    await api.put(`/orders/${activeOrderId}/items`, orderData);
+                } catch (putErr) {
+                    await axios.put(`${PROD_API_URL}/orders/${activeOrderId}/items`, orderData, { timeout: 15000 });
+                }
             } else {
-                const res = await api.post('/orders', orderData);
-                targetOrderId = res.data?._id;
+                try {
+                    const res = await api.post('/orders', orderData);
+                    targetOrderId = res.data?._id;
+                } catch (postErr) {
+                    const failoverRes = await axios.post(`${PROD_API_URL}/orders`, orderData, { timeout: 15000 });
+                    targetOrderId = failoverRes.data?._id;
+                }
             }
 
             if (isPrePaid && targetOrderId) {
-                await api.put(`/orders/${targetOrderId}/pay`, {
-                    paymentMethod: orderData.paymentMethod,
-                    taxPrice: 0,
-                    totalPrice: finalTotal
-                });
+                try {
+                    await api.put(`/orders/${targetOrderId}/pay`, {
+                        paymentMethod: orderData.paymentMethod,
+                        taxPrice: 0,
+                        totalPrice: finalTotal
+                    });
+                } catch (_) {
+                    await axios.put(`${PROD_API_URL}/orders/${targetOrderId}/pay`, {
+                        paymentMethod: orderData.paymentMethod,
+                        taxPrice: 0,
+                        totalPrice: finalTotal
+                    }, { timeout: 15000 });
+                }
             }
 
             setShowPaymentModal(false);
