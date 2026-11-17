@@ -98,34 +98,36 @@ const Menu = () => {
                         sessionStorage.setItem('foodnest_menu_cache', JSON.stringify(data));
                         sessionStorage.setItem('restosys_live_menu_cache', JSON.stringify(data));
                     } catch { }
+                } else if (isMounted && Array.isArray(data)) {
+                    setMenuItems(data);
                     return;
                 }
             } catch (error) {
                 console.warn('Initial menu fetch notice:', error?.message || error);
             }
 
-            // Direct reliable failover to live backend endpoint
-            try {
-                const fallbackRes = await axios.get(`${PROD_API_URL}/menu`, { timeout: 15000 });
-                if (isMounted && Array.isArray(fallbackRes.data) && fallbackRes.data.length > 0) {
-                    setMenuItems(fallbackRes.data);
-                    try {
-                        sessionStorage.setItem('foodnest_menu_cache', JSON.stringify(fallbackRes.data));
-                        sessionStorage.setItem('restosys_live_menu_cache', JSON.stringify(fallbackRes.data));
-                    } catch { }
+                // Direct reliable failover to live backend endpoint
+                try {
+                    const fallbackRes = await axios.get(`${PROD_API_URL}/menu`, { timeout: 15000 });
+                    if (isMounted && Array.isArray(fallbackRes.data) && fallbackRes.data.length > 0) {
+                        setMenuItems(fallbackRes.data);
+                        try {
+                            sessionStorage.setItem('foodnest_menu_cache', JSON.stringify(fallbackRes.data));
+                            sessionStorage.setItem('restosys_live_menu_cache', JSON.stringify(fallbackRes.data));
+                        } catch { }
+                    }
+                } catch (fallbackErr) {
+                    console.error('Direct production menu fetch failed:', fallbackErr);
+                } finally {
+                    if (isMounted) setLoading(false);
                 }
-            } catch (fallbackErr) {
-                console.error('Direct production menu fetch failed:', fallbackErr);
-            } finally {
-                if (isMounted) setLoading(false);
-            }
-        };
-        fetchMenu();
-        return () => {
-            isMounted = false;
-            clearTimeout(safetyTimer);
-        };
-    }, [api]);
+            };
+            fetchMenu();
+            return () => {
+                isMounted = false;
+                clearTimeout(safetyTimer);
+            };
+        }, [api]);
 
     // Check if there are dishes matching restaurantFilter (by _id or by name)
     const hasRestaurantMatches = useMemo(() => {
