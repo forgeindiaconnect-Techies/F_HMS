@@ -1,5 +1,5 @@
 {
-  "appId": "com.restosys.hms",
+  "appId": "com.foodnest.customer.app",
   "appName": "FoodNest",
   "webDir": "dist",
   "server": {
