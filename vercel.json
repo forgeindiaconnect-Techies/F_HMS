@@ -1,6 +1,6 @@
 {
   "framework": "vite",
-  "buildCommand": "cd frontend-customer && npm install && npm run build",
+  "buildCommand": "cd frontend-customer && npm install --include=dev && npm run build",
   "outputDirectory": "frontend-customer/dist",
   "rewrites": [
     {
