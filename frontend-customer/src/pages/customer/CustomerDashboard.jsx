@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
+import axios from 'axios';
 import {
     LayoutGrid, BookOpen, ShoppingBag,
     Calendar, Heart, MessageSquare, Settings,
@@ -8,7 +9,7 @@ import {
     Bike, Store, BellRing, Menu, X, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
-import defaultApi, { getApiUrl } from '../../utils/axiosInstance';
+import defaultApi, { getApiUrl, PROD_API_URL } from '../../utils/axiosInstance';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import CustomerNavDrawer, { CUSTOMER_DASHBOARD_TABS } from '../../components/CustomerNavDrawer';
 import { useCart } from '../../context/CartContext';
@@ -205,32 +206,57 @@ useEffect(() => {
     const fetchRegisteredRestaurants = async () => {
         try {
             const { data } = await client.get('/restaurants');
-            if (isMounted && Array.isArray(data)) {
+            if (isMounted && Array.isArray(data) && data.length > 0) {
                 setRegisteredRestaurants(data);
                 try { sessionStorage.setItem('restosys_reg_rests_cache', JSON.stringify(data)); } catch { }
+                return;
             }
         } catch (err) {
-            console.error('Failed to load registered restaurants for menu page', err);
+            console.warn('Initial restaurants fetch notice:', err?.message || err);
+        }
+        // Failover directly to live production API
+        try {
+            const directRes = await axios.get(`${PROD_API_URL}/restaurants`, { timeout: 15000 });
+            if (isMounted && Array.isArray(directRes.data) && directRes.data.length > 0) {
+                setRegisteredRestaurants(directRes.data);
+                try { sessionStorage.setItem('restosys_reg_rests_cache', JSON.stringify(directRes.data)); } catch { }
+            }
+        } catch (failoverErr) {
+            console.error('Direct production restaurants fetch failed:', failoverErr);
         }
     };
 
-        const fetchLiveMenu = async () => {
-            setLoadingMenuItems(true);
-            try {
-                const { data } = await client.get('/menu');
-                if (isMounted && Array.isArray(data)) {
-                    setLiveMenuItems(data);
-                    try {
-                        sessionStorage.setItem('restosys_live_menu_cache', JSON.stringify(data));
-                        sessionStorage.setItem('foodnest_menu_cache', JSON.stringify(data));
-                    } catch { }
-                }
-            } catch (err) {
-                console.error('Failed to load live menu in dashboard', err);
-            } finally {
-                if (isMounted) setLoadingMenuItems(false);
+    const fetchLiveMenu = async () => {
+        setLoadingMenuItems(true);
+        try {
+            const { data } = await client.get('/menu');
+            if (isMounted && Array.isArray(data) && data.length > 0) {
+                setLiveMenuItems(data);
+                try {
+                    sessionStorage.setItem('restosys_live_menu_cache', JSON.stringify(data));
+                    sessionStorage.setItem('foodnest_menu_cache', JSON.stringify(data));
+                } catch { }
+                return;
             }
-        };
+        } catch (err) {
+            console.warn('Initial menu fetch notice:', err?.message || err);
+        }
+        // Failover directly to live production API
+        try {
+            const directRes = await axios.get(`${PROD_API_URL}/menu`, { timeout: 15000 });
+            if (isMounted && Array.isArray(directRes.data) && directRes.data.length > 0) {
+                setLiveMenuItems(directRes.data);
+                try {
+                    sessionStorage.setItem('restosys_live_menu_cache', JSON.stringify(directRes.data));
+                    sessionStorage.setItem('foodnest_menu_cache', JSON.stringify(directRes.data));
+                } catch { }
+            }
+        } catch (failoverErr) {
+            console.error('Direct production menu fetch failed:', failoverErr);
+        } finally {
+            if (isMounted) setLoadingMenuItems(false);
+        }
+    };
 
         fetchRegisteredRestaurants();
         fetchLiveMenu();

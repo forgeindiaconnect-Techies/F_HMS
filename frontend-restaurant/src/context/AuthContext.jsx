@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
-import { getApiUrl } from '../utils/axiosInstance';
+import { getApiUrl, PROD_API_URL } from '../utils/axiosInstance';
 import { evaluateClientSubscriptionFreeze } from '../utils/subscriptionClient';
 
 const defaultAuthContext = {
@@ -72,6 +72,15 @@ api.interceptors.response.use(
             config.baseURL.includes('10.') || 
             config.baseURL.includes('172.')
         );
+
+        if (config && isLocalTarget && isNetworkDown) {
+            console.warn('Local port 5000 is unreachable, automatically switching to production API:', PROD_API_URL);
+            config.baseURL = PROD_API_URL;
+            if (typeof window !== 'undefined' && window.sessionStorage) {
+                window.sessionStorage.setItem('foodnest_api_failover', PROD_API_URL);
+            }
+            return axios(config);
+        }
 
 
         if (config && isColdStart && (!config._retryCount || config._retryCount < 5)) {

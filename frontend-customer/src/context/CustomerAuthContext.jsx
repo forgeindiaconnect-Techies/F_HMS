@@ -1,12 +1,12 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
-import { getApiUrl } from '../utils/axiosInstance';
+import { getApiUrl, PROD_API_URL } from '../utils/axiosInstance';
 
 const defaultCustomerAuthContext = {
     customer: null,
-    setCustomer: () => {},
+    setCustomer: () => { },
     login: async () => ({ success: false, message: 'Initializing auth...' }),
-    logout: () => {},
+    logout: () => { },
     api: null,
 };
 
@@ -45,11 +45,24 @@ api.interceptors.response.use(
     async (error) => {
         const config = error.config;
         const status = error.response ? error.response.status : 0;
-        
+
         // Cold-start spin-up status codes (502, 503, 504, or network drops during boot).
         const isNetworkDown = !error.response || error.code === 'ERR_NETWORK';
         const isColdStart = status === 502 || status === 503 || status === 504 || isNetworkDown;
-        
+
+        // If local backend on port 5000 is not reachable, failover to production API
+        if (config && isNetworkDown) {
+            const currentBase = config.baseURL || '';
+            if (currentBase.includes(':5000') || currentBase.includes('localhost') || currentBase.includes('127.0.0.1')) {
+                console.warn('Local port 5000 is unreachable, automatically switching to production API:', PROD_API_URL);
+                config.baseURL = PROD_API_URL;
+                if (typeof window !== 'undefined' && window.sessionStorage) {
+                    window.sessionStorage.setItem('foodnest_api_failover', PROD_API_URL);
+                }
+                return axios(config);
+            }
+        }
+
 
         if (config && isColdStart && (!config._retryCount || config._retryCount < 3)) {
             config._retryCount = (config._retryCount || 0) + 1;
@@ -123,8 +136,8 @@ export const CustomerAuthProvider = ({ children }) => {
 
     const logout = () => {
         try {
-            api.post('/auth/logout').catch(() => {});
-        } catch (_) {}
+            api.post('/auth/logout').catch(() => { });
+        } catch (_) { }
         setUser(null);
         localStorage.removeItem('token');
         localStorage.removeItem('restosys_customer_user');
@@ -138,7 +151,7 @@ export const CustomerAuthProvider = ({ children }) => {
             sessionStorage.removeItem('restosys_reg_rests_cache');
             sessionStorage.removeItem('restosys_live_menu_cache');
             sessionStorage.removeItem('foodnest_menu_cache');
-        } catch (_) {}
+        } catch (_) { }
         window.location.href = '/customer/login';
     };
 

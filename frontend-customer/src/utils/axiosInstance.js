@@ -4,6 +4,12 @@ import { Capacitor } from '@capacitor/core';
 export const PROD_API_URL = 'https://backend-ochre-five-29.vercel.app/api';
 
 export const getApiUrl = () => {
+    // 0. Active failover check
+    if (typeof window !== 'undefined' && window.sessionStorage) {
+        const failoverUrl = window.sessionStorage.getItem('foodnest_api_failover');
+        if (failoverUrl) return failoverUrl;
+    }
+
     // 1. Check custom localStorage override first (useful for manual setting or testing on physical devices)
     if (typeof window !== 'undefined' && window.localStorage) {
         const customUrl = window.localStorage.getItem('foodnest_api_url');
@@ -50,12 +56,6 @@ api.interceptors.request.use(
         let token = localStorage.getItem('token');
         if (!token) {
             try {
-                const staffUser = JSON.parse(localStorage.getItem('restosys_staff_user'));
-                if (staffUser?.token) token = staffUser.token;
-            } catch (e) {}
-        }
-        if (!token) {
-            try {
                 const custUser = JSON.parse(localStorage.getItem('restosys_customer_user'));
                 if (custUser?.token) token = custUser.token;
             } catch (e) {}
@@ -70,7 +70,7 @@ api.interceptors.request.use(
     (error) => Promise.reject(error)
 );
 
-// Response interceptor to handle automatic retries for cold-starts (502 / 503 / 504 / Network Error)
+// Response interceptor to handle automatic failover and cold-start retries
 api.interceptors.response.use(
     (response) => response,
     async (error) => {
@@ -79,6 +79,19 @@ api.interceptors.response.use(
         const isTimeout = error.code === 'ECONNABORTED' || (error.message && error.message.toLowerCase().includes('timeout'));
         const isNetworkDown = !error.response || error.code === 'ERR_NETWORK' || isTimeout;
         const isColdStart = status === 502 || status === 503 || status === 504 || isNetworkDown;
+
+        // If local backend on port 5000 is not running or timed out, automatically failover to production API
+        if (config && (isNetworkDown || isTimeout)) {
+            const currentBase = config.baseURL || '';
+            if (currentBase.includes(':5000') || currentBase.includes('localhost') || currentBase.includes('127.0.0.1')) {
+                console.warn('Local port 5000 is unreachable, automatically switching to production API:', PROD_API_URL);
+                config.baseURL = PROD_API_URL;
+                if (typeof window !== 'undefined' && window.sessionStorage) {
+                    window.sessionStorage.setItem('foodnest_api_failover', PROD_API_URL);
+                }
+                return axios(config);
+            }
+        }
 
         // Exponential backoff retry on cold start (up to 3 retries) against the configured backend URL
         if (config && isColdStart && (!config._retryCount || config._retryCount < 3)) {

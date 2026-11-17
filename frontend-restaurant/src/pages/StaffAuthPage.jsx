@@ -123,7 +123,7 @@ const StaffAuthPage = () => {
         const fetchPlans = async () => {
             try {
                 setPlansLoading(true);
-                const res = await api.get('/plans', { timeout: 5000 });
+                const res = await api.get('/plans', { timeout: 20000 });
                 if (res.data && Array.isArray(res.data) && res.data.length > 0) {
                     setPlans(res.data);
                     const qPlan = searchParams.get('plan');
