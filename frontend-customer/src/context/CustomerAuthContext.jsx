@@ -92,6 +92,7 @@ export const CustomerAuthProvider = ({ children }) => {
         try {
             const { data } = await api.post('/auth/login', { email, password, loginType: 'customer' });
             setUser(data);
+            if (data?.token) localStorage.setItem('token', data.token);
             localStorage.setItem('restosys_customer_user', JSON.stringify(data));
             return { success: true, data };
         } catch (error) {
@@ -107,6 +108,7 @@ export const CustomerAuthProvider = ({ children }) => {
         try {
             const { data } = await api.post('/auth/register', { name, email, password, phoneNumber, roleName: 'Customer', loginType: 'customer' });
             setUser(data);
+            if (data?.token) localStorage.setItem('token', data.token);
             localStorage.setItem('restosys_customer_user', JSON.stringify(data));
             localStorage.removeItem('restosys_cart');
             localStorage.removeItem('restosys_wishlist');

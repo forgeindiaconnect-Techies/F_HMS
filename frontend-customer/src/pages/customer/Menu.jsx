@@ -83,23 +83,38 @@ const Menu = () => {
         let isMounted = true;
         const client = api || defaultApi;
 
-        // 2500ms failsafe timer so loading skeleton/spinner NEVER hangs
+        // 3500ms failsafe timer so loading skeleton/spinner NEVER hangs
         const safetyTimer = setTimeout(() => {
             if (isMounted) setLoading(false);
-        }, 2500);
+        }, 3500);
 
         const fetchMenu = async () => {
             try {
                 const { data } = await client.get('/menu');
-                if (isMounted && Array.isArray(data)) {
+                if (isMounted && Array.isArray(data) && data.length > 0) {
                     setMenuItems(data);
                     try {
                         sessionStorage.setItem('foodnest_menu_cache', JSON.stringify(data));
                         sessionStorage.setItem('restosys_live_menu_cache', JSON.stringify(data));
                     } catch { }
+                } else if (isMounted && Array.isArray(data)) {
+                    setMenuItems(data);
                 }
             } catch (error) {
-                console.error('Failed to fetch menu:', error);
+                console.error('Failed to fetch menu with client:', error);
+                // Fallback attempt with clean defaultApi
+                try {
+                    const fallbackRes = await defaultApi.get('/menu');
+                    if (isMounted && Array.isArray(fallbackRes.data)) {
+                        setMenuItems(fallbackRes.data);
+                        try {
+                            sessionStorage.setItem('foodnest_menu_cache', JSON.stringify(fallbackRes.data));
+                            sessionStorage.setItem('restosys_live_menu_cache', JSON.stringify(fallbackRes.data));
+                        } catch { }
+                    }
+                } catch (fallbackErr) {
+                    console.error('Fallback menu fetch also failed:', fallbackErr);
+                }
             } finally {
                 if (isMounted) setLoading(false);
             }
@@ -111,19 +126,27 @@ const Menu = () => {
         };
     }, [api]);
 
+    // Check if there are dishes matching restaurantFilter (by _id or by name)
+    const hasRestaurantMatches = useMemo(() => {
+        if (!restaurantFilter) return false;
+        return menuItems.some(i => {
+            const id = String(i.restaurantId?._id || i.restaurantId);
+            const name = (i.restaurantId?.name || '').toLowerCase();
+            return id === String(restaurantFilter) || name === String(restaurantFilter).toLowerCase();
+        });
+    }, [restaurantFilter, menuItems]);
+
     const filteredMenu = useMemo(() => {
         const cleanQuery = searchQuery.trim().toLowerCase();
-
-        // Check if there are dishes matching restaurantFilter
-        const hasRestaurantMatches = restaurantFilter
-            ? menuItems.some(i => String(i.restaurantId?._id || i.restaurantId) === String(restaurantFilter))
-            : false;
 
         return menuItems.filter(item => {
             // If restaurant filter is set and matches exist, filter by restaurant
             if (restaurantFilter && hasRestaurantMatches) {
                 const itemRestId = String(item.restaurantId?._id || item.restaurantId);
-                if (itemRestId !== String(restaurantFilter)) return false;
+                const itemRestName = (item.restaurantId?.name || '').toLowerCase();
+                if (itemRestId !== String(restaurantFilter) && itemRestName !== String(restaurantFilter).toLowerCase()) {
+                    return false;
+                }
             }
 
             const itemCat = (item.category || '').toLowerCase().trim();
@@ -239,7 +262,7 @@ const Menu = () => {
 
                     {/* Section Header Count */}
                     {restaurantFilter && (
-                        <div className="flex items-center gap-2 mb-3">
+                        <div className="flex flex-wrap items-center gap-2 mb-3">
                             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-50 border border-orange-200 text-[#FF5A1F] text-xs font-bold">
                                 <span>Filtered by Outlet</span>
                                 <button
@@ -251,6 +274,11 @@ const Menu = () => {
                                     ✕
                                 </button>
                             </span>
+                            {!hasRestaurantMatches && (
+                                <span className="text-xs text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
+                                    No dishes specific to this outlet. Showing all menu items.
+                                </span>
+                            )}
                         </div>
                     )}
                     <div className="flex items-center justify-between mb-5 mt-2">
