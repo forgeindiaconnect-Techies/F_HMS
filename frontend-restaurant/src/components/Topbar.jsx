@@ -265,15 +265,57 @@ const Topbar = () => {
         const fetchNotifications = async () => {
             try {
                 const res = await api.get('/notifications');
-                setHasUnread(res.data.some(n => !n.read));
+                if (Array.isArray(res.data)) {
+                    const isManager = user?.role === 'BranchManager';
+                    const userRole = user?.role || '';
+                    const userBranchId = String(user?.branchId || '');
+
+                    const hasRelevantUnread = res.data.some(n => {
+                        if (n.read) return false;
+
+                        // Check branch scoping if notification and manager have branchId
+                        if (isManager && userBranchId && n.branchId && String(n.branchId) !== userBranchId) {
+                            return false;
+                        }
+
+                        // Check target role scoping if specified
+                        if (Array.isArray(n.targetRole) && n.targetRole.length > 0) {
+                            const matchesRole = n.targetRole.includes(userRole) ||
+                                n.targetRole.includes('All') ||
+                                ((userRole === 'RestaurantAdmin' || userRole === 'Admin') && n.targetRole.includes('Admin')) ||
+                                (isManager && (n.targetRole.includes('BranchManager') || n.targetRole.includes('Manager')));
+                            if (!matchesRole) return false;
+                        }
+
+                        // Filter out routine kitchen / ready clutter for branch manager
+                        if (isManager) {
+                            const title = (n.title || '').toLowerCase();
+                            const type = (n.type || '').toLowerCase();
+                            if (type === 'kitchen' || title.includes('order ready') || title.includes('served')) {
+                                return false;
+                            }
+                        }
+
+                        return true;
+                    });
+                    setHasUnread(hasRelevantUnread);
+                } else {
+                    setHasUnread(false);
+                }
             } catch (error) {
                 console.error('Failed to fetch notifications for topbar', error);
+                setHasUnread(false);
             }
         };
+
         fetchNotifications();
-        const intervalId = setInterval(fetchNotifications, 60000);
-        return () => clearInterval(intervalId);
-    }, []);
+        window.addEventListener('notifications-updated', fetchNotifications);
+        const intervalId = setInterval(fetchNotifications, 30000);
+        return () => {
+            window.removeEventListener('notifications-updated', fetchNotifications);
+            clearInterval(intervalId);
+        };
+    }, [api, user]);
 
     // Fetch available plans + branches (restaurant subscription comes from AuthContext)
     useEffect(() => {

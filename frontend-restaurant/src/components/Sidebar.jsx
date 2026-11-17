@@ -208,14 +208,14 @@ const Sidebar = () => {
                 />
             )}
             <aside className={clsx(
-                "bg-white text-slate-800 shadow-sm h-screen fixed inset-y-0 left-0 md:sticky md:top-0 flex flex-col transition-all duration-300 z-40 border-r border-slate-200/90",
+                "bg-[#062419] text-white shadow-2xl h-screen fixed inset-y-0 left-0 md:sticky md:top-0 flex flex-col transition-all duration-300 z-40 border-r border-[#0d3b2b]",
                 isDesktopCollapsed ? "md:-translate-x-full md:w-0 md:opacity-0 md:pointer-events-none md:overflow-hidden" : "md:translate-x-0 md:w-64",
                 isOpen ? "translate-x-0 w-64" : "-translate-x-full"
             )}>
                 {/* Header */}
-                <div className="p-5 border-b border-slate-100 flex items-center gap-3 shrink-0">
+                <div className="p-5 border-b border-[#0d3b2b] flex items-center gap-3 shrink-0">
                     {logoSrc && !logoError ? (
-                        <div className="w-10 h-10 rounded-xl overflow-hidden border border-slate-200 bg-slate-50 flex items-center justify-center shrink-0">
+                        <div className="w-10 h-10 rounded-xl overflow-hidden border border-[#144d38] bg-[#093323] flex items-center justify-center shrink-0">
                             <img
                                 src={logoSrc}
                                 alt="Logo"
@@ -224,20 +224,20 @@ const Sidebar = () => {
                             />
                         </div>
                     ) : (
-                        <div className="bg-emerald-600 text-white p-2 rounded-xl shrink-0 shadow-sm shadow-emerald-600/20">
+                        <div className="bg-emerald-500 text-white p-2 rounded-xl shrink-0 shadow-md shadow-emerald-950">
                             <UtensilsCrossed size={22} />
                         </div>
                     )}
                     <div className="flex flex-col truncate">
-                        <h1 className="text-lg font-bold text-slate-900 tracking-tight truncate max-w-[150px]" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                            {restaurant && restaurant.name ? restaurant.name : 'FoodNest'}<span className="text-emerald-600">Hub</span>
+                        <h1 className="text-lg font-bold text-white tracking-tight truncate max-w-[150px]" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                            {restaurant && restaurant.name ? restaurant.name : 'FoodNest'}<span className="text-emerald-400">Hub</span>
                         </h1>
                         {isCustomBilling ? (
-                            <span className="text-[9px] font-black uppercase tracking-wider text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 w-fit mt-0.5 truncate max-w-[140px]">
+                            <span className="text-[9px] font-black uppercase tracking-wider text-emerald-300 bg-[#0c402e] px-1.5 py-0.5 rounded border border-[#175c43] w-fit mt-0.5 truncate max-w-[140px]">
                                 Custom • {restaurant?.billingConfig?.outletFormat || 'Setup'}
                             </span>
                         ) : (
-                            <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">Restaurant Admin</span>
+                            <span className="text-[10px] font-bold text-emerald-400/80 uppercase tracking-wider">Restaurant Admin</span>
                         )}
                     </div>
                 </div>
@@ -246,7 +246,7 @@ const Sidebar = () => {
                 <nav className="flex-1 px-3 py-4 overflow-y-auto custom-scrollbar" style={{ scrollbarWidth: 'none' }}>
                     {navGroups.map((group, index) => (
                         <div key={index} className="mb-5">
-                            <h3 className="px-3 mb-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                            <h3 className="px-3 mb-2 text-[10px] font-bold text-emerald-300/60 uppercase tracking-widest" style={{ fontFamily: 'Poppins, sans-serif' }}>
                                 {group.title}
                             </h3>
                             <div className="space-y-0.5">
@@ -264,14 +264,14 @@ const Sidebar = () => {
                                                     toast.error(`${lock.feature} requires the ${lock.minPlan} Plan or above. Please upgrade your subscription.`);
                                                     navigate('/admin/billing');
                                                 }}
-                                                className="flex items-center justify-between w-full px-3 py-2.5 rounded-xl transition-all duration-200 group text-sm text-slate-400 hover:bg-slate-50 hover:text-slate-600 font-medium cursor-pointer"
+                                                className="flex items-center justify-between w-full px-3 py-2.5 rounded-xl transition-all duration-200 group text-sm text-emerald-200/40 hover:bg-[#0b3827] hover:text-emerald-100 font-medium cursor-pointer"
                                                 title={`Requires ${lock.minPlan} Plan`}
                                             >
                                                 <div className="flex items-center gap-3">
                                                     <Icon size={17} className="shrink-0 opacity-60" />
                                                     <span>{item.name}</span>
                                                 </div>
-                                                <Lock size={14} className="text-slate-400 shrink-0" />
+                                                <Lock size={14} className="text-emerald-400/50 shrink-0" />
                                             </button>
                                         );
                                     }
@@ -321,18 +321,18 @@ const Sidebar = () => {
                                             className={clsx(
                                                 "relative flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all text-sm group",
                                                 isActive
-                                                    ? "bg-emerald-600 text-white shadow-sm font-semibold"
-                                                    : "text-slate-600 hover:bg-emerald-50/80 hover:text-emerald-700"
+                                                    ? "bg-emerald-500 text-white shadow-lg shadow-emerald-950/40 font-semibold"
+                                                    : "text-emerald-100/70 hover:bg-[#0b3827] hover:text-white"
                                             )}
                                         >
-                                            <Icon size={17} className={clsx("transition-transform group-hover:scale-110 shrink-0", isActive ? "text-white" : "text-slate-400 group-hover:text-emerald-600")} />
+                                            <Icon size={17} className={clsx("transition-transform group-hover:scale-110 shrink-0", isActive ? "text-white" : "text-emerald-300/60 group-hover:text-emerald-200")} />
                                             <span className="truncate">{item.name}</span>
                                             {item.name === 'Verification' && (
                                                 <span className={clsx(
                                                     "ml-auto text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider shrink-0",
                                                     (restaurant?.approvalStatus === 'Approved' || restaurant?.verificationStatus === 'Verified')
-                                                        ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                                                        : "bg-amber-50 text-amber-700 border border-amber-200"
+                                                        ? "bg-emerald-500/25 text-emerald-300 border border-emerald-500/40"
+                                                        : "bg-amber-500/25 text-amber-300 border border-amber-500/40"
                                                 )}>
                                                     {(restaurant?.approvalStatus === 'Approved' || restaurant?.verificationStatus === 'Verified') ? 'Verified' : 'Pending'}
                                                 </span>
@@ -346,10 +346,10 @@ const Sidebar = () => {
                     ))}
                 </nav>
 
-                <div className="p-3 border-t border-slate-100 shrink-0">
+                <div className="p-3 border-t border-[#0d3b2b] shrink-0">
                     <button
                         onClick={() => setShowLogoutConfirm(true)}
-                        className="flex items-center gap-3 px-3 py-2.5 w-full rounded-xl font-medium text-slate-600 hover:bg-red-50 hover:text-red-600 transition-all text-sm cursor-pointer"
+                        className="flex items-center gap-3 px-3 py-2.5 w-full rounded-xl font-medium text-emerald-200/70 hover:bg-red-500/10 hover:text-red-400 transition-all text-sm cursor-pointer"
                     >
                         <LogOut size={17} />
                         <span>Logout</span>

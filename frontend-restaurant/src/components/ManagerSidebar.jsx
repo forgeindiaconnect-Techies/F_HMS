@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import {
+import { 
     Store, ShoppingBag, UserCheck, PackageSearch, FileText, Settings, LogOut, UtensilsCrossed, ChefHat, MessageSquare, DollarSign, PieChart, QrCode, Truck, Bell, Receipt,
     CalendarDays, CreditCard, ChevronRight
 } from 'lucide-react';
@@ -12,6 +12,13 @@ const ManagerSidebar = () => {
     const { logout, restaurant } = useAuth();
     const location = useLocation();
     const [isOpen, setIsOpen] = useState(false);
+    const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(() => {
+        try {
+            return localStorage.getItem('manager_sidebar_collapsed') === 'true';
+        } catch (_) {
+            return false;
+        }
+    });
     const [logoError, setLogoError] = useState(false);
 
     useEffect(() => {
@@ -19,7 +26,17 @@ const ManagerSidebar = () => {
     }, [restaurant?.logo]);
 
     useEffect(() => {
-        const handleToggle = () => setIsOpen(prev => !prev);
+        const handleToggle = () => {
+            if (window.innerWidth < 768) {
+                setIsOpen(prev => !prev);
+            } else {
+                setIsDesktopCollapsed(prev => {
+                    const next = !prev;
+                    try { localStorage.setItem('manager_sidebar_collapsed', String(next)); } catch (_) {}
+                    return next;
+                });
+            }
+        };
         window.addEventListener('toggle-sidebar', handleToggle);
         return () => window.removeEventListener('toggle-sidebar', handleToggle);
     }, []);
@@ -38,8 +55,6 @@ const ManagerSidebar = () => {
         }
     };
     const logoSrc = getLogoUrl();
-
-    const currentFullPath = location.pathname + location.search;
 
     const isItemActive = (itemPath) => {
         const currentTab = new URLSearchParams(location.search).get('tab') || 'shifts';
@@ -114,14 +129,15 @@ const ManagerSidebar = () => {
             />
         )}
         <aside className={clsx(
-            "w-72 sm:w-64 bg-white text-slate-800 shadow-sm h-screen fixed inset-y-0 left-0 md:sticky md:top-0 flex flex-col transition-transform duration-300 z-50 border-r border-slate-200",
-            isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+            "bg-[#0d122b] text-white shadow-2xl h-screen fixed inset-y-0 left-0 md:sticky md:top-0 flex flex-col transition-all duration-300 z-50 border-r border-[#1a224a]",
+            isDesktopCollapsed ? "md:-translate-x-full md:w-0 md:opacity-0 md:pointer-events-none md:overflow-hidden" : "md:translate-x-0 md:w-64",
+            isOpen ? "translate-x-0 w-64" : "-translate-x-full"
         )}>
             {/* Header */}
-            <div className="p-5 border-b border-slate-100 flex items-center justify-between gap-3 shrink-0">
+            <div className="p-5 border-b border-[#1a224a] flex items-center justify-between gap-3 shrink-0">
                 <div className="flex items-center gap-3 min-w-0">
                     {logoSrc && !logoError ? (
-                        <div className="w-10 h-10 rounded-xl overflow-hidden border border-slate-200 bg-slate-50 flex items-center justify-center shrink-0">
+                        <div className="w-10 h-10 rounded-xl overflow-hidden border border-[#273269] bg-[#141b3d] flex items-center justify-center shrink-0">
                             <img 
                                 src={logoSrc} 
                                 alt="Logo" 
@@ -130,22 +146,22 @@ const ManagerSidebar = () => {
                             />
                         </div>
                     ) : (
-                        <div className="bg-indigo-600 text-white p-2 rounded-xl shrink-0 shadow-sm shadow-indigo-600/20">
+                        <div className="bg-indigo-600 text-white p-2 rounded-xl shrink-0 shadow-md shadow-indigo-950">
                             <UtensilsCrossed size={22} />
                         </div>
                     )}
                     <div className="min-w-0">
-                        <h1 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight truncate max-w-[140px]" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                            {restaurant && restaurant.name ? restaurant.name : 'FoodNest'}<span className="text-indigo-600">Mgr</span>
+                        <h1 className="text-base sm:text-lg font-bold text-white tracking-tight truncate max-w-[140px]" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                            {restaurant && restaurant.name ? restaurant.name : 'FoodNest'}<span className="text-indigo-400">Mgr</span>
                         </h1>
-                        <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest block mt-0.5">Branch Manager</span>
+                        <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest block mt-0.5">Branch Manager</span>
                     </div>
                 </div>
 
                 {/* Mobile Close Button */}
                 <button 
                     onClick={() => setIsOpen(false)}
-                    className="md:hidden p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 transition-colors shrink-0 cursor-pointer"
+                    className="md:hidden p-1.5 text-indigo-300 hover:text-white rounded-lg hover:bg-[#1a224a] transition-colors shrink-0 cursor-pointer"
                     aria-label="Close Sidebar"
                 >
                     ✕
@@ -156,7 +172,7 @@ const ManagerSidebar = () => {
             <nav className="flex-1 px-3 py-4 overflow-y-auto custom-scrollbar" style={{ scrollbarWidth: 'none' }}>
                 {navGroups.map((group, index) => (
                     <div key={index} className="mb-5">
-                        <h3 className="px-3 mb-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                        <h3 className="px-3 mb-2 text-[10px] font-bold text-indigo-300/60 uppercase tracking-widest" style={{ fontFamily: 'Poppins, sans-serif' }}>
                             {group.title}
                         </h3>
                         <div className="space-y-0.5">
@@ -170,11 +186,11 @@ const ManagerSidebar = () => {
                                         className={clsx(
                                             "relative flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all text-sm group",
                                             isItemActive(item.path)
-                                            ? "bg-indigo-600 text-white shadow-sm font-semibold" 
-                                            : "text-slate-600 hover:bg-indigo-50/80 hover:text-indigo-600"
+                                            ? "bg-indigo-600 text-white shadow-lg shadow-indigo-950/50 font-semibold" 
+                                            : "text-indigo-200/70 hover:bg-[#151c42] hover:text-white"
                                         )}
                                     >
-                                        <Icon size={17} className={clsx("transition-transform group-hover:scale-110 shrink-0", isItemActive(item.path) ? "text-white" : "text-slate-400 group-hover:text-indigo-600")} />
+                                        <Icon size={17} className={clsx("transition-transform group-hover:scale-110 shrink-0", isItemActive(item.path) ? "text-white" : "text-indigo-300/60 group-hover:text-indigo-200")} />
                                         <span className="truncate">{item.name}</span>
                                         {isItemActive(item.path) && <ChevronRight size={14} className="ml-auto shrink-0 opacity-80" />}
                                     </Link>
@@ -186,14 +202,14 @@ const ManagerSidebar = () => {
             </nav>
 
             {/* Sidebar Footer */}
-            <div className="p-3 border-t border-slate-100 shrink-0 bg-slate-50">
-                <div className="px-3 py-2 mb-2 rounded-xl bg-white border border-slate-200">
-                    <p className="text-xs font-bold text-slate-800 truncate">{restaurant?.name || 'Branch Manager'}</p>
-                    <p className="text-[10px] text-indigo-600 font-medium">Branch Operations</p>
+            <div className="p-3 border-t border-[#1a224a] shrink-0 bg-[#080b1c]">
+                <div className="px-3 py-2 mb-2 rounded-xl bg-[#141b3d]/80 border border-[#232d61]/60">
+                    <p className="text-xs font-bold text-white truncate">{restaurant?.name || 'Branch Manager'}</p>
+                    <p className="text-[10px] text-indigo-400 font-medium">Branch Operations</p>
                 </div>
                 <button 
                     onClick={logout}
-                    className="flex items-center gap-3 px-3 py-2.5 w-full rounded-xl font-medium text-slate-600 hover:bg-red-50 hover:text-red-600 transition-all text-sm cursor-pointer"
+                    className="flex items-center gap-3 px-3 py-2.5 w-full rounded-xl font-medium text-indigo-200/70 hover:bg-red-500/10 hover:text-red-400 transition-all text-sm cursor-pointer"
                 >
                     <LogOut size={17} />
                     <span>Logout</span>

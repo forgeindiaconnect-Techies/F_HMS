@@ -15,6 +15,13 @@ const ChefSidebar = () => {
     const navigate = useNavigate();
     const { logout, restaurant } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
+    const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(() => {
+        try {
+            return localStorage.getItem('chef_sidebar_collapsed') === 'true';
+        } catch (_) {
+            return false;
+        }
+    });
     const [logoError, setLogoError] = useState(false);
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
@@ -23,7 +30,17 @@ const ChefSidebar = () => {
     }, [restaurant?.logo]);
 
     useEffect(() => {
-        const handleToggle = () => setIsOpen(prev => !prev);
+        const handleToggle = () => {
+            if (window.innerWidth < 768) {
+                setIsOpen(prev => !prev);
+            } else {
+                setIsDesktopCollapsed(prev => {
+                    const next = !prev;
+                    try { localStorage.setItem('chef_sidebar_collapsed', String(next)); } catch (_) {}
+                    return next;
+                });
+            }
+        };
         window.addEventListener('toggle-sidebar', handleToggle);
         return () => window.removeEventListener('toggle-sidebar', handleToggle);
     }, []);
@@ -43,44 +60,32 @@ const ChefSidebar = () => {
     };
     const logoSrc = getLogoUrl();
 
-    const handleLogout = () => {
-        logout();
-        navigate('/login');
-    };
-
-    const kdsEnabled = restaurant?.restaurantConfig?.orderKitchen?.kdsEnabled !== false;
-    const kotEnabled = restaurant?.restaurantConfig?.orderKitchen?.kotEnabled !== false;
-
-    const kitchenItems = [];
-    if (kdsEnabled) {
-        kitchenItems.push({ name: 'Active KDS', path: '/chef', icon: MonitorDot });
-    }
-    if (kotEnabled) {
-        kitchenItems.push({ name: 'Kitchen Tickets (KOT)', path: '/chef/kot', icon: Receipt });
-    }
-    if (!kdsEnabled && !kotEnabled) {
-        kitchenItems.push({ name: 'Kitchen Ops (Inactive)', path: '/chef', icon: MonitorDot });
-    }
-
-    const navGroups = [
+    const menuGroups = [
         {
-            title: 'Kitchen Ops',
-            items: kitchenItems
-        },
-        {
-            title: 'Inventory & Stock',
+            title: 'Kitchen Operations',
             items: [
-                { name: 'Wastage & Restock', path: '/chef/inventory', icon: AlertTriangle },
+                { name: 'Live KOT Board', path: '/chef', icon: MonitorDot },
+                { name: 'Order Queue', path: '/chef/orders', icon: ClipboardList },
+                { name: 'Menu Availability', path: '/chef/menu', icon: BookOpen },
             ]
         },
         {
-            title: 'My Workspace',
+            title: 'Inventory & Reporting',
             items: [
-                { name: 'My Leave', path: '/chef/leave', icon: CalendarDays },
-                { name: 'My Salary & Slips', path: '/chef/payroll', icon: CreditCard },
+                { name: 'Wastage & Spoilage', path: '/chef/wastage', icon: AlertTriangle },
+            ]
+        },
+        {
+            title: 'Staff & Shift',
+            items: [
+                { name: 'My Schedule & Shift', path: '/chef/my-shift', icon: CalendarDays },
+                { name: 'Duty Clock-in & Timer', path: '/chef/duty-timer', icon: Receipt },
+                { name: 'My Salary & Slips', path: '/chef/my-payroll', icon: CreditCard },
             ]
         }
     ];
+
+    const navGroups = menuGroups;
 
     return (
         <>
@@ -92,14 +97,15 @@ const ChefSidebar = () => {
             />
         )}
         <aside className={clsx(
-            "w-64 bg-white text-slate-800 border-r border-slate-200 shadow-sm h-screen fixed inset-y-0 left-0 md:sticky md:top-0 flex flex-col transition-transform duration-300 z-40",
-            isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+            "w-64 bg-[#1c130c] text-white border-r border-[#331f12] shadow-2xl h-screen fixed inset-y-0 left-0 md:sticky md:top-0 flex flex-col transition-all duration-300 z-40",
+            isDesktopCollapsed ? "md:-translate-x-full md:w-0 md:opacity-0 md:pointer-events-none md:overflow-hidden" : "md:translate-x-0 md:w-64",
+            isOpen ? "translate-x-0 w-64" : "-translate-x-full"
         )}>
             {/* Header */}
-            <div className="h-16 flex items-center px-5 border-b border-slate-100 shrink-0">
+            <div className="h-16 flex items-center px-5 border-b border-[#331f12] shrink-0">
                 <div className="flex items-center gap-3">
                     {logoSrc && !logoError ? (
-                        <div className="w-10 h-10 rounded-xl overflow-hidden border border-slate-200 bg-slate-50 flex items-center justify-center shrink-0">
+                        <div className="w-10 h-10 rounded-xl overflow-hidden border border-[#4a2e1b] bg-[#29170c] flex items-center justify-center shrink-0">
                             <img 
                                 src={logoSrc} 
                                 alt="Logo" 
@@ -108,15 +114,15 @@ const ChefSidebar = () => {
                             />
                         </div>
                     ) : (
-                        <div className="w-10 h-10 bg-[#FF5A1F] rounded-xl flex items-center justify-center shadow-xs shrink-0">
+                        <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-orange-950 shrink-0">
                             <ChefHat className="text-white" size={22} strokeWidth={2.5} />
                         </div>
                     )}
                     <div>
-                        <h1 className="text-base font-bold text-slate-900 tracking-tight leading-none truncate max-w-[140px]" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                        <h1 className="text-base font-bold text-white tracking-tight leading-none truncate max-w-[140px]" style={{ fontFamily: 'Poppins, sans-serif' }}>
                             {restaurant && restaurant.name ? restaurant.name : 'FoodNest'}
                         </h1>
-                        <span className="text-[10px] font-bold text-[#FF5A1F] uppercase tracking-widest block mt-1">Kitchen Station</span>
+                        <span className="text-[10px] font-bold text-orange-400 uppercase tracking-widest block mt-1">Kitchen Station</span>
                     </div>
                 </div>
             </div>
@@ -125,7 +131,7 @@ const ChefSidebar = () => {
             <nav className="flex-1 px-3 py-5 overflow-y-auto space-y-5 custom-scrollbar" style={{ scrollbarWidth: 'none' }}>
                 {navGroups.map((group, index) => (
                     <div key={index}>
-                        <h2 className="px-3 mb-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                        <h2 className="px-3 mb-2 text-[10px] font-bold text-orange-300/60 uppercase tracking-widest">
                             {group.title}
                         </h2>
                         <ul className="space-y-0.5">
@@ -139,13 +145,13 @@ const ChefSidebar = () => {
                                             className={({ isActive }) => clsx(
                                                 "relative flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all text-sm group",
                                                 isActive 
-                                                ? "bg-[#FF5A1F] text-white shadow-sm font-semibold" 
-                                                : "text-slate-600 hover:bg-orange-50/80 hover:text-[#FF5A1F]"
+                                                ? "bg-orange-500 text-white shadow-lg shadow-orange-950/50 font-semibold" 
+                                                : "text-orange-200/70 hover:bg-[#291a10] hover:text-white"
                                             )}
                                         >
                                             {({ isActive }) => (
                                                 <>
-                                                    <Icon size={17} className={clsx("transition-transform group-hover:scale-110 shrink-0", isActive ? "text-white" : "text-slate-400 group-hover:text-[#FF5A1F]")} />
+                                                    <Icon size={17} className={clsx("transition-transform group-hover:scale-110 shrink-0", isActive ? "text-white" : "text-orange-300/60 group-hover:text-orange-200")} />
                                                     <span className="truncate">{item.name}</span>
                                                     {isActive && <ChevronRight size={14} className="ml-auto shrink-0 opacity-80" />}
                                                 </>
@@ -160,14 +166,14 @@ const ChefSidebar = () => {
             </nav>
 
             {/* Footer Profile & Logout */}
-            <div className="p-3 border-t border-slate-100 shrink-0 bg-slate-50">
-                <div className="px-3 py-2 mb-2 rounded-xl bg-white border border-slate-200">
-                    <p className="text-xs font-bold text-slate-800 truncate">{restaurant?.name || 'Kitchen Staff'}</p>
-                    <p className="text-[10px] text-[#FF5A1F] font-medium">Head Chef Station</p>
+            <div className="p-3 border-t border-[#331f12] shrink-0 bg-[#140c07]">
+                <div className="px-3 py-2 mb-2 rounded-xl bg-[#26160d]/80 border border-[#3d2417]/60">
+                    <p className="text-xs font-bold text-white truncate">{restaurant?.name || 'Kitchen Staff'}</p>
+                    <p className="text-[10px] text-orange-400 font-medium">Head Chef Station</p>
                 </div>
                 <button 
                     onClick={() => setShowLogoutConfirm(true)} 
-                    className="flex items-center gap-3 px-3 py-2.5 w-full rounded-xl font-medium text-slate-600 hover:bg-red-50 hover:text-red-600 transition-all text-sm cursor-pointer"
+                    className="flex items-center gap-3 px-3 py-2.5 w-full rounded-xl font-medium text-orange-200/70 hover:bg-red-500/10 hover:text-red-400 transition-all text-sm cursor-pointer"
                 >
                     <LogOut size={17} />
                     <span>Exit Kitchen</span>
@@ -180,13 +186,12 @@ const ChefSidebar = () => {
             onClose={() => setShowLogoutConfirm(false)}
             onConfirm={() => {
                 logout();
-                toast.success('Successfully signed out');
-                navigate('/login');
+                toast.success('Signed out from kitchen station');
             }}
-            title="Exit Kitchen Session"
-            message="Are you sure you want to exit your Kitchen Station session?"
-            confirmText="Exit Kitchen"
-            cancelText="Stay in Kitchen"
+            title="Exit Kitchen Station"
+            message="Are you sure you want to end your active kitchen session and clock out?"
+            confirmText="Clock Out & Exit"
+            cancelText="Stay on Station"
             isDestructive={true}
         />
         </>

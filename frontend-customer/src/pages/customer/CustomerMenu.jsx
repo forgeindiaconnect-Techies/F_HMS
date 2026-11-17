@@ -104,11 +104,26 @@ const CustomerMenu = () => {
         const fetchMenu = async () => {
             try {
                 // Fetch restaurant info, public config, and menu items ALL CONCURRENTLY in parallel
-                const [restRes, configRes, menuRes] = await Promise.all([
+                let [restRes, configRes, menuRes] = await Promise.all([
                     api.get(`/restaurants/${restaurantId}`).catch((err) => err.response || null),
                     api.get(`/restaurants/${restaurantId}/public-config`).catch((err) => err.response || null),
                     api.get(`/menu?restaurantId=${restaurantId}&branchId=${branchId || ''}`).catch(() => ({ data: [] }))
                 ]);
+
+                // Direct production cloud failovers if primary client failed
+                if (!restRes?.data?._id) {
+                    try {
+                        const fallbackRest = await axios.get(`${PROD_API_URL}/restaurants/${restaurantId}`, { timeout: 8000 });
+                        if (fallbackRest?.data) restRes = fallbackRest;
+                    } catch (_) {}
+                }
+
+                if (!configRes?.data?.restaurantName) {
+                    try {
+                        const fallbackCfg = await axios.get(`${PROD_API_URL}/restaurants/${restaurantId}/public-config`, { timeout: 8000 });
+                        if (fallbackCfg?.data) configRes = fallbackCfg;
+                    } catch (_) {}
+                }
 
                 // Verify restaurant is active and visible
                 const isExplicitlyDead =
@@ -122,7 +137,18 @@ const CustomerMenu = () => {
                     configRes?.status === 404 ||
                     configRes?.status === 403;
 
-                const hasAnyValidData = Boolean(restRes?.data?._id || configRes?.data?.restaurantName || (Array.isArray(menuRes?.data) && menuRes.data.length > 0));
+                let items = Array.isArray(menuRes?.data) ? menuRes.data : [];
+                // If branch filter produced 0 items, fallback to all dishes for this restaurant
+                if (items.length === 0) {
+                    try {
+                        const fallbackMenu = await axios.get(`${PROD_API_URL}/menu?restaurantId=${restaurantId}`, { timeout: 8000 });
+                        if (Array.isArray(fallbackMenu.data) && fallbackMenu.data.length > 0) {
+                            items = fallbackMenu.data;
+                        }
+                    } catch (_) {}
+                }
+
+                const hasAnyValidData = Boolean(restRes?.data?._id || configRes?.data?.restaurantName || items.length > 0);
 
                 if (isExplicitlyDead || (!hasAnyValidData && (restRes?.status >= 400 || !restRes?.data))) {
                     setIsUnavailable(true);
@@ -137,7 +163,6 @@ const CustomerMenu = () => {
                     setRestaurantName(restRes.data.name);
                 }
 
-                const items = Array.isArray(menuRes?.data) ? menuRes.data : [];
                 setMenuItems(items);
 
                 if (configRes && configRes.data) {

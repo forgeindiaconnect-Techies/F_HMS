@@ -21,13 +21,14 @@ const Menu = () => {
         try {
             const cached = sessionStorage.getItem('foodnest_menu_cache') || sessionStorage.getItem('restosys_live_menu_cache');
             const parsed = cached ? JSON.parse(cached) : [];
-            return Array.isArray(parsed) ? parsed : [];
+            return Array.isArray(parsed) && parsed.length > 0 ? parsed : [];
         } catch { return []; }
     });
     const [loading, setLoading] = useState(() => {
         try {
             const cached = sessionStorage.getItem('foodnest_menu_cache') || sessionStorage.getItem('restosys_live_menu_cache');
-            return !(cached && JSON.parse(cached)?.length > 0);
+            const parsed = cached ? JSON.parse(cached) : [];
+            return !(Array.isArray(parsed) && parsed.length > 0);
         } catch { return true; }
     });
     const [searchQuery, setSearchQuery] = useState(() => {
@@ -90,6 +91,22 @@ const Menu = () => {
         }, 8000);
 
         const fetchMenu = async () => {
+            // 1. Direct reliable fetch from live production cloud API (no staff auth interference)
+            try {
+                const directRes = await axios.get(`${PROD_API_URL}/menu`, { timeout: 12000 });
+                if (isMounted && Array.isArray(directRes.data) && directRes.data.length > 0) {
+                    setMenuItems(directRes.data);
+                    try {
+                        sessionStorage.setItem('foodnest_menu_cache', JSON.stringify(directRes.data));
+                        sessionStorage.setItem('restosys_live_menu_cache', JSON.stringify(directRes.data));
+                    } catch { }
+                    return;
+                }
+            } catch (directErr) {
+                console.warn('Direct production menu fetch notice:', directErr?.message || directErr);
+            }
+
+            // 2. Fallback to client instance
             try {
                 const { data } = await client.get('/menu');
                 if (isMounted && Array.isArray(data) && data.length > 0) {
@@ -98,26 +115,9 @@ const Menu = () => {
                         sessionStorage.setItem('foodnest_menu_cache', JSON.stringify(data));
                         sessionStorage.setItem('restosys_live_menu_cache', JSON.stringify(data));
                     } catch { }
-                } else if (isMounted && Array.isArray(data)) {
-                    setMenuItems(data);
-                    return;
                 }
             } catch (error) {
                 console.warn('Initial menu fetch notice:', error?.message || error);
-            }
-
-            // Direct reliable failover to live backend endpoint
-            try {
-                const fallbackRes = await axios.get(`${PROD_API_URL}/menu`, { timeout: 15000 });
-                if (isMounted && Array.isArray(fallbackRes.data) && fallbackRes.data.length > 0) {
-                    setMenuItems(fallbackRes.data);
-                    try {
-                        sessionStorage.setItem('foodnest_menu_cache', JSON.stringify(fallbackRes.data));
-                        sessionStorage.setItem('restosys_live_menu_cache', JSON.stringify(fallbackRes.data));
-                    } catch { }
-                }
-            } catch (fallbackErr) {
-                console.error('Direct production menu fetch failed:', fallbackErr);
             } finally {
                 if (isMounted) setLoading(false);
             }
@@ -306,14 +306,40 @@ const Menu = () => {
                 ) : filteredMenu.length === 0 ? (
                     <div className="text-center py-20 bg-slate-50/60 rounded-3xl border border-slate-100 max-w-lg mx-auto">
                         <Search size={40} className="mx-auto text-slate-300 mb-3" />
-                        <h3 className="text-base font-bold text-slate-900">No dishes match your search</h3>
-                        <p className="text-xs text-slate-500 mt-1">Try searching with a different keyword or category.</p>
-                        <button
-                            onClick={() => { setSearchQuery(''); setActiveCategory('All'); setRestaurantFilter(''); }}
-                            className="mt-4 text-xs font-bold text-[#FF5A1F] hover:underline cursor-pointer"
-                        >
-                            Reset filters
-                        </button>
+                        <h3 className="text-base font-bold text-slate-900">
+                            {restaurantFilter && !hasRestaurantMatches ? 'No dishes published for this specific outlet' : 'No dishes match your search'}
+                        </h3>
+                        <p className="text-xs text-slate-500 mt-1">
+                            {restaurantFilter && !hasRestaurantMatches
+                                ? 'This outlet has not listed dishes yet. Click below to explore all delicious dishes from other registered kitchens.'
+                                : 'Try searching with a different keyword or category.'}
+                        </p>
+                        <div className="flex items-center justify-center gap-2 mt-4">
+                            <button
+                                onClick={() => {
+                                    setSearchQuery('');
+                                    setActiveCategory('All');
+                                    setRestaurantFilter('');
+                                    try { window.history.replaceState({}, '', window.location.pathname); } catch {}
+                                }}
+                                className="px-4 py-2 bg-[#FF5A1F] hover:bg-[#e04f1a] text-white text-xs font-bold rounded-xl transition-all cursor-pointer shadow-xs"
+                            >
+                                Reset filters &amp; View All Dishes
+                            </button>
+                            {menuItems.length === 0 && (
+                                <button
+                                    onClick={() => {
+                                        setLoading(true);
+                                        axios.get(`${PROD_API_URL}/menu`, { timeout: 10000 })
+                                            .then(r => { if (Array.isArray(r.data)) setMenuItems(r.data); })
+                                            .finally(() => setLoading(false));
+                                    }}
+                                    className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded-xl transition-all cursor-pointer"
+                                >
+                                    Reload Menu
+                                </button>
+                            )}
+                        </div>
                     </div>
                 ) : (
                     <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-4">

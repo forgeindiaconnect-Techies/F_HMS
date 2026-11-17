@@ -45,9 +45,17 @@ export const getMenuItems = async (req, res) => {
             }
         }
 
-        const items = await MenuItem.find(filter)
+        let items = await MenuItem.find(filter)
             .populate('restaurantId', 'name city address approvalStatus subscription isActive isDeleted status')
             .lean();
+
+        // If filtering by branchId yielded 0 items, fallback to all active dishes for this restaurant
+        if (items.length === 0 && filter.$or && req.query.restaurantId) {
+            delete filter.$or;
+            items = await MenuItem.find(filter)
+                .populate('restaurantId', 'name city address approvalStatus subscription isActive isDeleted status')
+                .lean();
+        }
 
         // Exclude menu items whose parent restaurant has been deleted, rejected, or inactive/suspended/frozen!
         const validItems = items.filter(item => {

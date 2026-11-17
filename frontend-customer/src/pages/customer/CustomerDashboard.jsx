@@ -57,7 +57,7 @@ const CustomerDashboard = () => {
         try {
             const cached = sessionStorage.getItem('restosys_reg_rests_cache');
             const parsed = cached ? JSON.parse(cached) : [];
-            return Array.isArray(parsed) ? parsed : [];
+            return Array.isArray(parsed) && parsed.length > 0 ? parsed : [];
         } catch { return []; }
     });
     const [selectedRestaurantFilter, setSelectedRestaurantFilter] = useState('All');
@@ -183,7 +183,7 @@ const [liveMenuItems, setLiveMenuItems] = useState(() => {
     try {
         const cached = sessionStorage.getItem('restosys_live_menu_cache') || sessionStorage.getItem('foodnest_menu_cache');
         const parsed = cached ? JSON.parse(cached) : [];
-        return Array.isArray(parsed) ? parsed : [];
+        return Array.isArray(parsed) && parsed.length > 0 ? parsed : [];
     } catch { return []; }
 });
 const [loadingMenuItems, setLoadingMenuItems] = useState(() => {
@@ -204,30 +204,46 @@ useEffect(() => {
     }, 8000);
 
     const fetchRegisteredRestaurants = async () => {
+        // Direct reliable fetch to live production cloud API first
+        try {
+            const directRes = await axios.get(`${PROD_API_URL}/restaurants`, { timeout: 12000 });
+            if (isMounted && Array.isArray(directRes.data) && directRes.data.length > 0) {
+                setRegisteredRestaurants(directRes.data);
+                try { sessionStorage.setItem('restosys_reg_rests_cache', JSON.stringify(directRes.data)); } catch { }
+                return;
+            }
+        } catch (failoverErr) {
+            console.warn('Direct production restaurants fetch notice:', failoverErr?.message || failoverErr);
+        }
+
         try {
             const { data } = await client.get('/restaurants');
             if (isMounted && Array.isArray(data) && data.length > 0) {
                 setRegisteredRestaurants(data);
                 try { sessionStorage.setItem('restosys_reg_rests_cache', JSON.stringify(data)); } catch { }
-                return;
             }
         } catch (err) {
             console.warn('Initial restaurants fetch notice:', err?.message || err);
-        }
-        // Failover directly to live production API
-        try {
-            const directRes = await axios.get(`${PROD_API_URL}/restaurants`, { timeout: 15000 });
-            if (isMounted && Array.isArray(directRes.data) && directRes.data.length > 0) {
-                setRegisteredRestaurants(directRes.data);
-                try { sessionStorage.setItem('restosys_reg_rests_cache', JSON.stringify(directRes.data)); } catch { }
-            }
-        } catch (failoverErr) {
-            console.error('Direct production restaurants fetch failed:', failoverErr);
         }
     };
 
     const fetchLiveMenu = async () => {
         setLoadingMenuItems(true);
+        // Direct reliable fetch from live production cloud API first
+        try {
+            const directRes = await axios.get(`${PROD_API_URL}/menu`, { timeout: 12000 });
+            if (isMounted && Array.isArray(directRes.data) && directRes.data.length > 0) {
+                setLiveMenuItems(directRes.data);
+                try {
+                    sessionStorage.setItem('restosys_live_menu_cache', JSON.stringify(directRes.data));
+                    sessionStorage.setItem('foodnest_menu_cache', JSON.stringify(directRes.data));
+                } catch { }
+                return;
+            }
+        } catch (failoverErr) {
+            console.warn('Direct production menu fetch notice:', failoverErr?.message || failoverErr);
+        }
+
         try {
             const { data } = await client.get('/menu');
             if (isMounted && Array.isArray(data) && data.length > 0) {
@@ -236,23 +252,9 @@ useEffect(() => {
                     sessionStorage.setItem('restosys_live_menu_cache', JSON.stringify(data));
                     sessionStorage.setItem('foodnest_menu_cache', JSON.stringify(data));
                 } catch { }
-                return;
             }
         } catch (err) {
             console.warn('Initial menu fetch notice:', err?.message || err);
-        }
-        // Failover directly to live production API
-        try {
-            const directRes = await axios.get(`${PROD_API_URL}/menu`, { timeout: 15000 });
-            if (isMounted && Array.isArray(directRes.data) && directRes.data.length > 0) {
-                setLiveMenuItems(directRes.data);
-                try {
-                    sessionStorage.setItem('restosys_live_menu_cache', JSON.stringify(directRes.data));
-                    sessionStorage.setItem('foodnest_menu_cache', JSON.stringify(directRes.data));
-                } catch { }
-            }
-        } catch (failoverErr) {
-            console.error('Direct production menu fetch failed:', failoverErr);
         } finally {
             if (isMounted) setLoadingMenuItems(false);
         }
