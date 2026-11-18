@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
-    MonitorDot, ClipboardList, BookOpen, AlertTriangle, LogOut, ChefHat, Receipt,
+    MonitorDot, AlertTriangle, LogOut, ChefHat, Receipt,
     CalendarDays, CreditCard, ChevronRight
 } from 'lucide-react';
 import clsx from 'clsx';
@@ -60,32 +60,39 @@ const ChefSidebar = () => {
     };
     const logoSrc = getLogoUrl();
 
-    const menuGroups = [
+    const kdsEnabled = restaurant?.restaurantConfig?.orderKitchen?.kdsEnabled !== false;
+    const kotEnabled = restaurant?.restaurantConfig?.orderKitchen?.kotEnabled !== false;
+
+    const kitchenItems = [];
+    if (kdsEnabled) {
+        kitchenItems.push({ name: 'Active KDS', path: '/chef', icon: MonitorDot });
+    }
+    if (kotEnabled) {
+        kitchenItems.push({ name: 'Kitchen Tickets (KOT)', path: '/chef/kot', icon: Receipt });
+    }
+    if (!kdsEnabled && !kotEnabled) {
+        kitchenItems.push({ name: 'Kitchen Ops (Inactive)', path: '/chef', icon: MonitorDot });
+    }
+
+    const navGroups = [
         {
-            title: 'Kitchen Operations',
+            title: 'Kitchen Ops',
+            items: kitchenItems
+        },
+        {
+            title: 'Inventory & Stock',
             items: [
-                { name: 'Live KOT Board', path: '/chef', icon: MonitorDot },
-                { name: 'Order Queue', path: '/chef/orders', icon: ClipboardList },
-                { name: 'Menu Availability', path: '/chef/menu', icon: BookOpen },
+                { name: 'Wastage & Restock', path: '/chef/inventory', icon: AlertTriangle },
             ]
         },
         {
-            title: 'Inventory & Reporting',
+            title: 'My Workspace',
             items: [
-                { name: 'Wastage & Spoilage', path: '/chef/wastage', icon: AlertTriangle },
-            ]
-        },
-        {
-            title: 'Staff & Shift',
-            items: [
-                { name: 'My Schedule & Shift', path: '/chef/my-shift', icon: CalendarDays },
-                { name: 'Duty Clock-in & Timer', path: '/chef/duty-timer', icon: Receipt },
-                { name: 'My Salary & Slips', path: '/chef/my-payroll', icon: CreditCard },
+                { name: 'My Leave', path: '/chef/leave', icon: CalendarDays },
+                { name: 'My Salary & Slips', path: '/chef/payroll', icon: CreditCard },
             ]
         }
     ];
-
-    const navGroups = menuGroups;
 
     return (
         <>
