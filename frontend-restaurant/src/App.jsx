@@ -344,6 +344,13 @@ function App() {
           <Route path="inventory" element={<ChefInventory />} />
           <Route path="leave" element={<StaffMyLeave />} />
           <Route path="payroll" element={<StaffMyPayroll />} />
+          {/* Legacy / Alias redirects */}
+          <Route path="orders" element={<Navigate to="/chef" replace />} />
+          <Route path="menu" element={<Navigate to="/chef" replace />} />
+          <Route path="wastage" element={<Navigate to="/chef/inventory" replace />} />
+          <Route path="my-shift" element={<Navigate to="/chef" replace />} />
+          <Route path="duty-timer" element={<Navigate to="/chef" replace />} />
+          <Route path="my-payroll" element={<Navigate to="/chef/payroll" replace />} />
         </Route>
         
         <Route path="/cashier" element={<ProtectedRoute allowedRoles={['SuperAdmin', 'Cashier', 'RestaurantAdmin', 'BranchManager']}><CashierLayout /></ProtectedRoute>}>
@@ -360,6 +367,16 @@ function App() {
           <Route path="leave" element={<StaffMyLeave />} />
           <Route path="payroll" element={<StaffMyPayroll />} />
           <Route path="settings" element={<CashierDashboard />} />
+          {/* Legacy / Alias redirects */}
+          <Route path="bills" element={<Navigate to="/cashier/invoices" replace />} />
+          <Route path="split-bill" element={<Navigate to="/cashier/split" replace />} />
+          <Route path="shift-register" element={<Navigate to="/cashier/summary" replace />} />
+          <Route path="table-status" element={<Navigate to="/cashier/billing" replace />} />
+          <Route path="transfer-table" element={<Navigate to="/cashier/billing" replace />} />
+          <Route path="coupons" element={<Navigate to="/cashier/discounts" replace />} />
+          <Route path="my-shift" element={<Navigate to="/cashier/billing" replace />} />
+          <Route path="duty-timer" element={<Navigate to="/cashier/billing" replace />} />
+          <Route path="my-payroll" element={<Navigate to="/cashier/payroll" replace />} />
         </Route>
 
         {/* Delivery Staff App */}

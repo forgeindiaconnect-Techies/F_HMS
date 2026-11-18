@@ -57,34 +57,25 @@ const CashierSidebar = () => {
 
     const menuGroups = [
         {
-            title: 'Billing Operations',
+            title: 'POINT OF SALE',
             items: [
-                { name: 'POS Terminal', path: '/cashier', icon: Calculator },
-                { name: 'Bill History', path: '/cashier/bills', icon: Receipt },
-                { name: 'Split Bill', path: '/cashier/split-bill', icon: Split },
-                { name: 'Shift Register & Summary', path: '/cashier/shift-register', icon: Landmark },
+                { name: 'POS Billing', icon: Calculator, path: '/cashier/billing' },
+                { name: 'Generate Invoices', icon: Receipt, path: '/cashier/invoices' },
+                { name: 'Split Bill', icon: Split, path: '/cashier/split' },
+                { name: 'Merge Bill', icon: ArrowLeftRight, path: '/cashier/merge' },
+                { name: 'Apply Discounts', icon: Tag, path: '/cashier/discounts' },
+                { name: 'Payment Collection', icon: Coins, path: '/cashier/collection' },
+                { name: 'Refund Management', icon: Undo2, path: '/cashier/refunds' },
+                { name: 'Daily Cash Summary', icon: Landmark, path: '/cashier/summary' },
+                { name: 'Transaction History', icon: History, path: '/cashier/history' },
+                { name: 'POS Settings', icon: Settings, path: '/cashier/settings' },
             ]
         },
         {
-            title: 'Floor & Orders',
+            title: 'MY WORKSPACE',
             items: [
-                { name: 'Table Status', path: '/cashier/table-status', icon: Coins },
-                { name: 'Transfer Table', path: '/cashier/transfer-table', icon: ArrowLeftRight },
-            ]
-        },
-        {
-            title: 'Customer & Discounts',
-            items: [
-                { name: 'Coupons & Discounts', path: '/cashier/coupons', icon: Tag },
-                { name: 'Refunds / Void Bill', path: '/cashier/refunds', icon: Undo2 },
-            ]
-        },
-        {
-            title: 'Staff & Shift',
-            items: [
-                { name: 'My Schedule & Shift', path: '/cashier/my-shift', icon: CalendarDays },
-                { name: 'Duty Clock-in & Timer', path: '/cashier/duty-timer', icon: Receipt },
-                { name: 'My Salary & Slips', path: '/cashier/my-payroll', icon: CreditCard },
+                { name: 'My Leave', icon: CalendarDays, path: '/cashier/leave' },
+                { name: 'My Salary & Slips', icon: CreditCard, path: '/cashier/payroll' },
             ]
         }
     ];
@@ -143,7 +134,7 @@ const CashierSidebar = () => {
                                     <li key={item.name}>
                                         <NavLink
                                             to={item.path}
-                                            end={item.path === '/cashier' || item.path === '/'}
+                                            end={item.path === '/cashier' || item.path === '/cashier/billing' || item.path === '/'}
                                             className={({ isActive }) => clsx(
                                                 "relative flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all text-sm group",
                                                 isActive 
