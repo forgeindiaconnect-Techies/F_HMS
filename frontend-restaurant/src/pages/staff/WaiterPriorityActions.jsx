@@ -46,6 +46,7 @@ const WaiterPriorityActions = () => {
             try {
                 let baseURL = getApiUrl();
                 let wsURL = baseURL.replace(/^http/, 'ws').replace(/\/api$/, '');
+                if (!wsURL || wsURL.includes('vercel.app')) return;
                 ws = new WebSocket(wsURL);
 
                 ws.onopen = () => {

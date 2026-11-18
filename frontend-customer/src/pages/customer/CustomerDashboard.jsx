@@ -430,6 +430,7 @@ useEffect(() => {
         try {
             const baseURL = getApiUrl();
             const wsURL = baseURL.replace(/^http/, 'ws').replace(/\/api$/, '');
+            if (!wsURL || wsURL.includes('vercel.app')) return;
             ws = new WebSocket(wsURL);
 
             ws.onopen = () => {

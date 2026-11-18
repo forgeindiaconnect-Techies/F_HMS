@@ -313,6 +313,7 @@ export const AuthProvider = ({ children }) => {
             if (isUnmounted || !user?.restaurantId) return;
             try {
                 const wsURL = getApiUrl().replace(/^http/, 'ws').replace(/\/api$/, '');
+                if (!wsURL || wsURL.includes('vercel.app')) return;
                 ws = new WebSocket(wsURL);
                 ws.onopen = () => {
                     const cleanRestId = typeof user.restaurantId === 'object' ? (user.restaurantId._id || user.restaurantId.id) : user.restaurantId;

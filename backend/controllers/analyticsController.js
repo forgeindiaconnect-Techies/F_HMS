@@ -120,7 +120,10 @@ export const getDashboardAnalytics = async (req, res) => {
             currentPeriodMatch.restaurantId = new mongoose.Types.ObjectId(userRestaurantId);
             previousPeriodMatch.restaurantId = new mongoose.Types.ObjectId(userRestaurantId);
             
-            if (req.user.role === 'BranchManager' || req.user.branchId) {
+            if (req.query.branchId) {
+                currentPeriodMatch.branchId = new mongoose.Types.ObjectId(req.query.branchId);
+                previousPeriodMatch.branchId = new mongoose.Types.ObjectId(req.query.branchId);
+            } else if (req.user.role === 'BranchManager') {
                 const effectiveBranchId = req.user.branchId || (await Branch.findOne({ manager: req.user._id }))?._id;
                 if (effectiveBranchId) {
                     currentPeriodMatch.branchId = new mongoose.Types.ObjectId(effectiveBranchId);
@@ -185,7 +188,7 @@ export const getDashboardAnalytics = async (req, res) => {
         const avgChange = calculateChange(curAvg, prevAvg);
 
         // 3. Revenue Trend
-        const revenueTrend = await Order.aggregate([
+        let revenueTrend = await Order.aggregate([
             { $match: currentPeriodMatch },
             {
                 $group: {
@@ -197,8 +200,27 @@ export const getDashboardAnalytics = async (req, res) => {
             { $sort: { _id: 1 } }
         ]);
 
+        if (revenueTrend.length === 0 && userRestaurantId) {
+            const fallbackMatch = {
+                status: { $nin: ['Cancelled', 'Refunded'] },
+                restaurantId: new mongoose.Types.ObjectId(userRestaurantId)
+            };
+            revenueTrend = await Order.aggregate([
+                { $match: fallbackMatch },
+                {
+                    $group: {
+                        _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+                        revenue: { $sum: '$totalPrice' },
+                        orders: { $sum: 1 }
+                    }
+                },
+                { $sort: { _id: 1 } },
+                { $limit: 14 }
+            ]);
+        }
+
         // 4. Popular Items
-        const popularItems = await Order.aggregate([
+        let popularItems = await Order.aggregate([
             { $match: currentPeriodMatch },
             { $unwind: '$orderItems' },
             {
@@ -212,6 +234,27 @@ export const getDashboardAnalytics = async (req, res) => {
             { $sort: { totalSold: -1 } },
             { $limit: 10 }
         ]);
+
+        if (popularItems.length === 0 && userRestaurantId) {
+            const fallbackMatch = {
+                status: { $nin: ['Cancelled', 'Refunded'] },
+                restaurantId: new mongoose.Types.ObjectId(userRestaurantId)
+            };
+            popularItems = await Order.aggregate([
+                { $match: fallbackMatch },
+                { $unwind: '$orderItems' },
+                {
+                    $group: {
+                        _id: '$orderItems.product',
+                        name: { $first: '$orderItems.name' },
+                        totalSold: { $sum: '$orderItems.qty' },
+                        revenue: { $sum: { $multiply: ['$orderItems.price', '$orderItems.qty'] } }
+                    }
+                },
+                { $sort: { totalSold: -1 } },
+                { $limit: 10 }
+            ]);
+        }
 
         const categoryData = popularItems.map(item => ({
             name: item.name,

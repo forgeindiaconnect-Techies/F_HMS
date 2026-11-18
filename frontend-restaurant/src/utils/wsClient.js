@@ -30,7 +30,7 @@ export const createReconnectingWebSocket = ({
         if (isUnmounted) return;
         try {
             const wsURL = String(apiUrl || '').replace(/^http/, 'ws').replace(/\/api$/, '');
-            if (!wsURL) return;
+            if (!wsURL || wsURL.includes('vercel.app')) return;
 
             ws = new WebSocket(wsURL);
 

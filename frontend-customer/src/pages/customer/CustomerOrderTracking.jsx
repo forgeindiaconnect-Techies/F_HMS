@@ -97,6 +97,7 @@ const CustomerOrderTracking = () => {
 
             const baseURL = API_URL;
             const wsURL = baseURL.replace(/^http/, 'ws').replace(/\/api$/, '');
+            if (!wsURL || wsURL.includes('vercel.app')) return;
             
             try {
                 ws = new WebSocket(wsURL);
