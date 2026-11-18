@@ -26,10 +26,10 @@ const Analytics = () => {
         const fetchAnalytics = async () => {
             setLoading(true);
             try {
-                const res = await api.get(`/analytics/dashboard?timeframe=${timeframe}`);
-                setData(res.data);
-            } catch (error) {
-                console.error('Failed to fetch analytics', error);
+                const res = await api.get(`/analytics/dashboard?timeframe=${timeframe}`, { noCache: true });
+                if (res.data) setData(res.data);
+            } catch {
+                // Graceful fallback
             } finally {
                 setLoading(false);
             }

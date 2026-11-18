@@ -12,7 +12,13 @@ const DashboardHome = () => {
     const [data, setData] = useState(() => {
         try {
             const cached = sessionStorage.getItem('restosys_admin_analytics');
-            return cached ? JSON.parse(cached) : null;
+            if (cached) {
+                const parsed = JSON.parse(cached);
+                if (parsed?.overview?.totalOrders > 0 || parsed?.overview?.totalRevenue > 0) {
+                    return parsed;
+                }
+            }
+            return null;
         } catch {
             return null;
         }
@@ -20,14 +26,16 @@ const DashboardHome = () => {
     const [loading, setLoading] = useState(() => !data);
 
     useEffect(() => {
-        const capTimer = setTimeout(() => setLoading(false), 1500);
+        const capTimer = setTimeout(() => setLoading(false), 2000);
         const fetchAnalytics = async () => {
             try {
-                const res = await api.get('/analytics/dashboard');
-                setData(res.data);
-                try { sessionStorage.setItem('restosys_admin_analytics', JSON.stringify(res.data)); } catch {}
+                const res = await api.get('/analytics/dashboard', { noCache: true });
+                if (res.data) {
+                    setData(res.data);
+                    try { sessionStorage.setItem('restosys_admin_analytics', JSON.stringify(res.data)); } catch {}
+                }
             } catch {
-                // Graceful fallback to default overview
+                // Graceful fallback
             } finally {
                 clearTimeout(capTimer);
                 setLoading(false);

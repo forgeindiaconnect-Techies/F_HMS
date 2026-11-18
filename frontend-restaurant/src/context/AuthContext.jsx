@@ -193,7 +193,10 @@ api.get = (url, config = {}) => {
         String(url).includes('/auth/') ||
         String(url).includes('/live') ||
         String(url).includes('/tables') ||
-        String(url).includes('/shifts');
+        String(url).includes('/shifts') ||
+        String(url).includes('/analytics') ||
+        String(url).includes('/stats') ||
+        String(url).includes('/super-admin');
 
     const skipCache = config?.noCache || isLiveOperationalUrl;
     if (skipCache) return _rawGet(url, config);
