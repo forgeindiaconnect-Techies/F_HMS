@@ -133395,23 +133395,18 @@ var getStats = async (req, res) => {
       }),
       Restaurant_default.countDocuments({ isDeleted: { $ne: true }, approvalStatus: "Pending" }),
       Restaurant_default.countDocuments({ isDeleted: { $ne: true }, "subscription.status": "Frozen" }),
-      User_default.countDocuments({
-        $or: [
-          { role: "SuperAdmin" },
-          { restaurantId: { $in: activeRestaurantIds } }
-        ]
-      }),
-      Order_default.countDocuments({ restaurantId: { $in: activeRestaurantIds } }),
+      User_default.countDocuments({ isDeleted: { $ne: true } }),
+      Order_default.countDocuments({ isDeleted: { $ne: true } }),
       Restaurant_default.find(
         { approvalStatus: { $ne: "Rejected" }, "subscription.status": { $ne: "Cancelled" }, isDeleted: { $ne: true } },
         "_id subscription"
       ).lean(),
       Restaurant_default.find({ isDeleted: { $ne: true } }, "_id commissionRate").lean(),
-      Order_default.find({ isPaid: true, restaurantId: { $in: activeRestaurantIds } }, "restaurantId totalPrice").lean()
+      Order_default.find({ isPaid: true }, "restaurantId totalPrice").lean()
     ]);
     let totalRevenue = 0;
     activeSubscribedRestaurants.forEach((r) => {
-      const planPrice = r.subscription?.price || (r.subscription?.plan === "Enterprise" ? 199 : r.subscription?.plan === "Pro" ? 99 : 49);
+      const planPrice = r.subscription?.price && r.subscription.price > 100 ? r.subscription.price : r.subscription?.plan === "Enterprise" ? 12999 : r.subscription?.plan === "Pro" ? 5999 : 2999;
       const cycle = r.subscription?.billingCycle || "monthly";
       totalRevenue += cycle === "yearly" ? Math.round(planPrice / 12) : planPrice;
     });

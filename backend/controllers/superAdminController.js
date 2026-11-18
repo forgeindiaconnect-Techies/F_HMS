@@ -37,25 +37,22 @@ export const getStats = async (req, res) => {
             }),
             Restaurant.countDocuments({ isDeleted: { $ne: true }, approvalStatus: 'Pending' }),
             Restaurant.countDocuments({ isDeleted: { $ne: true }, 'subscription.status': 'Frozen' }),
-            User.countDocuments({
-                $or: [
-                    { role: 'SuperAdmin' },
-                    { restaurantId: { $in: activeRestaurantIds } }
-                ]
-            }),
-            Order.countDocuments({ restaurantId: { $in: activeRestaurantIds } }),
+            User.countDocuments({ isDeleted: { $ne: true } }),
+            Order.countDocuments({ isDeleted: { $ne: true } }),
             Restaurant.find(
                 { approvalStatus: { $ne: 'Rejected' }, 'subscription.status': { $ne: 'Cancelled' }, isDeleted: { $ne: true } },
                 '_id subscription'
             ).lean(),
             Restaurant.find({ isDeleted: { $ne: true } }, '_id commissionRate').lean(),
-            Order.find({ isPaid: true, restaurantId: { $in: activeRestaurantIds } }, 'restaurantId totalPrice').lean()
+            Order.find({ isPaid: true }, 'restaurantId totalPrice').lean()
         ]);
 
         // Calculate real MRR from active restaurant subscriptions
         let totalRevenue = 0;
         activeSubscribedRestaurants.forEach(r => {
-            const planPrice = r.subscription?.price || (r.subscription?.plan === 'Enterprise' ? 199 : r.subscription?.plan === 'Pro' ? 99 : 49);
+            const planPrice = (r.subscription?.price && r.subscription.price > 100)
+                ? r.subscription.price 
+                : (r.subscription?.plan === 'Enterprise' ? 12999 : r.subscription?.plan === 'Pro' ? 5999 : 2999);
             const cycle = r.subscription?.billingCycle || 'monthly';
             totalRevenue += cycle === 'yearly' ? Math.round(planPrice / 12) : planPrice;
         });

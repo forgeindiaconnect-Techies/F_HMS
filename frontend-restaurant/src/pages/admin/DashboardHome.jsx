@@ -26,8 +26,8 @@ const DashboardHome = () => {
                 const res = await api.get('/analytics/dashboard');
                 setData(res.data);
                 try { sessionStorage.setItem('restosys_admin_analytics', JSON.stringify(res.data)); } catch {}
-            } catch (err) {
-                console.error('Failed to fetch dashboard analytics', err);
+            } catch {
+                // Graceful fallback to default overview
             } finally {
                 clearTimeout(capTimer);
                 setLoading(false);

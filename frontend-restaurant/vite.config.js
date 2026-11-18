@@ -19,8 +19,8 @@ export default defineConfig(({ mode }) => {
     ],
     resolve: {
       alias: {
-        'react-router/dom': path.resolve(__dirname, 'node_modules/react-router/dist/production/dom-export.js'),
-        'react-router': path.resolve(__dirname, 'node_modules/react-router/dist/production/index.js'),
+        'react-router/dom': path.resolve(__dirname, 'node_modules/react-router/dist/production/dom-export.mjs'),
+        'react-router': path.resolve(__dirname, 'node_modules/react-router/dist/production/index.mjs'),
         'react-hook-form': path.resolve(__dirname, 'node_modules/react-hook-form/dist/index.cjs.js'),
       }
     },

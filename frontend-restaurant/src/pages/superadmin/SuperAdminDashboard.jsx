@@ -64,14 +64,8 @@ const SuperAdminDashboard = () => {
             };
 
             const [statsRes, restsRes, verifsRes, inquiriesRes, ticketsRes, notifsRes, demosRes] = await Promise.all([
-                api.get('/super-admin/stats', reqConfig).catch((err) => {
-                    console.warn('/super-admin/stats error:', err?.message);
-                    return { data: null };
-                }),
-                api.get('/super-admin/restaurants', reqConfig).catch((err) => {
-                    console.warn('/super-admin/restaurants error:', err?.message);
-                    return { data: [] };
-                }),
+                api.get('/super-admin/stats', reqConfig).catch(() => ({ data: null })),
+                api.get('/super-admin/restaurants', reqConfig).catch(() => ({ data: [] })),
                 api.get('/restaurants/verification/all', reqConfig).catch(() => ({ data: [] })),
                 api.get('/inquiries/admin', reqConfig).catch(() => ({ data: [] })),
                 api.get('/super-admin/tickets', reqConfig).catch(() => ({ data: [] })),

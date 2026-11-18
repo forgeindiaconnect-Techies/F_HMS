@@ -1,119 +1,119 @@
-import { useEffect } from 'react';
+import { useEffect, Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import FreeTrialManagement from './pages/superadmin/FreeTrialManagement';
+const FreeTrialManagement = lazy(() => import('./pages/superadmin/FreeTrialManagement'));
 import ProtectedRoute from './components/ProtectedRoute';
 import DashboardLayout from './layouts/DashboardLayout';
-import DashboardHome from './pages/admin/DashboardHome';
-import BranchesManagement from './pages/admin/BranchesManagement';
-import MenuManagement from './pages/admin/MenuManagement';
-import UsersManagement from './pages/admin/UsersManagement';
-import StaffManagement from './pages/admin/StaffManagement';
-import RoleManagement from './pages/admin/RoleManagement';
-import CategoryManagement from './pages/admin/CategoryManagement';
-import InventoryManagement from './pages/admin/InventoryManagement';
-import SupplierManagement from './pages/admin/SupplierManagement';
-import CustomerManagement from './pages/admin/CustomerManagement';
-import ReservationManagement from './pages/admin/ReservationManagement';
-import OrderManagement from './pages/admin/OrderManagement';
-import PaymentManagement from './pages/admin/PaymentManagement';
-import BillingManagement from './pages/admin/BillingManagement';
-import OfferManagement from './pages/admin/OfferManagement';
-import TaxManagement from './pages/admin/TaxManagement';
-import Reports from './pages/admin/Reports';
-import Analytics from './pages/admin/Analytics';
-import NotificationCenter from './pages/admin/NotificationCenter';
-import ActivityLogs from './pages/admin/ActivityLogs';
-import Settings from './pages/admin/Settings';
-import RestaurantSetupWizard from './pages/admin/RestaurantSetupWizard';
-import TipManagement from './pages/admin/TipManagement';
-import SubscriptionPortal from './pages/admin/SubscriptionPortal';
-import RestaurantVerification from './pages/admin/RestaurantVerification';
-import FranchiseManagement from './pages/admin/FranchiseManagement';
-import CentralKitchen from './pages/admin/CentralKitchen';
-import DeveloperConfig from './pages/admin/DeveloperConfig';
-import AuditLogs from './pages/admin/AuditLogs';
-import BusinessIntelligence from './pages/admin/BusinessIntelligence';
-import ExpenseSummaryAdmin from './pages/admin/ExpenseSummaryAdmin';
-import ProfitAndLoss from './pages/admin/ProfitAndLoss';
-import DailyEarnings from './pages/admin/DailyEarnings';
-import VerificationManagement from './pages/superadmin/VerificationManagement';
-import AdminCustomerCare from './pages/admin/AdminCustomerCare';
-import CustomerCareDashboard from './pages/admin/CustomerCareDashboard';
-import CreateTicket from './pages/admin/CreateTicket';
-import TicketList from './pages/admin/TicketList';
-import TicketDetails from './pages/admin/TicketDetails';
-import SupportKnowledgeBase from './pages/admin/SupportKnowledgeBase';
-import SupportAnnouncements from './pages/admin/SupportAnnouncements';
-import WaiterDashboard from './pages/staff/WaiterDashboard';
-import WaiterSettings from './pages/staff/WaiterSettings';
-import ChefDashboard from './pages/staff/ChefDashboard';
-import ChefPrepList from './pages/staff/ChefPrepList';
-import ChefRecipes from './pages/staff/ChefRecipes';
-import ChefInventory from './pages/staff/ChefInventory';
-import ChefKOTManagement from './pages/staff/ChefKOTManagement';
-import StaffMyLeave from './components/staff/StaffMyLeave';
-import StaffMyPayroll from './components/staff/StaffMyPayroll';
+const DashboardHome = lazy(() => import('./pages/admin/DashboardHome'));
+const BranchesManagement = lazy(() => import('./pages/admin/BranchesManagement'));
+const MenuManagement = lazy(() => import('./pages/admin/MenuManagement'));
+const UsersManagement = lazy(() => import('./pages/admin/UsersManagement'));
+const StaffManagement = lazy(() => import('./pages/admin/StaffManagement'));
+const RoleManagement = lazy(() => import('./pages/admin/RoleManagement'));
+const CategoryManagement = lazy(() => import('./pages/admin/CategoryManagement'));
+const InventoryManagement = lazy(() => import('./pages/admin/InventoryManagement'));
+const SupplierManagement = lazy(() => import('./pages/admin/SupplierManagement'));
+const CustomerManagement = lazy(() => import('./pages/admin/CustomerManagement'));
+const ReservationManagement = lazy(() => import('./pages/admin/ReservationManagement'));
+const OrderManagement = lazy(() => import('./pages/admin/OrderManagement'));
+const PaymentManagement = lazy(() => import('./pages/admin/PaymentManagement'));
+const BillingManagement = lazy(() => import('./pages/admin/BillingManagement'));
+const OfferManagement = lazy(() => import('./pages/admin/OfferManagement'));
+const TaxManagement = lazy(() => import('./pages/admin/TaxManagement'));
+const Reports = lazy(() => import('./pages/admin/Reports'));
+const Analytics = lazy(() => import('./pages/admin/Analytics'));
+const NotificationCenter = lazy(() => import('./pages/admin/NotificationCenter'));
+const ActivityLogs = lazy(() => import('./pages/admin/ActivityLogs'));
+const Settings = lazy(() => import('./pages/admin/Settings'));
+const RestaurantSetupWizard = lazy(() => import('./pages/admin/RestaurantSetupWizard'));
+const TipManagement = lazy(() => import('./pages/admin/TipManagement'));
+const SubscriptionPortal = lazy(() => import('./pages/admin/SubscriptionPortal'));
+const RestaurantVerification = lazy(() => import('./pages/admin/RestaurantVerification'));
+const FranchiseManagement = lazy(() => import('./pages/admin/FranchiseManagement'));
+const CentralKitchen = lazy(() => import('./pages/admin/CentralKitchen'));
+const DeveloperConfig = lazy(() => import('./pages/admin/DeveloperConfig'));
+const AuditLogs = lazy(() => import('./pages/admin/AuditLogs'));
+const BusinessIntelligence = lazy(() => import('./pages/admin/BusinessIntelligence'));
+const ExpenseSummaryAdmin = lazy(() => import('./pages/admin/ExpenseSummaryAdmin'));
+const ProfitAndLoss = lazy(() => import('./pages/admin/ProfitAndLoss'));
+const DailyEarnings = lazy(() => import('./pages/admin/DailyEarnings'));
+const VerificationManagement = lazy(() => import('./pages/superadmin/VerificationManagement'));
+const AdminCustomerCare = lazy(() => import('./pages/admin/AdminCustomerCare'));
+const CustomerCareDashboard = lazy(() => import('./pages/admin/CustomerCareDashboard'));
+const CreateTicket = lazy(() => import('./pages/admin/CreateTicket'));
+const TicketList = lazy(() => import('./pages/admin/TicketList'));
+const TicketDetails = lazy(() => import('./pages/admin/TicketDetails'));
+const SupportKnowledgeBase = lazy(() => import('./pages/admin/SupportKnowledgeBase'));
+const SupportAnnouncements = lazy(() => import('./pages/admin/SupportAnnouncements'));
+const WaiterDashboard = lazy(() => import('./pages/staff/WaiterDashboard'));
+const WaiterSettings = lazy(() => import('./pages/staff/WaiterSettings'));
+const ChefDashboard = lazy(() => import('./pages/staff/ChefDashboard'));
+const ChefPrepList = lazy(() => import('./pages/staff/ChefPrepList'));
+const ChefRecipes = lazy(() => import('./pages/staff/ChefRecipes'));
+const ChefInventory = lazy(() => import('./pages/staff/ChefInventory'));
+const ChefKOTManagement = lazy(() => import('./pages/staff/ChefKOTManagement'));
+const StaffMyLeave = lazy(() => import('./components/staff/StaffMyLeave'));
+const StaffMyPayroll = lazy(() => import('./components/staff/StaffMyPayroll'));
 
-import ManagerDashboard from './pages/staff/ManagerDashboard';
-import ManagerOrderMonitoring from './pages/staff/ManagerOrderMonitoring';
-import ManagerStaff from './pages/staff/ManagerStaff';
-import ManagerKitchenStatus from './pages/staff/ManagerKitchenStatus';
-import ManagerInventory from './pages/staff/ManagerInventory';
-import ManagerReservations from './pages/staff/ManagerReservations';
-import ManagerFeedback from './pages/staff/ManagerFeedback';
-import ManagerSales from './pages/staff/ManagerSales';
-import ManagerReports from './pages/staff/ManagerReports';
-import ManagerAnalytics from './pages/staff/ManagerAnalytics';
-import ManagerSettings from './pages/staff/ManagerSettings';
-import ManagerExpenses from './pages/staff/ManagerExpenses';
+const ManagerDashboard = lazy(() => import('./pages/staff/ManagerDashboard'));
+const ManagerOrderMonitoring = lazy(() => import('./pages/staff/ManagerOrderMonitoring'));
+const ManagerStaff = lazy(() => import('./pages/staff/ManagerStaff'));
+const ManagerKitchenStatus = lazy(() => import('./pages/staff/ManagerKitchenStatus'));
+const ManagerInventory = lazy(() => import('./pages/staff/ManagerInventory'));
+const ManagerReservations = lazy(() => import('./pages/staff/ManagerReservations'));
+const ManagerFeedback = lazy(() => import('./pages/staff/ManagerFeedback'));
+const ManagerSales = lazy(() => import('./pages/staff/ManagerSales'));
+const ManagerReports = lazy(() => import('./pages/staff/ManagerReports'));
+const ManagerAnalytics = lazy(() => import('./pages/staff/ManagerAnalytics'));
+const ManagerSettings = lazy(() => import('./pages/staff/ManagerSettings'));
+const ManagerExpenses = lazy(() => import('./pages/staff/ManagerExpenses'));
 import ManagerLayout from './layouts/ManagerLayout';
 import ChefLayout from './layouts/ChefLayout';
 import WaiterLayout from './layouts/WaiterLayout';
-import WaiterActiveOrders from './pages/staff/WaiterActiveOrders';
-import WaiterPendingServes from './pages/staff/WaiterPendingServes';
-import WaiterCompleted from './pages/staff/WaiterCompleted';
-import WaiterPriorityActions from './pages/staff/WaiterPriorityActions';
-import WaiterFloorPlan from './pages/staff/WaiterFloorPlan';
-import WaiterKitchenTracker from './pages/staff/WaiterKitchenTracker';
-import WaiterTasks from './pages/staff/WaiterTasks';
-import WaiterPerformance from './pages/staff/WaiterPerformance';
-import WaiterShiftStatus from './pages/staff/WaiterShiftStatus';
+const WaiterActiveOrders = lazy(() => import('./pages/staff/WaiterActiveOrders'));
+const WaiterPendingServes = lazy(() => import('./pages/staff/WaiterPendingServes'));
+const WaiterCompleted = lazy(() => import('./pages/staff/WaiterCompleted'));
+const WaiterPriorityActions = lazy(() => import('./pages/staff/WaiterPriorityActions'));
+const WaiterFloorPlan = lazy(() => import('./pages/staff/WaiterFloorPlan'));
+const WaiterKitchenTracker = lazy(() => import('./pages/staff/WaiterKitchenTracker'));
+const WaiterTasks = lazy(() => import('./pages/staff/WaiterTasks'));
+const WaiterPerformance = lazy(() => import('./pages/staff/WaiterPerformance'));
+const WaiterShiftStatus = lazy(() => import('./pages/staff/WaiterShiftStatus'));
 import CashierLayout from './layouts/CashierLayout';
-import CashierOverview from './pages/staff/CashierOverview';
-import CashierDashboard from './pages/staff/CashierDashboard';
-import CashierHistory from './pages/staff/CashierHistory';
-import Home from './pages/customer/Home';
-import ThreeDemoShowcase from './pages/customer/ThreeDemoShowcase';
-import ChaiTheoryShowcase from './pages/customer/ChaiTheoryShowcase';
-import StaffAuthPage from './pages/StaffAuthPage';
+const CashierOverview = lazy(() => import('./pages/staff/CashierOverview'));
+const CashierDashboard = lazy(() => import('./pages/staff/CashierDashboard'));
+const CashierHistory = lazy(() => import('./pages/staff/CashierHistory'));
+const Home = lazy(() => import('./pages/customer/Home'));
+const ThreeDemoShowcase = lazy(() => import('./pages/customer/ThreeDemoShowcase'));
+const ChaiTheoryShowcase = lazy(() => import('./pages/customer/ChaiTheoryShowcase'));
+const StaffAuthPage = lazy(() => import('./pages/StaffAuthPage'));
 import SuperAdminLayout from './layouts/SuperAdminLayout';
-import SuperAdminDashboard from './pages/superadmin/SuperAdminDashboard';
-import PlatformRestaurants from './pages/superadmin/PlatformRestaurants';
-import PlanManagement from './pages/superadmin/PlanManagement';
-import SupportTickets from './pages/superadmin/SupportTickets';
-import GlobalReports from './pages/superadmin/GlobalReports';
-import SuperAdminSupportConsole from './pages/superadmin/SuperAdminSupportConsole';
-import CommissionManagement from './pages/superadmin/CommissionManagement';
-import RevenueAnalytics from './pages/superadmin/RevenueAnalytics';
-import UserManagement from './pages/superadmin/UserManagement';
-import FeatureManagement from './pages/superadmin/FeatureManagement';
-import SystemSettings from './pages/superadmin/SystemSettings';
-import NotificationManagement from './pages/superadmin/NotificationManagement';
-import BillingDemoRequestsManagement from './pages/superadmin/BillingDemoRequestsManagement';
+const SuperAdminDashboard = lazy(() => import('./pages/superadmin/SuperAdminDashboard'));
+const PlatformRestaurants = lazy(() => import('./pages/superadmin/PlatformRestaurants'));
+const PlanManagement = lazy(() => import('./pages/superadmin/PlanManagement'));
+const SupportTickets = lazy(() => import('./pages/superadmin/SupportTickets'));
+const GlobalReports = lazy(() => import('./pages/superadmin/GlobalReports'));
+const SuperAdminSupportConsole = lazy(() => import('./pages/superadmin/SuperAdminSupportConsole'));
+const CommissionManagement = lazy(() => import('./pages/superadmin/CommissionManagement'));
+const RevenueAnalytics = lazy(() => import('./pages/superadmin/RevenueAnalytics'));
+const UserManagement = lazy(() => import('./pages/superadmin/UserManagement'));
+const FeatureManagement = lazy(() => import('./pages/superadmin/FeatureManagement'));
+const SystemSettings = lazy(() => import('./pages/superadmin/SystemSettings'));
+const NotificationManagement = lazy(() => import('./pages/superadmin/NotificationManagement'));
+const BillingDemoRequestsManagement = lazy(() => import('./pages/superadmin/BillingDemoRequestsManagement'));
 
 import PublicLayout from './layouts/PublicLayout';
-import TablesManagement from './pages/admin/TablesManagement';
-import DeliveryManagement from './pages/admin/DeliveryManagement';
-import DeliveryPartnerLogin from './pages/customer/DeliveryPartnerLogin';
-import DeliveryPartnerDashboard from './pages/customer/DeliveryPartnerDashboard';
-import Contact from './pages/customer/Contact';
-import About from './pages/customer/About';
-import MyTestimonial from './pages/admin/MyTestimonial';
-import TestimonialsManagement from './pages/superadmin/TestimonialsManagement';
-import ManagementFeatures from './pages/ManagementFeatures';
-import ModuleDetails from './pages/ModuleDetails';
-import PosModuleLandingPage from './pages/customer/PosModuleLandingPage';
-import OutletTypeLandingPage from './pages/customer/OutletTypeLandingPage';
+const TablesManagement = lazy(() => import('./pages/admin/TablesManagement'));
+const DeliveryManagement = lazy(() => import('./pages/admin/DeliveryManagement'));
+const DeliveryPartnerLogin = lazy(() => import('./pages/customer/DeliveryPartnerLogin'));
+const DeliveryPartnerDashboard = lazy(() => import('./pages/customer/DeliveryPartnerDashboard'));
+const Contact = lazy(() => import('./pages/customer/Contact'));
+const About = lazy(() => import('./pages/customer/About'));
+const MyTestimonial = lazy(() => import('./pages/admin/MyTestimonial'));
+const TestimonialsManagement = lazy(() => import('./pages/superadmin/TestimonialsManagement'));
+const ManagementFeatures = lazy(() => import('./pages/ManagementFeatures'));
+const ModuleDetails = lazy(() => import('./pages/ModuleDetails'));
+const PosModuleLandingPage = lazy(() => import('./pages/customer/PosModuleLandingPage'));
+const OutletTypeLandingPage = lazy(() => import('./pages/customer/OutletTypeLandingPage'));
 import ThemeToggle from './components/ThemeToggle';
 import FloatingVideoWidget from './components/FloatingVideoWidget';
 
@@ -141,6 +141,13 @@ const CustomerRedirect = ({ path }) => {
   );
 };
 
+
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-[#FAFAF8] dark:bg-slate-950">
+    <div className="w-10 h-10 rounded-full border-4 border-emerald-200 border-t-emerald-600 animate-spin" />
+  </div>
+);
+
 function App() {
 
   return (
@@ -148,7 +155,8 @@ function App() {
       <Toaster position="top-right" />
       <FloatingVideoWidget />
 
-      <Routes>
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
         {/* Public Restaurant Software Landing Page & Showcase */}
         <Route path="/" element={<PublicLayout />}>
           <Route index element={<Home />} />
@@ -392,6 +400,7 @@ function App() {
           </div>
         } />
       </Routes>
+      </Suspense>
     </>
   );
 }
