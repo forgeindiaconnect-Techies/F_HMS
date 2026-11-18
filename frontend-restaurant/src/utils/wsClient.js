@@ -1,4 +1,13 @@
 /**
+ * Returns a valid WebSocket URL from an API base URL, or null if on Vercel / invalid
+ */
+export const getWebSocketUrl = (apiUrl) => {
+    const raw = String(apiUrl || '').replace(/^http/, 'ws').replace(/\/api$/, '');
+    if (!raw || raw.includes('vercel.app')) return null;
+    return raw;
+};
+
+/**
  * Creates a leak-free reconnecting WebSocket connection with automatic cleanup
  * and JWT token inclusion for authenticated tenant channels.
  */
@@ -29,8 +38,8 @@ export const createReconnectingWebSocket = ({
     const connect = () => {
         if (isUnmounted) return;
         try {
-            const wsURL = String(apiUrl || '').replace(/^http/, 'ws').replace(/\/api$/, '');
-            if (!wsURL || wsURL.includes('vercel.app')) return;
+            const wsURL = getWebSocketUrl(apiUrl);
+            if (!wsURL) return;
 
             ws = new WebSocket(wsURL);
 

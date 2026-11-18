@@ -2,19 +2,20 @@ import { createContext, useContext, useState, useEffect, useCallback, useMemo } 
 import axios from 'axios';
 import { getApiUrl, PROD_API_URL } from '../utils/axiosInstance';
 import { evaluateClientSubscriptionFreeze } from '../utils/subscriptionClient';
+import { getWebSocketUrl } from '../utils/wsClient';
 
 const defaultAuthContext = {
     user: null,
-    setUser: () => {},
+    setUser: () => { },
     restaurant: null,
-    setRestaurant: () => {},
+    setRestaurant: () => { },
     subscriptionState: null,
     fetchRestaurant: async () => null,
     plans: [],
     fetchPlans: async () => [],
     login: async () => ({ success: false, message: 'Initializing authentication...' }),
     register: async () => ({ success: false, message: 'Initializing authentication...' }),
-    logout: async () => {},
+    logout: async () => { },
     loading: false,
     api: null,
 };
@@ -36,19 +37,48 @@ api.interceptors.request.use((config) => {
     let token = null;
     try {
         const user = JSON.parse(localStorage.getItem('restosys_staff_user'));
-        if (user?.token) token = user.token;
+        if (user?.token && user.token !== 'undefined' && user.token !== 'null') {
+            token = user.token;
+        }
     } catch (e) {
         localStorage.removeItem('restosys_staff_user');
     }
     if (!token) {
-        token = localStorage.getItem('token');
+        const rawToken = localStorage.getItem('token');
+        if (rawToken && rawToken !== 'undefined' && rawToken !== 'null') {
+            token = rawToken;
+        }
     }
+    if (!token) {
+        try {
+            const custUser = JSON.parse(localStorage.getItem('restosys_customer_user'));
+            if (custUser?.token && custUser.token !== 'undefined' && custUser.token !== 'null') {
+                token = custUser.token;
+            }
+        } catch (e) { }
+    }
+
     if (token) {
-        if (config.headers && typeof config.headers.set === 'function') {
-            config.headers.set('Authorization', `Bearer ${token}`);
+        const cleanToken = String(token).replace(/^Bearer\s+/i, '').trim();
+        if (cleanToken && cleanToken !== 'undefined' && cleanToken !== 'null' && cleanToken.length > 20) {
+            if (config.headers && typeof config.headers.set === 'function') {
+                config.headers.set('Authorization', `Bearer ${cleanToken}`);
+            } else {
+                config.headers = config.headers || {};
+                config.headers.Authorization = `Bearer ${cleanToken}`;
+            }
+        } else if (config.headers) {
+            if (typeof config.headers.delete === 'function') {
+                config.headers.delete('Authorization');
+            } else {
+                delete config.headers.Authorization;
+            }
+        }
+    } else if (config.headers) {
+        if (typeof config.headers.delete === 'function') {
+            config.headers.delete('Authorization');
         } else {
-            config.headers = config.headers || {};
-            config.headers.Authorization = `Bearer ${token}`;
+            delete config.headers.Authorization;
         }
     }
     return config;
@@ -73,23 +103,39 @@ api.interceptors.response.use(
             return axios(config);
         }
 
-
         if (config && isColdStart && (!config._retryCount || config._retryCount < 5)) {
             config._retryCount = (config._retryCount || 0) + 1;
             await new Promise((resolve) => setTimeout(resolve, 2000));
             return api.request(config);
         }
+
         if (error.response && error.response.status === 401) {
             const path = window.location.pathname;
             const isLoginRoute = path === '/login' || path === '/register' || path === '/delivery/login' || path === '/customer/login' || path === '/staff/login';
             const isAuthEndpoint = config && config.url && (config.url.includes('/auth/login') || config.url.includes('/auth/verify-otp') || config.url.includes('/auth/send-otp'));
+            const isPollingOrPassiveEndpoint = config && config.url && (
+                config.url.includes('/kot') ||
+                config.url.includes('/orders') ||
+                config.url.includes('/notifications') ||
+                config.url.includes('/plans') ||
+                config.url.includes('/restaurants/mine') ||
+                config.url.includes('/branches') ||
+                config.url.includes('/analytics') ||
+                config.url.includes('/support') ||
+                config.url.includes('/stats') ||
+                config.url.includes('/summary')
+            );
 
-            if (!isLoginRoute && !isAuthEndpoint) {
-                localStorage.removeItem('restosys_staff_user');
-                if (path.startsWith('/delivery')) {
-                    window.location.href = '/delivery/login';
-                } else {
-                    window.location.href = '/login';
+            // Never kick active kitchen/staff users out to /login during background polling or passive requests
+            if (!isLoginRoute && !isAuthEndpoint && !isPollingOrPassiveEndpoint) {
+                const existingStaff = localStorage.getItem('restosys_staff_user');
+                // Only redirect if there is truly no staff user credentials present
+                if (!existingStaff) {
+                    if (path.startsWith('/delivery')) {
+                        window.location.href = '/delivery/login';
+                    } else {
+                        window.location.href = '/login';
+                    }
                 }
             }
         }
@@ -118,7 +164,7 @@ try {
             }
         });
     }
-} catch (_) {}
+} catch (_) { }
 
 const persistCacheEntry = (key, data) => {
     try {
@@ -129,18 +175,27 @@ const persistCacheEntry = (key, data) => {
         if (keys.length > 25) delete existing[keys[0]];
         existing[key] = { data, ts: Date.now() };
         sessionStorage.setItem(SESSION_CACHE_KEY, JSON.stringify(existing));
-    } catch (_) {}
+    } catch (_) { }
 };
 
 export const clearApiGetCache = () => {
     _apiGetCache.clear();
     _apiInFlight.clear();
-    try { sessionStorage.removeItem(SESSION_CACHE_KEY); } catch (_) {}
+    try { sessionStorage.removeItem(SESSION_CACHE_KEY); } catch (_) { }
 };
 
 const _rawGet = api.get.bind(api);
 api.get = (url, config = {}) => {
-    const skipCache = config?.noCache || String(url).includes('/notifications') || String(url).includes('/auth/');
+    const isLiveOperationalUrl =
+        String(url).includes('/kot') ||
+        String(url).includes('/orders') ||
+        String(url).includes('/notifications') ||
+        String(url).includes('/auth/') ||
+        String(url).includes('/live') ||
+        String(url).includes('/tables') ||
+        String(url).includes('/shifts');
+
+    const skipCache = config?.noCache || isLiveOperationalUrl;
     if (skipCache) return _rawGet(url, config);
 
     const tokenKey = localStorage.getItem('token') || 'anon';
@@ -279,6 +334,16 @@ export const AuthProvider = ({ children }) => {
             if (storedUser) {
                 try {
                     const parsedUser = JSON.parse(storedUser);
+                    // Sync token between parsedUser and localStorage token
+                    if (parsedUser.token && parsedUser.token !== 'undefined' && parsedUser.token !== 'null') {
+                        localStorage.setItem('token', parsedUser.token);
+                    } else {
+                        const existingToken = localStorage.getItem('token');
+                        if (existingToken && existingToken !== 'undefined' && existingToken !== 'null' && existingToken.length > 20) {
+                            parsedUser.token = existingToken;
+                            try { localStorage.setItem('restosys_staff_user', JSON.stringify(parsedUser)); } catch (_) { }
+                        }
+                    }
                     setUser(parsedUser);
                     setLoading(false);
                     // Refresh restaurant in background without blocking initial UI render on cold starts
@@ -312,8 +377,8 @@ export const AuthProvider = ({ children }) => {
         const connectSubWS = () => {
             if (isUnmounted || !user?.restaurantId) return;
             try {
-                const wsURL = getApiUrl().replace(/^http/, 'ws').replace(/\/api$/, '');
-                if (!wsURL || wsURL.includes('vercel.app')) return;
+                const wsURL = getWebSocketUrl(getApiUrl());
+                if (!wsURL) return; // Vercel serverless does not support WebSockets; periodic polling handles sync
                 ws = new WebSocket(wsURL);
                 ws.onopen = () => {
                     const cleanRestId = typeof user.restaurantId === 'object' ? (user.restaurantId._id || user.restaurantId.id) : user.restaurantId;
@@ -402,6 +467,9 @@ export const AuthProvider = ({ children }) => {
             if (data?.token) {
                 localStorage.setItem('token', data.token);
             }
+            if (data?.token) {
+                localStorage.setItem('token', data.token);
+            }
             if (data?.restaurant) {
                 setRestaurant(data.restaurant);
                 try { localStorage.setItem('restosys_restaurant', JSON.stringify(data.restaurant)); } catch (e) { }
@@ -427,6 +495,9 @@ export const AuthProvider = ({ children }) => {
             });
             setUser(data);
             localStorage.setItem('restosys_staff_user', JSON.stringify(data));
+            if (data?.token) {
+                localStorage.setItem('token', data.token);
+            }
             await fetchRestaurant(data);
             return { success: true, data };
         } catch (error) {
