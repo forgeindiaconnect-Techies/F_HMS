@@ -50,8 +50,8 @@ const MyTestimonial = () => {
                         } catch (_) {
                             origin = typeof window !== 'undefined' ? window.location.origin : '';
                         }
-                        const fullAvatar = data.avatar.startsWith('http') || data.avatar.startsWith('data:') 
-                            ? data.avatar 
+                        const fullAvatar = data.avatar.startsWith('http') || data.avatar.startsWith('data:')
+                            ? data.avatar
                             : `${origin}${data.avatar.startsWith('/') ? '' : '/'}${data.avatar}`;
                         setAvatarPreview(fullAvatar);
                     } else {

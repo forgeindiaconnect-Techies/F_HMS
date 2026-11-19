@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { getApiUrl } from '../utils/axiosInstance';
+import { getApiUrl, isLocalEnvironment } from '../utils/axiosInstance';
 
 const defaultAuthContext = {
     user: null,
@@ -24,6 +24,7 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
+    config.baseURL = getApiUrl();
     let user = null;
     try {
         user = JSON.parse(localStorage.getItem('restosys_staff_user'));

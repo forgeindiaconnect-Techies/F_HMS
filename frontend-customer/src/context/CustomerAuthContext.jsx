@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
-import { getApiUrl, PROD_API_URL } from '../utils/axiosInstance';
+import { getApiUrl, PROD_API_URL, isLocalEnvironment } from '../utils/axiosInstance';
 
 const defaultCustomerAuthContext = {
     customer: null,
@@ -49,9 +49,10 @@ api.interceptors.response.use(
         // Cold-start spin-up status codes (502, 503, 504, or network drops during boot).
         const isNetworkDown = !error.response || error.code === 'ERR_NETWORK';
         const isColdStart = status === 502 || status === 503 || status === 504 || isNetworkDown;
+        const isLocal = isLocalEnvironment();
 
-        // If backend is unreachable or timed out, failover to fast production Vercel API
-        if (config && isNetworkDown) {
+        // If backend is unreachable or timed out on cloud, failover to production API (NEVER on local development!)
+        if (config && !isLocal && isNetworkDown) {
             const currentBase = config.baseURL || '';
             if (currentBase !== PROD_API_URL) {
                 console.warn('Backend is unreachable, automatically switching to production API:', PROD_API_URL);

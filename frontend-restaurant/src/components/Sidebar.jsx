@@ -76,7 +76,7 @@ const Sidebar = () => {
             } else {
                 setIsDesktopCollapsed(prev => {
                     const next = !prev;
-                    try { localStorage.setItem('admin_sidebar_collapsed', String(next)); } catch (_) {}
+                    try { localStorage.setItem('admin_sidebar_collapsed', String(next)); } catch (_) { }
                     return next;
                 });
             }

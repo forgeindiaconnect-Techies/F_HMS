@@ -9,7 +9,7 @@ const formatTime = (dateString) => {
     const now = new Date();
     const isToday = date.getDate() === now.getDate() && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
     const isYesterday = new Date(now.setDate(now.getDate() - 1)).getDate() === date.getDate();
-    
+
     let dayStr = isToday ? '(Today)' : isYesterday ? '(Yesterday)' : date.toLocaleDateString();
     return `${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} ${dayStr}`;
 };
@@ -46,7 +46,7 @@ const CashierHistory = () => {
 
     const exportToCSV = () => {
         if (filteredTransactions.length === 0) return toast.error('No data to export');
-        
+
         const headers = ['Transaction ID', 'Bill ID', 'Table/Type', 'Payment Method', 'Amount', 'Tax', 'Date'];
         const csvRows = [headers.join(',')];
 
@@ -91,7 +91,7 @@ const CashierHistory = () => {
                 <div className="flex gap-4">
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-                        <input 
+                        <input
                             type="text"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
@@ -99,7 +99,7 @@ const CashierHistory = () => {
                             className="pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-purple-500"
                         />
                     </div>
-                    <button 
+                    <button
                         onClick={exportToCSV}
                         className="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-colors shadow-sm"
                     >
@@ -138,12 +138,11 @@ const CashierHistory = () => {
                                     </span>
                                 </td>
                                 <td className="p-4">
-                                    <span className={`px-3 py-1 rounded-full text-xs font-bold border ${
-                                        txn.paymentMethod === 'Card' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                                    <span className={`px-3 py-1 rounded-full text-xs font-bold border ${txn.paymentMethod === 'Card' ? 'bg-blue-50 text-blue-700 border-blue-200' :
                                         txn.paymentMethod === 'Cash' ? 'bg-green-50 text-green-700 border-green-200' :
-                                        txn.paymentMethod === 'UPI' ? 'bg-orange-50 text-orange-700 border-orange-200' :
-                                        'bg-purple-50 text-purple-700 border-purple-200'
-                                    }`}>
+                                            txn.paymentMethod === 'UPI' ? 'bg-orange-50 text-orange-700 border-orange-200' :
+                                                'bg-purple-50 text-purple-700 border-purple-200'
+                                        }`}>
                                         {txn.paymentMethod}
                                     </span>
                                 </td>
@@ -152,7 +151,7 @@ const CashierHistory = () => {
                                     {formatTime(txn.paidAt || txn.createdAt)}
                                 </td>
                                 <td className="p-4 text-right">
-                                    <button 
+                                    <button
                                         onClick={() => setActiveReceipt(txn)}
                                         className="text-purple-600 hover:text-purple-800 p-2 rounded-lg hover:bg-purple-50 transition-colors"
                                     >
@@ -172,21 +171,21 @@ const CashierHistory = () => {
                     <div className="bg-white rounded-2xl shadow-xl w-full max-w-md relative z-10 overflow-hidden flex flex-col">
                         <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                             <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2">
-                                <Receipt size={20} className="text-purple-600"/> Receipt Details
+                                <Receipt size={20} className="text-purple-600" /> Receipt Details
                             </h3>
                             <button onClick={() => setActiveReceipt(null)} className="text-gray-400 hover:text-gray-600 transition-colors">
                                 <X size={20} />
                             </button>
                         </div>
-                        
+
                         <div className="p-6 bg-gray-50">
                             <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-4">
                                 <div className="text-center pb-4 border-b border-gray-100 uppercase tracking-widest text-xs font-bold text-gray-500">
                                     <p className="text-gray-900 font-sans text-xl tracking-normal mb-1">FoodNest</p>
-                                    Bill #{activeReceipt._id.substring(activeReceipt._id.length - 6).toUpperCase()}<br/>
+                                    Bill #{activeReceipt._id.substring(activeReceipt._id.length - 6).toUpperCase()}<br />
                                     {activeReceipt.orderType === 'Dine In' ? `Table ${activeReceipt.tableNumber || 'Any'}` : activeReceipt.orderType}
                                 </div>
-                                
+
                                 <div className="space-y-2 pt-2 border-b border-gray-100 pb-4">
                                     {activeReceipt.orderItems.map((item, idx) => (
                                         <div key={idx} className="flex justify-between text-sm">
@@ -195,7 +194,7 @@ const CashierHistory = () => {
                                         </div>
                                     ))}
                                 </div>
-                                
+
                                 <div className="space-y-2 pt-2">
                                     <div className="flex justify-between text-sm text-gray-500">
                                         <span>Subtotal</span>
@@ -210,14 +209,14 @@ const CashierHistory = () => {
                                         <span>₹{activeReceipt.totalPrice.toFixed(2)}</span>
                                     </div>
                                 </div>
-                                
+
                                 <div className="text-center pt-4 border-t border-gray-100 text-xs text-gray-500">
-                                    Paid via <span className="font-bold text-gray-700">{activeReceipt.paymentMethod}</span><br/>
+                                    Paid via <span className="font-bold text-gray-700">{activeReceipt.paymentMethod}</span><br />
                                     {formatTime(activeReceipt.paidAt || activeReceipt.createdAt)}
                                 </div>
                             </div>
 
-                            <button 
+                            <button
                                 onClick={() => {
                                     handlePrintReceipt(activeReceipt);
                                     toast.success('Printing receipt...');

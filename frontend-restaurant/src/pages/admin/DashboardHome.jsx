@@ -26,7 +26,7 @@ const DashboardHome = () => {
     const [loading, setLoading] = useState(() => !data);
 
     useEffect(() => {
-        const capTimer = setTimeout(() => setLoading(false), 2000);
+        const capTimer = setTimeout(() => setLoading(false), 15000);
         const fetchAnalytics = async () => {
             try {
                 const res = await api.get('/analytics/dashboard', { noCache: true });

@@ -24,7 +24,7 @@ const RestaurantVerification = () => {
     // Form states
     const [addressText, setAddressText] = useState('');
     const [fssaiExpiryDate, setFssaiExpiryDate] = useState('');
-    
+
     // File upload references
     const [files, setFiles] = useState({
         fssai: null,
@@ -36,7 +36,7 @@ const RestaurantVerification = () => {
         logo: null,
         menuPdf: null
     });
-    
+
     const [optionalImages, setOptionalImages] = useState([]);
 
     const fileInputRefs = {
@@ -109,7 +109,7 @@ const RestaurantVerification = () => {
     const handleImagesChange = (e) => {
         const selected = Array.from(e.target.files);
         let valid = [];
-        
+
         selected.forEach(file => {
             if (file.size > 5 * 1024 * 1024) {
                 toast.error(`File ${file.name} exceeds 5 MB limit`);
@@ -135,7 +135,7 @@ const RestaurantVerification = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         const isNew = !verification || !verification._id;
         const status = verification?.status || 'Pending';
 
@@ -182,7 +182,7 @@ const RestaurantVerification = () => {
 
         setSubmitting(true);
         const formData = new FormData();
-        
+
         // Add files
         Object.keys(files).forEach(key => {
             if (files[key]) {
@@ -207,12 +207,12 @@ const RestaurantVerification = () => {
 
         try {
             await api.post('/restaurants/verification/submit', formData);
-            
+
             toast.success("Verification documents submitted successfully!");
             // Refresh context and local details
             await fetchRestaurant();
             await loadVerification();
-            
+
             // Clear temporary local file selections
             setFiles({
                 fssai: null,
@@ -332,10 +332,9 @@ const RestaurantVerification = () => {
         }
 
         return (
-            <div className={`p-5 rounded-2xl border-2 bg-white transition-all duration-200 ${
-                doc?.status === 'Rejected' ? 'border-red-200 shadow-sm shadow-red-50' : 
+            <div className={`p-5 rounded-2xl border-2 bg-white transition-all duration-200 ${doc?.status === 'Rejected' ? 'border-red-200 shadow-sm shadow-red-50' :
                 doc?.status === 'Approved' ? 'border-green-100 bg-green-50/10' : 'border-gray-100 hover:border-gray-200'
-            }`}>
+                }`}>
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="space-y-1.5 flex-1">
                         <div className="flex items-center gap-2">
@@ -447,13 +446,13 @@ const RestaurantVerification = () => {
         );
     }
 
-    const isApprovedOrVerified = restaurant?.approvalStatus === 'Approved' || 
-        restaurant?.verificationStatus === 'Verified' || 
+    const isApprovedOrVerified = restaurant?.approvalStatus === 'Approved' ||
+        restaurant?.verificationStatus === 'Verified' ||
         verification?.status === 'Verified' ||
         restaurant?.subscription?.status === 'Active';
 
-    const verificationStatus = isApprovedOrVerified 
-        ? 'Verified' 
+    const verificationStatus = isApprovedOrVerified
+        ? 'Verified'
         : (verification?.status || restaurant?.verificationStatus || 'Pending');
     const isUnderReview = !isApprovedOrVerified && (verificationStatus === 'Under Review');
 
@@ -462,7 +461,7 @@ const RestaurantVerification = () => {
             {/* Header info */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm relative overflow-hidden">
                 <div className="absolute -top-12 -right-12 w-32 h-32 bg-green-500/5 rounded-full blur-xl pointer-events-none" />
-                
+
                 <div className="space-y-1 z-10">
                     <h2 className="text-2xl font-black text-gray-900 tracking-tight">Restaurant Verification</h2>
                     <p className="text-sm text-gray-500 font-semibold">
@@ -472,13 +471,12 @@ const RestaurantVerification = () => {
 
                 <div className="shrink-0 flex items-center gap-2">
                     <span className="text-xs font-bold text-gray-400">Current Status:</span>
-                    <span className={`px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider border shadow-sm ${
-                        verificationStatus === 'Verified' ? 'bg-green-100 text-green-700 border-green-200' :
+                    <span className={`px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider border shadow-sm ${verificationStatus === 'Verified' ? 'bg-green-100 text-green-700 border-green-200' :
                         verificationStatus === 'Under Review' ? 'bg-blue-100 text-blue-700 border-blue-200' :
-                        verificationStatus === 'Re-upload Required' ? 'bg-orange-100 text-orange-700 border-orange-200' :
-                        verificationStatus === 'Rejected' ? 'bg-red-100 text-red-700 border-red-200' :
-                        'bg-amber-100 text-amber-700 border-amber-200'
-                    }`}>
+                            verificationStatus === 'Re-upload Required' ? 'bg-orange-100 text-orange-700 border-orange-200' :
+                                verificationStatus === 'Rejected' ? 'bg-red-100 text-red-700 border-red-200' :
+                                    'bg-amber-100 text-amber-700 border-amber-200'
+                        }`}>
                         {verificationStatus}
                     </span>
                 </div>
@@ -522,7 +520,7 @@ const RestaurantVerification = () => {
 
             {/* Verification Form */}
             <form onSubmit={handleSubmit} className="space-y-8 min-w-0 pr-1.5 flex-1">
-                
+
                 {/* Mandatory section */}
                 <div className="space-y-4 min-w-0 pr-1.5 flex-1">
                     <div className="border-b border-gray-100 pb-2">
@@ -654,7 +652,7 @@ const RestaurantVerification = () => {
                     {/* Multi images section */}
                     <div className="space-y-3 pt-4 border-t border-gray-100">
                         <label className="text-xs font-black text-gray-500 uppercase tracking-wider block">Restaurant Showcase Images (Max 5)</label>
-                        
+
                         {/* Display existing images */}
                         {((verification?.documents?.images?.length || 0) > 0 || (restaurant?.showcaseImages?.length || 0) > 0) && (
                             <div className="flex flex-wrap gap-3 mb-3">
@@ -675,13 +673,12 @@ const RestaurantVerification = () => {
                             id="showcase-images"
                             accept=".jpg,.jpeg,.png"
                         />
-                        
+
                         <div className="flex items-center gap-4">
                             <label
                                 htmlFor="showcase-images"
-                                className={`px-4 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-bold rounded-xl border border-gray-200 text-xs flex items-center gap-2 shadow-sm cursor-pointer ${
-                                    isUnderReview || (verification?.documents?.images?.length || 0) + optionalImages.length >= 5 ? 'opacity-50 pointer-events-none bg-gray-100' : ''
-                                }`}
+                                className={`px-4 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-bold rounded-xl border border-gray-200 text-xs flex items-center gap-2 shadow-sm cursor-pointer ${isUnderReview || (verification?.documents?.images?.length || 0) + optionalImages.length >= 5 ? 'opacity-50 pointer-events-none bg-gray-100' : ''
+                                    }`}
                             >
                                 <Upload size={14} className="text-gray-500" />
                                 Add Showcase Images
@@ -743,9 +740,8 @@ const RestaurantVerification = () => {
                     <button
                         type="submit"
                         disabled={isUnderReview || submitting}
-                        className={`px-8 py-3.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-black rounded-2xl shadow-md hover:shadow-lg transition-all hover:opacity-95 text-sm md:text-base flex items-center justify-center gap-2 shrink-0 ${
-                            isUnderReview ? 'opacity-50 cursor-not-allowed' : ''
-                        }`}
+                        className={`px-8 py-3.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-black rounded-2xl shadow-md hover:shadow-lg transition-all hover:opacity-95 text-sm md:text-base flex items-center justify-center gap-2 shrink-0 ${isUnderReview ? 'opacity-50 cursor-not-allowed' : ''
+                            }`}
                     >
                         {submitting ? (
                             <><RefreshCw size={16} className="animate-spin" /> Submitting…</>

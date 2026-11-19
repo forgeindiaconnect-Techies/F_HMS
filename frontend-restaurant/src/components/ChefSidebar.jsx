@@ -60,8 +60,10 @@ const ChefSidebar = () => {
     };
     const logoSrc = getLogoUrl();
 
-    const kdsEnabled = restaurant?.restaurantConfig?.orderKitchen?.kdsEnabled !== false;
-    const kotEnabled = restaurant?.restaurantConfig?.orderKitchen?.kotEnabled !== false;
+    const isKotOnly = restaurant?.kitchenMode === 'KOT_ONLY' || restaurant?.restaurantConfig?.orderKitchen?.kitchenMode === 'KOT_ONLY';
+    const isKdsOnly = restaurant?.kitchenMode === 'KDS_ONLY' || restaurant?.restaurantConfig?.orderKitchen?.kitchenMode === 'KDS_ONLY';
+    const kdsEnabled = !isKotOnly && restaurant?.restaurantConfig?.orderKitchen?.kdsEnabled !== false;
+    const kotEnabled = !isKdsOnly && restaurant?.restaurantConfig?.orderKitchen?.kotEnabled !== false;
 
     const kitchenItems = [];
     if (kdsEnabled) {

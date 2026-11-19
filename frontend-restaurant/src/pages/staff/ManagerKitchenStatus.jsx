@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 const getStationForItem = (itemName) => {
     const name = (itemName || '').toLowerCase();
     const isMilkDessert = /milk\s*(cake|peda|sweet|pudding|halwa|barfi)|tres\s*leches|rabri|rasmalai|basundi|kheer/i.test(name);
-    
+
     if (isMilkDessert || name.includes('dessert') || name.includes('cake') || name.includes('ice cream') || name.includes('sweet') || name.includes('brownie') || name.includes('waffle')) {
         return 'Dessert';
     }
@@ -71,7 +71,7 @@ const ManagerKitchenStatus = () => {
     tenantOrders.forEach(order => {
         const isActive = ['Pending', 'Preparing', 'Ready'].includes(order.status);
         const isCompleted = ['Served', 'Out for Delivery', 'Delivered'].includes(order.status);
-        
+
         order.orderItems.forEach(item => {
             const station = getStationForItem(item.name);
             if (stationsData[station]) {
@@ -177,7 +177,7 @@ const ManagerKitchenStatus = () => {
                 {stationsList.map((station, i) => (
                     <div key={i} className={`bg-white rounded-2xl p-5 border shadow-sm relative overflow-hidden ${station.delay ? 'border-red-200' : 'border-gray-100'}`}>
                         {station.delay && <div className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-bl-lg"><AlertTriangle size={14} /></div>}
-                        
+
                         <div className="flex items-center gap-3 mb-4">
                             <div className={`p-2.5 rounded-lg ${station.delay ? 'bg-red-50 text-red-600' : 'bg-orange-50 text-orange-600'}`}>
                                 {station.name === 'Grill' ? <Flame size={20} /> : <ChefHat size={20} />}

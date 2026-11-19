@@ -42,7 +42,7 @@ export const getStaff = async (req, res) => {
         const staffRoles = hasEnterprise
             ? ['BranchManager', 'Manager', 'Chef', 'Waiter', 'Cashier', 'DeliveryPartner', 'Staff']
             : ['BranchManager', 'Manager', 'Chef', 'Waiter', 'Cashier', 'Staff'];
-        
+
         const filter = {
             restaurantId,
             role: { $in: staffRoles }
@@ -70,7 +70,7 @@ export const getStaff = async (req, res) => {
             .populate('branchId', 'name')
             .select('-password')
             .sort({ name: 1 });
-        
+
         res.json(staff);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -119,7 +119,7 @@ const normalizeSalaryConfig = (config) => {
 // @route   POST /api/staff
 // @access  Private
 export const createStaff = async (req, res) => {
-    const { 
+    const {
         name, email, phone, role, branchId, password,
         employeeId, joiningDate, employmentStatus, salaryConfig, bankDetails
     } = req.body;
@@ -131,7 +131,7 @@ export const createStaff = async (req, res) => {
 
         const normalizedEmail = email.trim().toLowerCase();
         const restaurantId = await getUserRestaurantId(req.user);
-        
+
         const userExists = await User.findOne({ email: { $regex: new RegExp(`^${normalizedEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') } });
         if (userExists) {
             return res.status(400).json({ message: 'A user with this email address already exists. Please use a unique email.' });
@@ -145,7 +145,7 @@ export const createStaff = async (req, res) => {
         const planName = restaurant?.subscription?.plan || 'Basic';
         const planDoc = await Plan.findOne({ name: planName });
         let staffLimit = 5;
-        
+
         if (planDoc && planDoc.staffLimit !== undefined) {
             staffLimit = planDoc.staffLimit;
         } else if (['Pro', 'Professional', 'Enterprise'].includes(planName)) {
@@ -159,13 +159,13 @@ export const createStaff = async (req, res) => {
             });
 
             if (currentStaffCount >= staffLimit) {
-                return res.status(400).json({ 
+                return res.status(400).json({
                     message: `Your current plan (${planName}) only allows up to ${staffLimit} staff users. Please upgrade your subscription plan to add more staff.`,
                     limitExceeded: true
                 });
             }
         }
-        
+
         let normalizedRole = role ? String(role).trim() : 'Waiter';
         if (normalizedRole === 'Manager') normalizedRole = 'BranchManager';
         const validRoles = ['BranchManager', 'Chef', 'Waiter', 'Cashier', 'DeliveryPartner', 'Staff'];
@@ -249,7 +249,7 @@ export const createStaff = async (req, res) => {
 // @route   PUT /api/staff/:id
 // @access  Private
 export const updateStaff = async (req, res) => {
-    const { 
+    const {
         name, phone, role, branchId, password,
         employeeId, joiningDate, employmentStatus, salaryConfig, bankDetails
     } = req.body;
@@ -311,7 +311,7 @@ export const updateStaff = async (req, res) => {
                 });
             }
         }
-        
+
         const updatedStaff = await User.findById(staff._id).populate('branchId', 'name').select('-password');
         res.json(updatedStaff);
     } catch (error) {
@@ -396,7 +396,7 @@ export const bulkMarkAttendance = async (req, res) => {
                     if (!isNaN(diffHrs) && diffHrs > 8) {
                         computedOt = Math.round((diffHrs - 8) * 2) / 2;
                     }
-                } catch (e) {}
+                } catch (e) { }
             }
 
             if (att) {
@@ -588,31 +588,33 @@ export const getAttendanceSummary = async (req, res) => {
                     presentDays: { $sum: { $cond: [{ $eq: ['$status', 'Present'] }, 1, 0] } },
                     absentDays: { $sum: { $cond: [{ $eq: ['$status', 'Absent'] }, 1, 0] } },
                     leaveDays: { $sum: { $cond: [{ $eq: ['$status', 'Leave'] }, 1, 0] } },
-                    paidLeaveDays: { 
-                        $sum: { 
+                    paidLeaveDays: {
+                        $sum: {
                             $cond: [
-                                { $and: [{ $eq: ['$status', 'Leave'] }, { $ne: ['$isPaidLeave', false] }] }, 
-                                1, 
+                                { $and: [{ $eq: ['$status', 'Leave'] }, { $ne: ['$isPaidLeave', false] }] },
+                                1,
                                 0
-                            ] 
-                        } 
+                            ]
+                        }
                     },
-                    unpaidLeaveDays: { 
-                        $sum: { 
+                    unpaidLeaveDays: {
+                        $sum: {
                             $cond: [
-                                { $and: [{ $eq: ['$status', 'Leave'] }, { $or: [{ $eq: ['$isPaidLeave', false] }, { $eq: ['$isLOP', true] }] }] }, 
-                                1, 
+                                { $and: [{ $eq: ['$status', 'Leave'] }, { $or: [{ $eq: ['$isPaidLeave', false] }, { $eq: ['$isLOP', true] }] }] },
+                                1,
                                 0
-                            ] 
-                        } 
+                            ]
+                        }
                     },
                     lopDays: {
                         $sum: {
                             $cond: [
-                                { $or: [
-                                    { $eq: ['$status', 'Absent'] },
-                                    { $and: [{ $eq: ['$status', 'Leave'] }, { $or: [{ $eq: ['$isPaidLeave', false] }, { $eq: ['$isLOP', true] }] }] }
-                                ]},
+                                {
+                                    $or: [
+                                        { $eq: ['$status', 'Absent'] },
+                                        { $and: [{ $eq: ['$status', 'Leave'] }, { $or: [{ $eq: ['$isPaidLeave', false] }, { $eq: ['$isLOP', true] }] }] }
+                                    ]
+                                },
                                 1,
                                 0
                             ]
@@ -1260,8 +1262,8 @@ export const applyLeave = async (req, res) => {
         });
 
         if (overlappingLeave) {
-            return res.status(400).json({ 
-                message: `You already have an active (${overlappingLeave.status}) leave request overlapping these dates (${new Date(overlappingLeave.startDate).toLocaleDateString()} to ${new Date(overlappingLeave.endDate).toLocaleDateString()})` 
+            return res.status(400).json({
+                message: `You already have an active (${overlappingLeave.status}) leave request overlapping these dates (${new Date(overlappingLeave.startDate).toLocaleDateString()} to ${new Date(overlappingLeave.endDate).toLocaleDateString()})`
             });
         }
 
@@ -1331,9 +1333,9 @@ export const getMyLeaves = async (req, res) => {
             restaurantId,
             employee: req.user._id
         })
-        .populate('branchId', 'name')
-        .populate('approvedBy', 'name role')
-        .sort({ createdAt: -1 });
+            .populate('branchId', 'name')
+            .populate('approvedBy', 'name role')
+            .sort({ createdAt: -1 });
 
         res.json(leaves);
     } catch (error) {
@@ -1504,8 +1506,8 @@ export const getMyPayroll = async (req, res) => {
             restaurantId,
             employee: req.user._id
         })
-        .populate('branchId', 'name address phone')
-        .sort({ year: -1, month: -1 });
+            .populate('branchId', 'name address phone')
+            .sort({ year: -1, month: -1 });
 
         res.json(records.map(enrichPayrollWithAliases));
     } catch (error) {
@@ -1524,9 +1526,9 @@ export const getMyPayrollSlip = async (req, res) => {
             restaurantId,
             employee: req.user._id
         })
-        .populate('employee', 'name email role employeeId phoneNumber bankDetails salaryConfig')
-        .populate('branchId', 'name address phone')
-        .populate('approvedBy', 'name role');
+            .populate('employee', 'name email role employeeId phoneNumber bankDetails salaryConfig')
+            .populate('branchId', 'name address phone')
+            .populate('approvedBy', 'name role');
 
         if (!payroll) {
             return res.status(404).json({ message: 'Salary slip not found or not authorized' });
@@ -1751,14 +1753,37 @@ export const updatePayrollConfig = async (req, res) => {
 export const clockIn = async (req, res) => {
     try {
         const userId = req.user._id;
-        const restaurantId = req.user.restaurantId || (await getUserRestaurantId(req.user));
-        const branchId = req.user.branchId || (await (await import('../models/Branch.js')).default.findOne({ restaurantId }).select('_id'))?._id;
-        
+        let restaurantId = req.user.restaurantId?._id || req.user.restaurantId;
+        if (!restaurantId) {
+            restaurantId = await getUserRestaurantId(req.user);
+        }
+        if (!restaurantId && userId) {
+            const userDoc = await User.findById(userId).select('restaurantId branchId');
+            restaurantId = userDoc?.restaurantId;
+        }
+        if (!restaurantId) {
+            const firstRest = await (await import('../models/Restaurant.js')).default.findOne().select('_id');
+            restaurantId = firstRest?._id;
+        }
+
+        let branchId = req.user.branchId?._id || req.user.branchId;
+        if (!branchId && restaurantId) {
+            const Branch = (await import('../models/Branch.js')).default;
+            let b = await Branch.findOne({ restaurantId });
+            if (!b) {
+                b = await Branch.create({
+                    restaurantId,
+                    name: 'Main Branch',
+                    isMainBranch: true
+                });
+            }
+            branchId = b?._id;
+        }
+
         const now = new Date();
         const dateString = now.toISOString().split('T')[0];
 
         let att = await Attendance.findOne({
-            restaurantId,
             employee: userId,
             dateString
         });
@@ -1768,11 +1793,13 @@ export const clockIn = async (req, res) => {
                 att.checkIn = now;
             }
             att.status = 'Present';
+            if (restaurantId && !att.restaurantId) att.restaurantId = restaurantId;
+            if (branchId && !att.branchId) att.branchId = branchId;
             await att.save();
         } else {
             att = await Attendance.create({
-                restaurantId,
-                branchId,
+                restaurantId: restaurantId || undefined,
+                branchId: branchId || undefined,
                 employee: userId,
                 date: now,
                 dateString,
@@ -1798,21 +1825,33 @@ export const clockIn = async (req, res) => {
 export const clockOut = async (req, res) => {
     try {
         const userId = req.user._id;
-        const restaurantId = req.user.restaurantId || (await getUserRestaurantId(req.user));
+        let restaurantId = req.user.restaurantId?._id || req.user.restaurantId;
+        if (!restaurantId) {
+            restaurantId = await getUserRestaurantId(req.user);
+        }
+        if (!restaurantId && userId) {
+            const userDoc = await User.findById(userId).select('restaurantId branchId');
+            restaurantId = userDoc?.restaurantId;
+        }
+
         const now = new Date();
         const dateString = now.toISOString().split('T')[0];
 
         let att = await Attendance.findOne({
-            restaurantId,
             employee: userId,
             dateString
         });
 
         if (!att) {
-            const branchId = req.user.branchId || (await (await import('../models/Branch.js')).default.findOne({ restaurantId }).select('_id'))?._id;
+            let branchId = req.user.branchId?._id || req.user.branchId;
+            if (!branchId && restaurantId) {
+                const Branch = (await import('../models/Branch.js')).default;
+                let b = await Branch.findOne({ restaurantId });
+                branchId = b?._id;
+            }
             att = await Attendance.create({
-                restaurantId,
-                branchId,
+                restaurantId: restaurantId || undefined,
+                branchId: branchId || undefined,
                 employee: userId,
                 date: now,
                 dateString,

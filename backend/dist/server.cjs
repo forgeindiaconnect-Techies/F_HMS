@@ -66344,9 +66344,9 @@ var init_emailService = __esm({
           host: smtpConfig.host,
           port: smtpConfig.port,
           secure: false,
-          connectionTimeout: 1e4,
-          greetingTimeout: 1e4,
-          socketTimeout: 15e3,
+          connectionTimeout: 3e3,
+          greetingTimeout: 3e3,
+          socketTimeout: 4e3,
           auth: {
             user: smtpConfig.user,
             pass: smtpConfig.pass
@@ -128601,8 +128601,12 @@ var checkSubscriptionAccess = async (req, res, next) => {
 // middleware/authMiddleware.js
 var getJwtSecret = () => process.env.JWT_SECRET || "supersecretjwtkey123";
 var extractRequestToken = (req) => {
-  if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
-    return req.headers.authorization.split(" ")[1];
+  if (req.headers.authorization) {
+    const parts = req.headers.authorization.trim().split(/\s+/);
+    const token = parts[parts.length - 1];
+    if (token && token.toLowerCase() !== "bearer" && token.length > 20) {
+      return token;
+    }
   }
   if (req.cookies) {
     return req.cookies.jwt || req.cookies.jwt_staff || req.cookies.jwt_customer || null;
@@ -131187,7 +131191,7 @@ var addOrderItems = async (req, res) => {
         finalBranchId = firstBranch._id;
       }
     }
-    if (!finalRestaurantId || !finalBranchId) {
+    if (!finalRestaurantId) {
       const Restaurant2 = import_mongoose18.default.model("Restaurant");
       const Branch2 = import_mongoose18.default.model("Branch");
       let demoRestaurant = await Restaurant2.findOne({ name: "Pizza Palace" }) || await Restaurant2.findOne({ isDemo: true });
@@ -131211,6 +131215,18 @@ var addOrderItems = async (req, res) => {
         });
       }
       finalBranchId = demoBranch._id;
+    } else if (!finalBranchId) {
+      const Branch2 = import_mongoose18.default.model("Branch");
+      const Restaurant2 = import_mongoose18.default.model("Restaurant");
+      let branch = await Branch2.findOne({ restaurantId: finalRestaurantId });
+      if (!branch) {
+        const restDoc = await Restaurant2.findById(finalRestaurantId);
+        branch = await Branch2.create({
+          name: `${restDoc?.name || "Main"} Branch`,
+          restaurantId: finalRestaurantId
+        });
+      }
+      finalBranchId = branch?._id;
     }
     let finalUserId = req.user ? req.user._id : null;
     if (!finalUserId) {
@@ -131609,15 +131625,17 @@ var getOrders = async (req, res) => {
           }
         }
         if (effectiveBranchId) {
-          filter.branchId = effectiveBranchId;
-        } else {
-          return res.json([]);
+          filter.$or = [
+            { branchId: effectiveBranchId },
+            { branchId: null },
+            { branchId: { $exists: false } }
+          ];
         }
       } else if (req.query.branchId && import_mongoose18.default.Types.ObjectId.isValid(req.query.branchId)) {
         filter.branchId = req.query.branchId;
       }
       const isDemoUser = req.user.email && (req.user.email.toLowerCase().includes("pizzapalace") || req.user.email.toLowerCase().includes("demo"));
-      if (!isDemoUser && req.user.createdAt) {
+      if (!isDemoUser && req.user.role === "RestaurantAdmin" && req.user.createdAt) {
         const cutoff = new Date(new Date(req.user.createdAt).getTime() - 5 * 60 * 1e3);
         filter.createdAt = { $gte: cutoff };
       }
@@ -132470,7 +132488,10 @@ var getDashboardAnalytics = async (req, res) => {
     if (userRestaurantId) {
       currentPeriodMatch.restaurantId = new import_mongoose24.default.Types.ObjectId(userRestaurantId);
       previousPeriodMatch.restaurantId = new import_mongoose24.default.Types.ObjectId(userRestaurantId);
-      if (req.user.role === "BranchManager" || req.user.branchId) {
+      if (req.query.branchId) {
+        currentPeriodMatch.branchId = new import_mongoose24.default.Types.ObjectId(req.query.branchId);
+        previousPeriodMatch.branchId = new import_mongoose24.default.Types.ObjectId(req.query.branchId);
+      } else if (req.user.role === "BranchManager") {
         const effectiveBranchId = req.user.branchId || (await Branch_default.findOne({ manager: req.user._id }))?._id;
         if (effectiveBranchId) {
           currentPeriodMatch.branchId = new import_mongoose24.default.Types.ObjectId(effectiveBranchId);
@@ -132522,7 +132543,7 @@ var getDashboardAnalytics = async (req, res) => {
     const revenueChange = calculateChange(curRevenue, prevRevenue);
     const ordersChange = calculateChange(curOrders, prevOrders);
     const avgChange = calculateChange(curAvg, prevAvg);
-    const revenueTrend = await Order_default.aggregate([
+    let revenueTrend = await Order_default.aggregate([
       { $match: currentPeriodMatch },
       {
         $group: {
@@ -132533,7 +132554,25 @@ var getDashboardAnalytics = async (req, res) => {
       },
       { $sort: { _id: 1 } }
     ]);
-    const popularItems = await Order_default.aggregate([
+    if (revenueTrend.length === 0 && userRestaurantId) {
+      const fallbackMatch = {
+        status: { $nin: ["Cancelled", "Refunded"] },
+        restaurantId: new import_mongoose24.default.Types.ObjectId(userRestaurantId)
+      };
+      revenueTrend = await Order_default.aggregate([
+        { $match: fallbackMatch },
+        {
+          $group: {
+            _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+            revenue: { $sum: "$totalPrice" },
+            orders: { $sum: 1 }
+          }
+        },
+        { $sort: { _id: 1 } },
+        { $limit: 14 }
+      ]);
+    }
+    let popularItems = await Order_default.aggregate([
       { $match: currentPeriodMatch },
       { $unwind: "$orderItems" },
       {
@@ -132547,6 +132586,26 @@ var getDashboardAnalytics = async (req, res) => {
       { $sort: { totalSold: -1 } },
       { $limit: 10 }
     ]);
+    if (popularItems.length === 0 && userRestaurantId) {
+      const fallbackMatch = {
+        status: { $nin: ["Cancelled", "Refunded"] },
+        restaurantId: new import_mongoose24.default.Types.ObjectId(userRestaurantId)
+      };
+      popularItems = await Order_default.aggregate([
+        { $match: fallbackMatch },
+        { $unwind: "$orderItems" },
+        {
+          $group: {
+            _id: "$orderItems.product",
+            name: { $first: "$orderItems.name" },
+            totalSold: { $sum: "$orderItems.qty" },
+            revenue: { $sum: { $multiply: ["$orderItems.price", "$orderItems.qty"] } }
+          }
+        },
+        { $sort: { totalSold: -1 } },
+        { $limit: 10 }
+      ]);
+    }
     const categoryData = popularItems.map((item) => ({
       name: item.name,
       value: item.totalSold
@@ -135046,10 +135105,12 @@ var getAttendanceSummary = async (req, res) => {
           lopDays: {
             $sum: {
               $cond: [
-                { $or: [
-                  { $eq: ["$status", "Absent"] },
-                  { $and: [{ $eq: ["$status", "Leave"] }, { $or: [{ $eq: ["$isPaidLeave", false] }, { $eq: ["$isLOP", true] }] }] }
-                ] },
+                {
+                  $or: [
+                    { $eq: ["$status", "Absent"] },
+                    { $and: [{ $eq: ["$status", "Leave"] }, { $or: [{ $eq: ["$isPaidLeave", false] }, { $eq: ["$isLOP", true] }] }] }
+                  ]
+                },
                 1,
                 0
               ]
@@ -135933,12 +135994,34 @@ var updatePayrollConfig = async (req, res) => {
 var clockIn = async (req, res) => {
   try {
     const userId = req.user._id;
-    const restaurantId = req.user.restaurantId || await getUserRestaurantId2(req.user);
-    const branchId = req.user.branchId || (await (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default.findOne({ restaurantId }).select("_id"))?._id;
+    let restaurantId = req.user.restaurantId?._id || req.user.restaurantId;
+    if (!restaurantId) {
+      restaurantId = await getUserRestaurantId2(req.user);
+    }
+    if (!restaurantId && userId) {
+      const userDoc = await User_default.findById(userId).select("restaurantId branchId");
+      restaurantId = userDoc?.restaurantId;
+    }
+    if (!restaurantId) {
+      const firstRest = await (await Promise.resolve().then(() => (init_Restaurant(), Restaurant_exports))).default.findOne().select("_id");
+      restaurantId = firstRest?._id;
+    }
+    let branchId = req.user.branchId?._id || req.user.branchId;
+    if (!branchId && restaurantId) {
+      const Branch2 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
+      let b = await Branch2.findOne({ restaurantId });
+      if (!b) {
+        b = await Branch2.create({
+          restaurantId,
+          name: "Main Branch",
+          isMainBranch: true
+        });
+      }
+      branchId = b?._id;
+    }
     const now = /* @__PURE__ */ new Date();
     const dateString = now.toISOString().split("T")[0];
     let att = await Attendance_default.findOne({
-      restaurantId,
       employee: userId,
       dateString
     });
@@ -135947,11 +136030,13 @@ var clockIn = async (req, res) => {
         att.checkIn = now;
       }
       att.status = "Present";
+      if (restaurantId && !att.restaurantId) att.restaurantId = restaurantId;
+      if (branchId && !att.branchId) att.branchId = branchId;
       await att.save();
     } else {
       att = await Attendance_default.create({
-        restaurantId,
-        branchId,
+        restaurantId: restaurantId || void 0,
+        branchId: branchId || void 0,
         employee: userId,
         date: now,
         dateString,
@@ -135972,19 +136057,30 @@ var clockIn = async (req, res) => {
 var clockOut = async (req, res) => {
   try {
     const userId = req.user._id;
-    const restaurantId = req.user.restaurantId || await getUserRestaurantId2(req.user);
+    let restaurantId = req.user.restaurantId?._id || req.user.restaurantId;
+    if (!restaurantId) {
+      restaurantId = await getUserRestaurantId2(req.user);
+    }
+    if (!restaurantId && userId) {
+      const userDoc = await User_default.findById(userId).select("restaurantId branchId");
+      restaurantId = userDoc?.restaurantId;
+    }
     const now = /* @__PURE__ */ new Date();
     const dateString = now.toISOString().split("T")[0];
     let att = await Attendance_default.findOne({
-      restaurantId,
       employee: userId,
       dateString
     });
     if (!att) {
-      const branchId = req.user.branchId || (await (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default.findOne({ restaurantId }).select("_id"))?._id;
+      let branchId = req.user.branchId?._id || req.user.branchId;
+      if (!branchId && restaurantId) {
+        const Branch2 = (await Promise.resolve().then(() => (init_Branch(), Branch_exports))).default;
+        let b = await Branch2.findOne({ restaurantId });
+        branchId = b?._id;
+      }
       att = await Attendance_default.create({
-        restaurantId,
-        branchId,
+        restaurantId: restaurantId || void 0,
+        branchId: branchId || void 0,
         employee: userId,
         date: now,
         dateString,
@@ -142946,9 +143042,13 @@ process.on("unhandledRejection", (reason, promise) => {
 });
 var app = (0, import_express32.default)();
 app.use((req, res, next) => {
-  const origin = req.headers.origin || "*";
-  res.setHeader("Access-Control-Allow-Origin", origin);
-  res.setHeader("Access-Control-Allow-Credentials", "true");
+  const origin = req.headers.origin;
+  if (origin) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+  } else {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+  }
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, Accept, Origin, Access-Control-Request-Method, Access-Control-Request-Headers, cache-control, pragma");
   if (req.method === "OPTIONS") {

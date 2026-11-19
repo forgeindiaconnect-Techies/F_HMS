@@ -107,20 +107,20 @@ const SuperAdminLayout = () => {
             
             {/* ── Sidebar ─────────────────────────────────────────── */}
             <aside className={`
-                w-64 shrink-0 bg-white text-slate-800 border-r border-slate-200/90 flex flex-col shadow-sm
+                w-64 shrink-0 bg-slate-900 text-white flex flex-col
                 fixed inset-y-0 left-0 z-40
                 md:relative md:translate-x-0
                 transition-transform duration-300 ease-in-out
                 ${isOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'}
             `}>
                 {/* Sidebar Header */}
-                <div className="h-16 flex items-center justify-between px-5 border-b border-slate-100 shrink-0">
-                    <h1 className="text-lg font-bold tracking-tight truncate text-slate-900">
+                <div className="h-16 flex items-center justify-between px-5 border-b border-slate-800 shrink-0">
+                    <h1 className="text-lg font-bold tracking-tight truncate text-white">
                         FoodNest<span className="text-[#FF5A1F]">SaaS</span>
                     </h1>
                     <button 
                         onClick={() => setIsOpen(false)} 
-                        className="md:hidden p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors shrink-0"
+                        className="md:hidden p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors shrink-0"
                     >
                         <X size={18} />
                     </button>
@@ -144,8 +144,8 @@ const SuperAdminLayout = () => {
                                     to={item.href}
                                     className={`relative flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all text-sm group ${
                                         isActive 
-                                        ? 'bg-blue-600 text-white shadow-sm font-semibold' 
-                                        : 'text-slate-600 hover:bg-blue-50/80 hover:text-blue-700'
+                                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40 font-semibold' 
+                                        : 'text-slate-400 hover:bg-slate-800 hover:text-white'
                                     }`}
                                 >
                                     <Icon size={17} className="shrink-0" />
@@ -158,16 +158,21 @@ const SuperAdminLayout = () => {
                 </nav>
                 
                 {/* Sidebar Footer */}
-                <div className="p-3 border-t border-slate-100 shrink-0 bg-slate-50">
-                    <div className="px-3 py-2 mb-2 rounded-xl bg-white border border-slate-200">
-                        <p className="text-xs font-bold text-slate-800 truncate">{user?.name || 'Super Admin'}</p>
-                        <p className="text-[10px] text-blue-600 font-medium">System Administrator</p>
+                <div className="p-3 border-t border-slate-800 shrink-0 bg-slate-900">
+                    <div className="flex items-center gap-3 p-2.5 mb-2 rounded-xl bg-slate-800/80 border border-slate-700/60">
+                        <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center font-bold text-xs text-white shrink-0 shadow-sm">
+                            SA
+                        </div>
+                        <div className="min-w-0 flex-1">
+                            <p className="text-xs font-semibold text-white truncate">{user?.name || 'Super Admin'}</p>
+                            <p className="text-[10px] text-blue-400 truncate font-medium">System Administrator</p>
+                        </div>
                     </div>
                     <button 
                         onClick={logout} 
-                        className="flex items-center gap-3 px-3 py-2.5 w-full rounded-xl font-medium text-slate-600 hover:bg-red-50 hover:text-red-600 transition-all text-sm cursor-pointer"
+                        className="flex items-center gap-2.5 px-3 py-2 w-full rounded-xl font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-colors text-xs cursor-pointer"
                     >
-                        <LogOut size={17} />
+                        <LogOut size={16} />
                         Logout
                     </button>
                 </div>

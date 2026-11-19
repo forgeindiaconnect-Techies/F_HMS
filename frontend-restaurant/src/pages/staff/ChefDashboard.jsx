@@ -5,7 +5,7 @@ import {
     Sliders, Star, Plus, Trash2, LayoutGrid, Columns,
     Search, Clock, ArrowRight, Utensils, Sparkles, Printer, Receipt
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getApiUrl } from '../../utils/axiosInstance';
 import { createReconnectingWebSocket } from '../../utils/wsClient';
@@ -442,22 +442,7 @@ const ChefDashboard = () => {
         restaurant?.restaurantConfig?.orderKitchen?.kdsEnabled === false;
 
     if (isKotOnlyKitchen) {
-        return (
-            <div className="w-full max-w-2xl mx-auto my-12 p-8 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 text-center space-y-4 shadow-sm">
-                <div className="w-16 h-16 rounded-2xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 flex items-center justify-center mx-auto">
-                    <AlertTriangle size={32} />
-                </div>
-                <h2 className="text-xl font-black text-slate-900 dark:text-white">Kitchen Display System (KDS) Disabled</h2>
-                <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto">
-                    The digital Kitchen Display System is currently disabled in your Restaurant Settings. Orders are processed via physical printed KOT tickets or cashier floor tickets.
-                </p>
-                {restaurant?.restaurantConfig?.orderKitchen?.kotEnabled !== false && (
-                    <Link to="/chef/kot" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-sm shadow-md transition cursor-pointer">
-                        <Receipt size={16} /> Open Kitchen Order Tickets (KOT)
-                    </Link>
-                )}
-            </div>
-        );
+        return <Navigate to="/chef/kot" replace />;
     }
 
     return (

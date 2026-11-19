@@ -18,7 +18,7 @@ const CashierOverview = () => {
         const fetchOverview = async () => {
             try {
                 const { data } = await api.get('/orders');
-                
+
                 // Calculate today's stats
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
@@ -70,7 +70,7 @@ const CashierOverview = () => {
                         <h3 className="text-3xl font-black text-gray-900">₹{stats.totalRevenue.toFixed(2)}</h3>
                     </div>
                 </div>
-                
+
                 <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
                     <div className="w-14 h-14 rounded-full bg-green-50 flex items-center justify-center shrink-0">
                         <CheckCircle size={24} className="text-green-600" />
@@ -96,7 +96,7 @@ const CashierOverview = () => {
                 {/* Quick Actions */}
                 <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                     <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                        <TrendingUp size={18} className="text-purple-600"/> Quick Actions
+                        <TrendingUp size={18} className="text-purple-600" /> Quick Actions
                     </h3>
                     <div className="space-y-4 min-w-0 pr-1.5 flex-1">
                         <Link to="/cashier/billing" className="block w-full p-4 rounded-xl border border-purple-100 bg-purple-50 hover:bg-purple-100 transition-colors group">
@@ -106,11 +106,11 @@ const CashierOverview = () => {
                                     <p className="text-purple-700 text-sm mt-1">Settle pending bills in the queue</p>
                                 </div>
                                 <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
-                                    <ReceiptText size={20} className="text-purple-600"/>
+                                    <ReceiptText size={20} className="text-purple-600" />
                                 </div>
                             </div>
                         </Link>
-                        
+
                         <Link to="/cashier/history" className="block w-full p-4 rounded-xl border border-gray-200 bg-gray-50 hover:bg-gray-100 transition-colors group">
                             <div className="flex items-center justify-between">
                                 <div>
@@ -118,7 +118,7 @@ const CashierOverview = () => {
                                     <p className="text-gray-500 text-sm mt-1">Review past transactions & print receipts</p>
                                 </div>
                                 <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm border border-gray-200 group-hover:scale-110 transition-transform">
-                                    <Clock size={20} className="text-gray-600"/>
+                                    <Clock size={20} className="text-gray-600" />
                                 </div>
                             </div>
                         </Link>
@@ -129,11 +129,11 @@ const CashierOverview = () => {
                 <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
                         <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                            <ReceiptText size={18} className="text-green-600"/> Recently Settled (Today)
+                            <ReceiptText size={18} className="text-green-600" /> Recently Settled (Today)
                         </h3>
                         <Link to="/cashier/history" className="text-sm font-bold text-purple-600 hover:text-purple-800">View All</Link>
                     </div>
-                    
+
                     {stats.recentSettled.length === 0 ? (
                         <div className="text-center py-10 text-gray-400 font-medium bg-gray-50 rounded-xl">
                             No bills settled yet today.

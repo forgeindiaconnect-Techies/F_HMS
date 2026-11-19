@@ -161,7 +161,14 @@ const StaffAuthPage = () => {
             if (role.includes('superadmin')) route = '/super-admin';
             else if (role.includes('supportagent')) route = '/super-admin/support';
             else if (role.includes('manager')) route = '/manager';
-            else if (role.includes('chef')) route = '/chef';
+            else if (role.includes('chef')) {
+                const rest = result.data?.restaurant || {};
+                const orderKitchen = rest.restaurantConfig?.orderKitchen || {};
+                const isKotOnly = rest.kitchenMode === 'KOT_ONLY' ||
+                    orderKitchen.kitchenMode === 'KOT_ONLY' ||
+                    orderKitchen.kdsEnabled === false;
+                route = isKotOnly ? '/chef/kot' : '/chef';
+            }
             else if (role.includes('waiter')) route = '/waiter';
             else if (role.includes('cashier')) route = '/cashier';
             else if (role.includes('delivery')) route = '/delivery/dashboard';

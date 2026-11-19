@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
-import { getApiUrl, PROD_API_URL } from '../utils/axiosInstance';
+import { getApiUrl, PROD_API_URL, isLocalEnvironment } from '../utils/axiosInstance';
 import { evaluateClientSubscriptionFreeze } from '../utils/subscriptionClient';
 import { getWebSocketUrl } from '../utils/wsClient';
 
@@ -34,6 +34,7 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
+    config.baseURL = getApiUrl();
     let token = null;
     try {
         const user = JSON.parse(localStorage.getItem('restosys_staff_user'));
@@ -93,9 +94,10 @@ api.interceptors.response.use(
         const isNetworkDown = !error.response || error.code === 'ERR_NETWORK' || isTimeout;
         const isColdStart = status === 502 || status === 503 || status === 504 || isNetworkDown;
 
-        // Fallback to live fast Vercel backend if target is down or timed out, NEVER on 401/400/404
-        if (config && config.baseURL !== PROD_API_URL && isNetworkDown) {
-            console.warn('Target API is unreachable or timed out, automatically switching to production Vercel API:', PROD_API_URL);
+        const isLocal = isLocalEnvironment();
+        // Fallback to live production API only when deployed on cloud, NEVER on localhost or local LAN!
+        if (config && !isLocal && config.baseURL !== PROD_API_URL && isNetworkDown) {
+            console.warn('Target API is unreachable or timed out, automatically switching to production API:', PROD_API_URL);
             config.baseURL = PROD_API_URL;
             if (typeof window !== 'undefined' && window.sessionStorage) {
                 window.sessionStorage.setItem('foodnest_api_failover', PROD_API_URL);
@@ -299,10 +301,7 @@ export const AuthProvider = ({ children }) => {
     }, [user, fetchPlans]);
 
     const fetchRestaurant = useCallback(async (currentUser = user) => {
-        const path = typeof window !== 'undefined' ? window.location.pathname : '';
-        const isStaffRoute = isStaffPortalPath(path);
-
-        if (!isStaffRoute || !currentUser || ['Customer', 'SuperAdmin', 'SupportAgent'].includes(currentUser.role)) {
+        if (!currentUser || ['Customer', 'SuperAdmin', 'SupportAgent'].includes(currentUser.role)) {
             setRestaurant(null);
             return null;
         }
@@ -476,9 +475,14 @@ export const AuthProvider = ({ children }) => {
             if (data?.restaurant) {
                 setRestaurant(data.restaurant);
                 try { localStorage.setItem('restosys_restaurant', JSON.stringify(data.restaurant)); } catch (e) { }
-                fetchRestaurant(data).catch(() => { });
-            } else {
-                fetchRestaurant(data).catch(() => { });
+            }
+            if (!['Customer', 'SuperAdmin', 'SupportAgent'].includes(data?.role)) {
+                try {
+                    const freshRest = await fetchRestaurant(data);
+                    if (freshRest) {
+                        data.restaurant = freshRest;
+                    }
+                } catch (_) { }
             }
             return { success: true, data };
         } catch (error) {

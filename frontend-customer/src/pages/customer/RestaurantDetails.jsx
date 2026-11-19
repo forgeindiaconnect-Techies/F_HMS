@@ -427,8 +427,8 @@ const RestaurantDetails = () => {
                                 key={branch._id}
                                 onClick={() => setSelectedBranch(branch._id)}
                                 className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl font-bold text-xs border transition-all cursor-pointer ${selectedBranch === branch._id
-                                        ? 'border-[#FF5A1F] bg-orange-50/70 dark:bg-orange-950/40 text-[#FF5A1F] shadow-2xs'
-                                        : 'border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-gray-700 dark:text-slate-300 hover:border-orange-200 hover:bg-orange-50/30'
+                                    ? 'border-[#FF5A1F] bg-orange-50/70 dark:bg-orange-950/40 text-[#FF5A1F] shadow-2xs'
+                                    : 'border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-gray-700 dark:text-slate-300 hover:border-orange-200 hover:bg-orange-50/30'
                                     }`}
                             >
                                 <span>{branch.name}</span>
@@ -527,8 +527,8 @@ const RestaurantDetails = () => {
                                                                 toast.success(isFav ? `${item.name} removed from wishlist` : `${item.name} added to wishlist!`);
                                                             }}
                                                             className={`p-1.5 rounded-full border transition-all cursor-pointer shrink-0 ${isFav
-                                                                    ? 'bg-rose-50 border-rose-200 text-rose-600 dark:bg-rose-950/40 dark:border-rose-800'
-                                                                    : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-400 hover:text-rose-500 hover:border-rose-200'
+                                                                ? 'bg-rose-50 border-rose-200 text-rose-600 dark:bg-rose-950/40 dark:border-rose-800'
+                                                                : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-400 hover:text-rose-500 hover:border-rose-200'
                                                                 }`}
                                                             title={isFav ? 'Remove from Wishlist' : 'Add to Wishlist'}
                                                             aria-label="Toggle Wishlist"
@@ -687,8 +687,8 @@ const RestaurantDetails = () => {
                             onClick={handleCheckout}
                             disabled={branches.length > 0 && !selectedBranch}
                             className={`px-8 py-3.5 font-bold rounded-xl transition-all shadow-lg flex items-center gap-2 ${(branches.length === 0 || selectedBranch)
-                                    ? 'bg-red-600 hover:bg-red-700 text-white shadow-red-600/30'
-                                    : 'bg-gray-300 dark:bg-slate-800 text-gray-500 dark:text-slate-500 cursor-not-allowed'
+                                ? 'bg-red-600 hover:bg-red-700 text-white shadow-red-600/30'
+                                : 'bg-gray-300 dark:bg-slate-800 text-gray-500 dark:text-slate-500 cursor-not-allowed'
                                 }`}
                         >
                             Continue to Checkout

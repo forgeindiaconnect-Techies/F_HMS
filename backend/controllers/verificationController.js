@@ -13,7 +13,7 @@ try {
     if (!fs.existsSync(uploadDir)) {
         fs.mkdirSync(uploadDir, { recursive: true });
     }
-} catch {}
+} catch { }
 
 // Multer Storage Configuration
 const storage = multer.diskStorage({
@@ -39,7 +39,7 @@ const fileFilter = (req, file, cb) => {
 
 export const upload = multer({
     storage: storage,
-    limits: { 
+    limits: {
         fileSize: 10 * 1024 * 1024, // 10 MB per file limit
         fieldSize: 25 * 1024 * 1024  // 25 MB field size limit to support Base64 images without LIMIT_FIELD_VALUE
     },
@@ -225,7 +225,7 @@ export const submitVerification = async (req, res) => {
             verification.documents = documents;
             verification.status = 'Under Review';
             verification.rejectionReason = '';
-            
+
             const fields = ['fssai', 'businessRegistration', 'panCard', 'aadhaarCard', 'addressProof', 'bankProof'];
             fields.forEach(f => {
                 if (verification.documents[f] && verification.documents[f].status === 'Rejected') {
@@ -512,7 +512,7 @@ export const reviewVerification = async (req, res) => {
     try {
         const { status, rejectionReason, documentStatus } = req.body;
         const { id } = req.params;
-        
+
         if (!['Verified', 'Rejected', 'Re-upload Required'].includes(status)) {
             return res.status(400).json({ message: 'Invalid review status value' });
         }

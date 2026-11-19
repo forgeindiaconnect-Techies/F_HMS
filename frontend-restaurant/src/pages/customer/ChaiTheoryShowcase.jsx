@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-    Utensils, ArrowRight, Sparkles, Flame, Coffee, Heart, 
+import {
+    Utensils, ArrowRight, Sparkles, Flame, Coffee, Heart,
     ShoppingBag, ChevronDown, Award, CheckCircle2, Store,
     Calculator, QrCode, Boxes, CalendarDays, LineChart, Shield
 } from 'lucide-react';
@@ -112,12 +112,12 @@ const ChaiTheoryShowcase = () => {
                 gsap.fromTo(
                     heroChars,
                     { y: 80, opacity: 0, rotateX: -45 },
-                    { 
-                        y: 0, 
-                        opacity: 1, 
-                        rotateX: 0, 
-                        stagger: 0.03, 
-                        duration: 1.1, 
+                    {
+                        y: 0,
+                        opacity: 1,
+                        rotateX: 0,
+                        stagger: 0.03,
+                        duration: 1.1,
                         ease: 'power4.out',
                         delay: 0.15
                     }
@@ -231,19 +231,19 @@ const ChaiTheoryShowcase = () => {
 
     return (
         <div ref={containerRef} className="w-full min-h-screen bg-[#FAFAF8] text-[#2B2320] font-sans relative overflow-x-hidden selection:bg-[#E38A2C] selection:text-white cursor-none">
-            
+
             {/* Custom Interactive Ring Cursor */}
-            <div 
-                ref={cursorRef} 
-                className="fixed top-0 left-0 w-3.5 h-3.5 bg-[#E38A2C] rounded-full pointer-events-none z-[9999] -translate-x-1/2 -translate-y-1/2 shadow-lg hidden md:block" 
+            <div
+                ref={cursorRef}
+                className="fixed top-0 left-0 w-3.5 h-3.5 bg-[#E38A2C] rounded-full pointer-events-none z-[9999] -translate-x-1/2 -translate-y-1/2 shadow-lg hidden md:block"
             />
-            <div 
-                ref={cursorFollowerRef} 
-                className="fixed top-0 left-0 w-11 h-11 border-2 border-[#6B3F1D]/40 rounded-full pointer-events-none z-[9998] -translate-x-1/2 -translate-y-1/2 transition-transform duration-75 hidden md:block" 
+            <div
+                ref={cursorFollowerRef}
+                className="fixed top-0 left-0 w-11 h-11 border-2 border-[#6B3F1D]/40 rounded-full pointer-events-none z-[9998] -translate-x-1/2 -translate-y-1/2 transition-transform duration-75 hidden md:block"
             />
 
             {/* Subtle Film Grain Noise Texture Canvas Overlay (2-3%) */}
-            <div 
+            <div
                 className="fixed inset-0 pointer-events-none z-[9990] opacity-[0.03]"
                 style={{
                     backgroundImage: `radial-gradient(circle at 1px 1px, rgba(43,35,32,0.8) 1px, transparent 0)`,
@@ -260,18 +260,18 @@ const ChaiTheoryShowcase = () => {
                         <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#6B3F1D] to-[#E38A2C] text-white flex items-center justify-center mx-auto shadow-xl shadow-[#6B3F1D]/20 animate-bounce">
                             <Utensils size={24} />
                         </div>
-                        
+
                         <h2 className="text-2xl sm:text-4xl font-black font-serif tracking-tight text-[#6B3F1D]">
                             CHAI THEORY — Built By Ruturaj
                         </h2>
-                        
+
                         <p className="text-xs font-black uppercase tracking-widest text-[#E38A2C]">
                             Artisan Indian Café & Restaurant Platform
                         </p>
 
                         {/* Thin Saffron Progress Bar */}
                         <div className="w-64 h-1 bg-slate-200 rounded-full mx-auto overflow-hidden mt-6">
-                            <div 
+                            <div
                                 className="h-full bg-gradient-to-r from-[#E38A2C] via-[#C23B22] to-[#6B3F1D] transition-all duration-75"
                                 style={{ width: `${preloaderProgress}%` }}
                             />
@@ -297,7 +297,7 @@ const ChaiTheoryShowcase = () => {
                 </Link>
 
                 <div className="flex items-center gap-3">
-                    <Link 
+                    <Link
                         to="/menu"
                         onMouseMove={handleMagneticMove}
                         onMouseLeave={handleMagneticLeave}
@@ -306,7 +306,7 @@ const ChaiTheoryShowcase = () => {
                         <ShoppingBag size={14} />
                         <span>Digital Menu</span>
                     </Link>
-                    <Link 
+                    <Link
                         to="/features/management"
                         onMouseMove={handleMagneticMove}
                         onMouseLeave={handleMagneticLeave}
@@ -322,7 +322,7 @@ const ChaiTheoryShowcase = () => {
             {/* B. HERO SECTION: CHAI POUR HERO */}
             {/* ========================================================================= */}
             <section className="hero-section relative min-h-screen flex flex-col items-center justify-center px-6 pt-24 pb-16 overflow-hidden bg-[#FAFAF8]">
-                
+
                 {/* Background Hero Media Container */}
                 <div className="absolute inset-0 z-0 overflow-hidden">
                     <video
@@ -340,7 +340,7 @@ const ChaiTheoryShowcase = () => {
 
                 {/* Main Hero Header Overlay */}
                 <div className="relative z-10 max-w-5xl mx-auto text-center space-y-6 pt-12">
-                    
+
                     {/* Saffron Kicker Badge */}
                     <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white/90 border border-[#E38A2C]/40 text-[#6B3F1D] font-extrabold text-xs tracking-wider uppercase shadow-xl backdrop-blur-md">
                         <Sparkles size={14} className="text-[#E38A2C] animate-spin" />
@@ -366,8 +366,8 @@ const ChaiTheoryShowcase = () => {
                         <span className="text-xs font-mono font-bold text-[#E38A2C] bg-[#E38A2C]/10 border border-[#E38A2C]/30 px-4 py-2 rounded-full inline-flex items-center gap-1.5 shadow-sm">
                             <Heart size={13} className="fill-[#E38A2C]" /> Built By Ruturaj
                         </span>
-                        
-                        <Link 
+
+                        <Link
                             to="/menu"
                             onMouseMove={handleMagneticMove}
                             onMouseLeave={handleMagneticLeave}
@@ -402,16 +402,16 @@ const ChaiTheoryShowcase = () => {
             {/* ========================================================================= */}
             <section className="coffee-section min-h-screen py-24 px-6 sm:px-12 bg-gradient-to-b from-[#FAFAF8] via-[#8A5A2B]/5 to-[#FAFAF8] flex items-center">
                 <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                    
+
                     {/* Left: Filter Coffee Media Box */}
                     <div className="coffee-image-box relative rounded-[3rem] overflow-hidden shadow-2xl border-4 border-white bg-white group">
-                        <img 
-                            src="/assets/images/filter-coffee.png" 
+                        <img
+                            src="/assets/images/filter-coffee.png"
                             alt="South Indian Filter Coffee"
                             className="w-full h-[520px] object-cover group-hover:scale-105 transition-transform duration-700"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-[#8A5A2B]/85 via-transparent to-transparent" />
-                        
+
                         <div className="absolute bottom-8 left-8 right-8 text-white space-y-2">
                             <span className="text-xs font-black uppercase tracking-widest text-[#D9A441] bg-black/40 px-3 py-1 rounded-full backdrop-blur-md">
                                 SOUTHERN BREW HERITAGE
@@ -462,7 +462,7 @@ const ChaiTheoryShowcase = () => {
             {/* ========================================================================= */}
             <section className="thali-pin-container relative min-h-screen flex flex-col items-center justify-center px-6 py-20 bg-[#FAFAF8]">
                 <div className="max-w-6xl mx-auto text-center space-y-6 w-full">
-                    
+
                     <span className="text-xs font-black uppercase tracking-widest text-[#E38A2C] bg-[#E38A2C]/10 px-4 py-2 rounded-full border border-[#E38A2C]/30">
                         WHAT WE SERVE • REEL WOW MOMENT
                     </span>
@@ -477,8 +477,8 @@ const ChaiTheoryShowcase = () => {
 
                     {/* Exploded Media Display Container */}
                     <div className="relative w-full max-w-4xl h-[450px] sm:h-[550px] mx-auto rounded-[3rem] overflow-hidden border-4 border-white shadow-2xl bg-white flex items-center justify-center my-8">
-                        <img 
-                            src="/assets/images/exploded-thali.png" 
+                        <img
+                            src="/assets/images/exploded-thali.png"
                             alt="Exploded South Indian Thali"
                             className="thali-main-img w-full h-full object-cover transition-all"
                         />
@@ -524,13 +524,13 @@ const ChaiTheoryShowcase = () => {
                     </p>
 
                     <div className="samosa-bg-box relative max-w-3xl h-[420px] mx-auto rounded-[3rem] overflow-hidden border-4 border-white shadow-2xl bg-white my-8 flex items-center justify-center">
-                        <img 
-                            src="/assets/images/sweets-fusion.png" 
+                        <img
+                            src="/assets/images/sweets-fusion.png"
                             alt="Street Food Elevated"
                             className="w-full h-full object-cover"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-[#C23B22]/80 via-transparent to-transparent" />
-                        
+
                         <div className="samosa-tag-1 absolute top-8 left-8 bg-[#C23B22] text-white px-4 py-2 rounded-2xl shadow-xl font-black text-xs uppercase tracking-wider border-2 border-white">
                             🌶️ Fiery Mint Chutney
                         </div>
@@ -592,7 +592,7 @@ const ChaiTheoryShowcase = () => {
             {/* ========================================================================= */}
             <section className="py-24 px-6 sm:px-12 bg-gradient-to-r from-[#F2994A]/10 via-[#FAFAF8] to-[#5C8A3A]/10">
                 <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12">
-                    
+
                     {/* Left: Mango Lassi */}
                     <div className="bg-white p-8 rounded-[3rem] border border-[#F2994A]/30 shadow-2xl space-y-6 text-left">
                         <span className="text-xs font-black uppercase tracking-widest text-[#F2994A] bg-[#F2994A]/10 px-3.5 py-1.5 rounded-full">
@@ -647,9 +647,9 @@ const ChaiTheoryShowcase = () => {
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <a 
-                            href={`${import.meta.env.VITE_CUSTOMER_URL || (typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:5174` : '')}/customer/menu`} 
-                            target="_blank" 
+                        <a
+                            href={`${import.meta.env.VITE_CUSTOMER_URL || (typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:5174` : '')}/customer/menu`}
+                            target="_blank"
                             rel="noreferrer"
                             className="bg-[#FAFAF8] p-6 rounded-3xl border border-[#6B3F1D]/20 shadow-md hover:-translate-y-1.5 transition-all text-left space-y-3 group"
                         >
@@ -660,9 +660,9 @@ const ChaiTheoryShowcase = () => {
                             <p className="text-xs text-[#2B2320]/70 font-medium">Scan table QR codes to place orders instantly with live dish customizations.</p>
                         </a>
 
-                        <a 
-                            href={`${import.meta.env.VITE_CUSTOMER_URL || (typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:5174` : '')}/menu`} 
-                            target="_blank" 
+                        <a
+                            href={`${import.meta.env.VITE_CUSTOMER_URL || (typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.hostname}:5174` : '')}/menu`}
+                            target="_blank"
                             rel="noreferrer"
                             className="bg-[#FAFAF8] p-6 rounded-3xl border border-[#6B3F1D]/20 shadow-md hover:-translate-y-1.5 transition-all text-left space-y-3 group"
                         >
@@ -731,7 +731,7 @@ const ChaiTheoryShowcase = () => {
             {/* ========================================================================= */}
             <section className="relative py-32 px-6 bg-[#C23B22] text-white text-center overflow-hidden">
                 <div className="relative z-10 max-w-4xl mx-auto space-y-8">
-                    
+
                     <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 text-white font-extrabold text-xs tracking-wider uppercase backdrop-blur-md">
                         <Sparkles size={14} />
                         <span>CHAI THEORY • BUILT BY RUTURAJ</span>
@@ -746,7 +746,7 @@ const ChaiTheoryShowcase = () => {
                     </p>
 
                     <div className="pt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
-                        <Link 
+                        <Link
                             to="/menu"
                             onMouseMove={handleMagneticMove}
                             onMouseLeave={handleMagneticLeave}

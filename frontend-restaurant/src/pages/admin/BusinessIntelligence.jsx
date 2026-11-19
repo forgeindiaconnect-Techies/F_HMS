@@ -1,11 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
-import { 
-    BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, 
-    LineChart, Line, PieChart, Pie, Cell, Legend 
+import {
+    BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
+    LineChart, Line, PieChart, Pie, Cell, Legend
 } from 'recharts';
-import { 
-    TrendingUp, Sparkles, RefreshCw, Download, FileSpreadsheet, 
-    FileText, Calendar, Building2, Filter, DollarSign, Percent, 
+import {
+    TrendingUp, Sparkles, RefreshCw, Download, FileSpreadsheet,
+    FileText, Calendar, Building2, Filter, DollarSign, Percent,
     ArrowUpRight, ArrowDownRight, Layers, BarChart3, PieChart as PieIcon
 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -110,7 +110,7 @@ const BusinessIntelligence = () => {
     const totalSales = filteredData.reduce((acc, curr) => acc + curr.sales, 0);
     const totalProfit = filteredData.reduce((acc, curr) => acc + curr.profit, 0);
     const totalFootfall = filteredData.reduce((acc, curr) => acc + curr.footfall, 0);
-    const avgMargin = filteredData.length > 0 
+    const avgMargin = filteredData.length > 0
         ? (filteredData.reduce((acc, curr) => acc + curr.margins, 0) / filteredData.length).toFixed(1)
         : '0.0';
 

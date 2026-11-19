@@ -21,7 +21,14 @@ const WaiterDashboard = () => {
     const [activeOrders, setActiveOrders] = useState([]);
     const [allOrders, setAllOrders] = useState([]);
     const [viewMode, setViewMode] = useState('DineIn'); // 'DineIn' or 'SelfPickup'
-    const [dbTables, setDbTables] = useState([]);
+    const [dbTables, setDbTables] = useState(() => {
+        try {
+            const cached = sessionStorage.getItem('restosys_waiter_tables_cache');
+            return cached ? JSON.parse(cached) : [];
+        } catch (_) {
+            return [];
+        }
+    });
     const [activeTable, setActiveTable] = useState(null);
     const [panelOpen, setPanelOpen] = useState(false);
     const [statusFilter, setStatusFilter] = useState('All');
@@ -32,8 +39,16 @@ const WaiterDashboard = () => {
 
     useEffect(() => {
         const onWaiterSearch = (e) => setSearchQuery(e.detail || '');
+        const onStaffClockOut = () => {
+            setIsClockedIn(false);
+            try { localStorage.removeItem('waiter_shift_clocked_in'); } catch (_) {}
+        };
         window.addEventListener('waiter-search', onWaiterSearch);
-        return () => window.removeEventListener('waiter-search', onWaiterSearch);
+        window.addEventListener('staff-clock-out', onStaffClockOut);
+        return () => {
+            window.removeEventListener('waiter-search', onWaiterSearch);
+            window.removeEventListener('staff-clock-out', onStaffClockOut);
+        };
     }, []);
     const [fabOpen, setFabOpen] = useState(false);
     const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -53,6 +68,9 @@ const WaiterDashboard = () => {
     const [waiterRating, setWaiterRating] = useState('5.0');
     const [isClockedIn, setIsClockedIn] = useState(() => {
         try {
+            if (localStorage.getItem('waiter_shift_clocked_in') === 'true') {
+                return true;
+            }
             const userName = user?.name || 'Staff Member';
             const userStorageKey = `staff_shift_clock_${userName.replace(/\s+/g, '_')}`;
             const saved = localStorage.getItem(userStorageKey);
@@ -68,8 +86,10 @@ const WaiterDashboard = () => {
 
     const handleClockInNow = async () => {
         try {
-            await api.post('/staff/clock-in', { status: 'Present' }).catch(() => {});
             setIsClockedIn(true);
+            localStorage.setItem('waiter_shift_clocked_in', 'true');
+            localStorage.setItem('waiter_shift_clockin_date', new Date().toDateString());
+
             const userName = user?.name || 'Floor Staff';
             const userStorageKey = `staff_shift_clock_${userName.replace(/\s+/g, '_')}`;
             const now = new Date().toISOString();
@@ -82,10 +102,13 @@ const WaiterDashboard = () => {
                 lastClockInTime: now,
                 lastClockOutTime: null
             }));
+
+            await api.post('/staff/clock-in', { status: 'Present' }).catch(() => {});
             toast.success('Successfully clocked in! Shift is active.');
             fetchData();
         } catch (err) {
             setIsClockedIn(true);
+            localStorage.setItem('waiter_shift_clocked_in', 'true');
             toast.success('Shift clock-in recorded! Shift is active.');
             fetchData();
         }
@@ -171,15 +194,20 @@ const WaiterDashboard = () => {
             const ords = Array.isArray(ordersRes.data) ? ordersRes.data : [];
             setAllOrders(ords);
             setActiveOrders(ords.filter(o => !['Delivered', 'Completed'].includes(o.status)));
-            setDbTables(Array.isArray(tablesRes.data) ? tablesRes.data : []);
+            const tbls = Array.isArray(tablesRes.data) ? tablesRes.data : [];
+            setDbTables(tbls);
+            try { sessionStorage.setItem('restosys_waiter_tables_cache', JSON.stringify(tbls)); } catch (_) {}
             setServiceRequests(Array.isArray(requestsRes.data) ? requestsRes.data : []);
 
             if (attendanceRes?.data) {
                 setAttendance(attendanceRes.data);
                 if (attendanceRes.data.status === 'Present' && attendanceRes.data.checkIn && !attendanceRes.data.checkOut) {
                     setIsClockedIn(true);
-                } else if (attendanceRes.data.checkOut || attendanceRes.data.status === 'Not Clocked In') {
+                    localStorage.setItem('waiter_shift_clocked_in', 'true');
+                } else if (attendanceRes.data.checkOut) {
+                    // Only unclock if they explicitly clocked out / checked out
                     setIsClockedIn(false);
+                    localStorage.removeItem('waiter_shift_clocked_in');
                 }
             }
 
@@ -368,9 +396,11 @@ const WaiterDashboard = () => {
         setTasks(prev => prev.map(t => t.id === taskId ? { ...t, done: !t.done } : t));
     };
 
-    // Calculate processed tables list
+    // Calculate processed tables list strictly from admin-created tables
     const norm = (val) => String(val || '').replace(/^Table\s*/i, '').trim().toLowerCase();
-    const tables = dbTables.length > 0 ? dbTables.map(t => {
+    const tables = dbTables.map(t => {
+        const cleanNum = String(t.tableNumber || '').replace(/^Table\s*/i, '').trim();
+        const displayId = String(t.tableNumber).toLowerCase().startsWith('table') ? t.tableNumber : `Table ${t.tableNumber}`;
         const order = activeOrders.find(o => norm(o.tableNumber) === norm(t.tableNumber) || String(o.tableNumber) === String(t.tableNumber));
         let displayStatus = t.status || 'Available';
         if (order) {
@@ -380,33 +410,15 @@ const WaiterDashboard = () => {
             else if (order.status === 'In Kitchen' || order.status === 'Preparing') displayStatus = 'Waiting for Food';
         }
         return {
-            id: String(t.tableNumber),
+            id: displayId,
+            rawId: cleanNum || String(t.tableNumber),
+            tableNumber: t.tableNumber,
             status: displayStatus,
             seats: t.capacity || t.seats || 4,
             orders: order,
             dbId: t._id,
             customers: t.customers || (order ? 2 : 0),
             timeAgo: order ? '18m ago' : '5m ago'
-        };
-    }) : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(num => {
-        const id = `T-${num}`;
-        const order = activeOrders.find(o => norm(o.tableNumber) === String(num) || o.tableNumber === id || o.tableNumber === String(num));
-        let status = 'Available';
-        if (order) {
-            if (order.status === 'Served') status = 'Billing';
-            else if (order.status === 'Ready' || order.status === 'Ready for Pickup') status = 'Needs Attention';
-            else if (order.status === 'Preparing' || order.status === 'In Kitchen') status = 'Waiting for Food';
-            else status = 'Occupied';
-        }
-
-        return {
-            id: `Table ${num}`,
-            rawId: String(num),
-            status: status,
-            seats: 4,
-            orders: order,
-            customers: order ? 2 : 0,
-            timeAgo: order ? 'Active' : 'Empty'
         };
     });
 

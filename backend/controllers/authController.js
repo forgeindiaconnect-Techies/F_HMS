@@ -423,6 +423,7 @@ export const loginUser = async (req, res) => {
                         verificationStatus: restaurant.verificationStatus,
                         status: restaurant.status,
                         subscription: restaurant.subscription,
+                        kitchenMode: restaurant.kitchenMode,
                         restaurantConfig: restaurant.restaurantConfig,
                         billingConfig: restaurant.billingConfig,
                     };

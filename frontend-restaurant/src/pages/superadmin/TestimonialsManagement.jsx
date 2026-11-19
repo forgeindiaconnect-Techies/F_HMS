@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { getApiUrl } from '../../utils/axiosInstance';
-import { 
-    MessageSquareQuote, Star, CheckCircle2, XCircle, Clock, AlertCircle, 
-    Trash2, Eye, Search, Filter, RefreshCw, Check, X, ShieldAlert 
+import {
+    MessageSquareQuote, Star, CheckCircle2, XCircle, Clock, AlertCircle,
+    Trash2, Eye, Search, Filter, RefreshCw, Check, X, ShieldAlert
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import ConfirmModal from '../../components/ConfirmModal';
@@ -131,7 +131,7 @@ const TestimonialsManagement = () => {
 
     return (
         <div className="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto space-y-6 text-slate-900 dark:text-slate-100">
-            
+
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
                 <div className="flex items-center gap-3">
@@ -169,19 +169,17 @@ const TestimonialsManagement = () => {
                         <button
                             key={tab.key}
                             onClick={() => setStatusFilter(tab.key)}
-                            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap inline-flex items-center gap-2 cursor-pointer ${
-                                statusFilter === tab.key 
-                                    ? 'bg-[#FF5A1F] text-white shadow-md shadow-orange-500/20' 
-                                    : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800'
-                            }`}
+                            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap inline-flex items-center gap-2 cursor-pointer ${statusFilter === tab.key
+                                ? 'bg-[#FF5A1F] text-white shadow-md shadow-orange-500/20'
+                                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800'
+                                }`}
                         >
                             <span>{tab.label}</span>
                             {tab.count !== undefined && (
-                                <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${
-                                    statusFilter === tab.key 
-                                        ? 'bg-white/20 text-white' 
-                                        : tab.alert ? 'bg-amber-100 text-amber-800 font-black' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
-                                }`}>
+                                <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${statusFilter === tab.key
+                                    ? 'bg-white/20 text-white'
+                                    : tab.alert ? 'bg-amber-100 text-amber-800 font-black' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
+                                    }`}>
                                     {tab.count}
                                 </span>
                             )}
@@ -216,15 +214,15 @@ const TestimonialsManagement = () => {
                         No testimonials found
                     </h3>
                     <p className="text-xs text-slate-400 max-w-sm mx-auto">
-                        {statusFilter === 'Pending' 
-                            ? 'No testimonials pending approval at this time.' 
+                        {statusFilter === 'Pending'
+                            ? 'No testimonials pending approval at this time.'
                             : 'No partner testimonials match your current filter.'}
                     </p>
                 </div>
             ) : (
                 <div className="space-y-4">
                     {filteredTestimonials.map(item => (
-                        <div 
+                        <div
                             key={item._id}
                             className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-5 transition-all hover:border-slate-300 dark:hover:border-slate-700"
                         >
@@ -250,15 +248,14 @@ const TestimonialsManagement = () => {
                                         <span className="text-xs text-slate-400 font-medium">
                                             • {item.restaurantName} ({item.location})
                                         </span>
-                                        
+
                                         {/* Status Tag */}
-                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                                            item.status === 'Approved'
-                                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                                                : item.status === 'Pending'
+                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${item.status === 'Approved'
+                                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                            : item.status === 'Pending'
                                                 ? 'bg-amber-50 text-amber-700 border border-amber-200'
                                                 : 'bg-rose-50 text-rose-700 border border-rose-200'
-                                        }`}>
+                                            }`}>
                                             {item.status}
                                         </span>
                                     </div>
@@ -293,7 +290,7 @@ const TestimonialsManagement = () => {
 
                             {/* Right: Moderation Actions */}
                             <div className="flex flex-wrap md:flex-col items-center md:items-end gap-2 shrink-0 pt-3 md:pt-0 border-t md:border-t-0 border-slate-100 dark:border-slate-800">
-                                
+
                                 {item.status !== 'Approved' && (
                                     <button
                                         onClick={() => handleUpdateStatus(item._id, 'Approved')}
@@ -431,8 +428,8 @@ const TestimonialsManagement = () => {
 
                             <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <img 
-                                        src={formatAvatarUrl(activeActionModal.item.avatar)} 
+                                    <img
+                                        src={formatAvatarUrl(activeActionModal.item.avatar)}
                                         alt={activeActionModal.item.ownerName}
                                         className="w-10 h-10 rounded-full object-cover border border-slate-200"
                                     />

@@ -26,11 +26,11 @@ const sanitizeOrderItems = (items) => {
 // @access  Private (Customer/Waiter)
 export const addOrderItems = async (req, res) => {
     try {
-        const { 
-            orderItems, orderType, source, restaurantId, branchId, 
-            paymentMethod, subscriptionPlan, taxPrice, totalPrice, 
-            tableNumber, notes, customerLocation, restaurantLocation, 
-            shippingAddress, customerName, customerPhone, serviceType, isPaid 
+        const {
+            orderItems, orderType, source, restaurantId, branchId,
+            paymentMethod, subscriptionPlan, taxPrice, totalPrice,
+            tableNumber, notes, customerLocation, restaurantLocation,
+            shippingAddress, customerName, customerPhone, serviceType, isPaid
         } = req.body;
 
         if (!orderItems || orderItems.length === 0) {
@@ -62,8 +62,8 @@ export const addOrderItems = async (req, res) => {
             }
         }
 
-        // Safe fallback for demo orders: attach to dedicated demo restaurant, NOT arbitrary new user restaurants
-        if (!finalRestaurantId || !finalBranchId) {
+        // Only fallback to demo restaurant if restaurantId is completely unknown
+        if (!finalRestaurantId) {
             const Restaurant = mongoose.model('Restaurant');
             const Branch = mongoose.model('Branch');
             let demoRestaurant = await Restaurant.findOne({ name: 'Pizza Palace' }) || await Restaurant.findOne({ isDemo: true });
@@ -88,6 +88,19 @@ export const addOrderItems = async (req, res) => {
                 });
             }
             finalBranchId = demoBranch._id;
+        } else if (!finalBranchId) {
+            // Auto-heal branch for the user's actual restaurant
+            const Branch = mongoose.model('Branch');
+            const Restaurant = mongoose.model('Restaurant');
+            let branch = await Branch.findOne({ restaurantId: finalRestaurantId });
+            if (!branch) {
+                const restDoc = await Restaurant.findById(finalRestaurantId);
+                branch = await Branch.create({
+                    name: `${restDoc?.name || 'Main'} Branch`,
+                    restaurantId: finalRestaurantId
+                });
+            }
+            finalBranchId = branch?._id;
         }
 
         let finalUserId = req.user ? req.user._id : null;
@@ -119,16 +132,16 @@ export const addOrderItems = async (req, res) => {
         }
 
         // Validate restaurant visibility and status before accepting order
-        const isRestBlocked = targetRestaurant.isDeleted || 
-            targetRestaurant.status === 'Deleted' || 
-            targetRestaurant.status === 'Inactive' || 
-            targetRestaurant.status === 'Suspended' || 
-            targetRestaurant.isActive === false || 
+        const isRestBlocked = targetRestaurant.isDeleted ||
+            targetRestaurant.status === 'Deleted' ||
+            targetRestaurant.status === 'Inactive' ||
+            targetRestaurant.status === 'Suspended' ||
+            targetRestaurant.isActive === false ||
             targetRestaurant.approvalStatus !== 'Approved';
 
         if (isRestBlocked) {
-            return res.status(403).json({ 
-                message: 'This restaurant is currently inactive or suspended and cannot accept orders.' 
+            return res.status(403).json({
+                message: 'This restaurant is currently inactive or suspended and cannot accept orders.'
             });
         }
 
@@ -141,7 +154,7 @@ export const addOrderItems = async (req, res) => {
         }
 
         const restDeliverySettings = targetRestaurant?.deliverySettings || {};
-        
+
         const restCoords = restDeliverySettings.location || {};
         const finalRestaurantLoc = (restaurantLocation && restaurantLocation.latitude && restaurantLocation.longitude) ? {
             latitude: Number(restaurantLocation.latitude),
@@ -163,7 +176,7 @@ export const addOrderItems = async (req, res) => {
             const R = 6371; // Earth's radius in km
             const dLat = (finalCustomerLoc.latitude - finalRestaurantLoc.latitude) * Math.PI / 180;
             const dLon = (finalCustomerLoc.longitude - finalRestaurantLoc.longitude) * Math.PI / 180;
-            const a = 
+            const a =
                 Math.sin(dLat / 2) * Math.sin(dLat / 2) +
                 Math.cos(finalRestaurantLoc.latitude * Math.PI / 180) * Math.cos(finalCustomerLoc.latitude * Math.PI / 180) *
                 Math.sin(dLon / 2) * Math.sin(dLon / 2);
@@ -171,14 +184,14 @@ export const addOrderItems = async (req, res) => {
             const calculatedDistanceKm = Number((R * c).toFixed(1));
 
             if (calculatedDistanceKm > maxRadiusKm) {
-                return res.status(400).json({ 
-                    message: `Order cannot be placed: Delivery location (${calculatedDistanceKm} km) exceeds the maximum allowed delivery radius of ${maxRadiusKm} km set by the restaurant.` 
+                return res.status(400).json({
+                    message: `Order cannot be placed: Delivery location (${calculatedDistanceKm} km) exceeds the maximum allowed delivery radius of ${maxRadiusKm} km set by the restaurant.`
                 });
             }
         }
 
-        const deliveryOtp = (orderType === 'Delivery') 
-            ? Math.floor(1000 + Math.random() * 9000).toString() 
+        const deliveryOtp = (orderType === 'Delivery')
+            ? Math.floor(1000 + Math.random() * 9000).toString()
             : null;
 
         const restConfig = targetRestaurant?.restaurantConfig || {};
@@ -215,7 +228,7 @@ export const addOrderItems = async (req, res) => {
         // Validate Payment Method against restaurant configuration
         const pmConfig = restConfig.paymentMethods || { cash: true, upi: true, card: true, onlineGateway: true };
         const lowerMethod = String(paymentMethod || '').toLowerCase();
-        
+
         if ((lowerMethod.includes('cash') || lowerMethod.includes('counter')) && pmConfig.cash === false) {
             return res.status(400).json({ message: 'Cash payment method is currently disabled by this restaurant.' });
         }
@@ -235,8 +248,8 @@ export const addOrderItems = async (req, res) => {
 
         const defaultPrepMins = (orderType === 'Delivery') ? 30 : 20;
         const finalPrepMinutes = Number(req.body.estimatedPrepMinutes) || defaultPrepMins;
-        const finalEstimatedReadyTime = req.body.estimatedReadyTime 
-            ? new Date(req.body.estimatedReadyTime) 
+        const finalEstimatedReadyTime = req.body.estimatedReadyTime
+            ? new Date(req.body.estimatedReadyTime)
             : new Date(Date.now() + finalPrepMinutes * 60 * 1000);
 
         const isCashMethod = ['cash on delivery', 'cash', 'pay at counter', 'cod'].some(m =>
@@ -407,12 +420,12 @@ export const addOrderItems = async (req, res) => {
 // @access  Private (Staff)
 export const appendOrderItems = async (req, res) => {
     const { orderItems, totalPrice, taxPrice, notes } = req.body;
-    
+
     if (orderItems && orderItems.length === 0) {
         res.status(400).json({ message: 'No new order items provided' });
         return;
     }
-    
+
     try {
         const order = await Order.findById(req.params.id);
         if (order) {
@@ -420,14 +433,14 @@ export const appendOrderItems = async (req, res) => {
             // Recalculate total price
             order.totalPrice += totalPrice;
             if (taxPrice) order.taxPrice += taxPrice;
-            
+
             if (notes) {
                 order.notes = order.notes ? `${order.notes}\n${notes}` : notes;
             }
-            
+
             // If the order was already completed/ready, set back to Preparing for the new items
             order.status = 'Preparing';
-            
+
             const updatedOrder = await order.save();
 
             // Automatically generate a new Running / Add-on KOT for newly added items only
@@ -488,7 +501,7 @@ export const getOrderById = async (req, res) => {
             order.deliveryOtp = Math.floor(1000 + Math.random() * 9000).toString();
             await order.save();
         }
-        
+
         const orderObj = order.toObject();
         // Fetch any KOTs created for this order
         try {
@@ -543,7 +556,7 @@ export const getOrders = async (req, res) => {
                 filter.status = { $in: statusArr };
             }
         }
-        
+
         // Filter by paid status if provided
         if (req.query.isPaid !== undefined) {
             filter.isPaid = req.query.isPaid === 'true';
@@ -552,7 +565,7 @@ export const getOrders = async (req, res) => {
         // Scope orders strictly to the logged-in user's restaurant (unless SuperAdmin)
         if (req.user && req.user.role !== 'SuperAdmin') {
             let userRestaurantId = req.user.restaurantId || req.user.restaurant;
-            
+
             // Auto-heal: If user has no restaurantId set on req.user object, resolve by ownerId, branchId, or managed branch
             if (!userRestaurantId && req.user._id) {
                 if (req.user.role === 'RestaurantAdmin') {
@@ -584,7 +597,7 @@ export const getOrders = async (req, res) => {
                 return res.json([]);
             }
 
-            // Strict branch scoping for BranchManager & Staff roles
+            // Branch scoping for staff: prioritize assigned branch, but allow viewing unassigned/all restaurant orders so chefs and staff never miss live tickets
             if (req.user.role === 'BranchManager' || ['Chef', 'Waiter', 'Cashier'].includes(req.user.role) || req.user.branchId) {
                 let effectiveBranchId = req.query.branchId || req.user.branchId;
                 if (!effectiveBranchId && req.user.role === 'BranchManager') {
@@ -595,18 +608,19 @@ export const getOrders = async (req, res) => {
                     }
                 }
                 if (effectiveBranchId) {
-                    filter.branchId = effectiveBranchId;
-                } else {
-                    // Branch manager or staff with no assigned branch should see no branch orders
-                    return res.json([]);
+                    filter.$or = [
+                        { branchId: effectiveBranchId },
+                        { branchId: null },
+                        { branchId: { $exists: false } }
+                    ];
                 }
             } else if (req.query.branchId && mongoose.Types.ObjectId.isValid(req.query.branchId)) {
                 filter.branchId = req.query.branchId;
             }
 
-            // Exclude legacy seed orders for non-demo new user accounts so new user dashboards start 100% fresh (0 orders)
+            // Exclude legacy seed orders for non-demo new admin accounts so new user dashboards start 100% fresh (0 orders)
             const isDemoUser = (req.user.email && (req.user.email.toLowerCase().includes('pizzapalace') || req.user.email.toLowerCase().includes('demo')));
-            if (!isDemoUser && req.user.createdAt) {
+            if (!isDemoUser && req.user.role === 'RestaurantAdmin' && req.user.createdAt) {
                 const cutoff = new Date(new Date(req.user.createdAt).getTime() - 5 * 60 * 1000);
                 filter.createdAt = { $gte: cutoff };
             }
@@ -653,7 +667,7 @@ export const updateOrderStatus = async (req, res) => {
     if (order) {
         const oldStatus = order.status;
         const newStatus = req.body.status || order.status;
-        
+
         if (req.body.tableNumber && req.body.tableNumber !== order.tableNumber) {
             const oldTableNum = order.tableNumber;
             const newTableNum = req.body.tableNumber;
@@ -704,15 +718,15 @@ export const updateOrderStatus = async (req, res) => {
                 if (isSelfPickup) {
                     // For Self-Pickup: Chef -> 'Ready for Pickup', Waiter/Staff -> 'Picked Up' (or counter hand-off), Cashier -> 'Completed'
                     if (!['Ready for Pickup', 'Picked Up'].includes(oldStatus)) {
-                        return res.status(400).json({ 
-                            message: `Cannot mark Self-Pickup order as Completed until Chef marks it as Ready for Pickup and food is collected at the counter.` 
+                        return res.status(400).json({
+                            message: `Cannot mark Self-Pickup order as Completed until Chef marks it as Ready for Pickup and food is collected at the counter.`
                         });
                     }
                 } else if (isDelivery) {
                     // For Delivery: Delivery partner MUST mark 'Delivered' first
                     if (oldStatus !== 'Delivered' && order.deliveryStatus !== 'Delivered') {
-                        return res.status(400).json({ 
-                            message: `Cannot mark Delivery order as Completed until the delivery partner completes delivery via OTP.` 
+                        return res.status(400).json({
+                            message: `Cannot mark Delivery order as Completed until the delivery partner completes delivery via OTP.`
                         });
                     }
                 }
@@ -720,8 +734,8 @@ export const updateOrderStatus = async (req, res) => {
 
             if (newStatus === 'Picked Up' && isSelfPickup) {
                 if (!['Ready', 'Ready for Pickup'].includes(oldStatus)) {
-                    return res.status(400).json({ 
-                        message: `Cannot mark Self-Pickup order as Picked Up until Chef finishes preparing food.` 
+                    return res.status(400).json({
+                        message: `Cannot mark Self-Pickup order as Picked Up until Chef finishes preparing food.`
                     });
                 }
             }
@@ -807,7 +821,7 @@ export const updateOrderStatus = async (req, res) => {
                         read: false
                     });
                     broadcastToRestaurant(order.restaurantId, 'new_notification', notif);
-                } catch (err) {}
+                } catch (err) { }
             }
 
             if (newStatus === 'Ready' || newStatus === 'Ready for Pickup' || newStatus === 'Ready for Dispatch') {
@@ -931,16 +945,16 @@ export const updateOrderStatus = async (req, res) => {
         }
 
         const updatedOrder = await order.save();
-        
+
         // Broadcast status update to customer tracking & restaurant staff
         broadcastToCustomerOrder(order._id, 'order_status_updated', updatedOrder);
         broadcastToRestaurant(order.restaurantId, 'order_status_updated', updatedOrder);
         broadcastToRestaurant(order.restaurantId, 'order_updated', updatedOrder);
-        
+
         if (updatedOrder.status === 'Ready' || updatedOrder.status === 'Ready for Pickup') {
             broadcastToRestaurant(order.restaurantId, 'ready_to_serve', updatedOrder);
         }
-        
+
         res.json(updatedOrder);
     } else {
         res.status(404).json({ message: 'Order not found' });
@@ -962,17 +976,17 @@ export const updateOrderToPaid = async (req, res) => {
         const isStaff = req.user && ['SuperAdmin', 'RestaurantAdmin', 'BranchManager', 'Cashier', 'Waiter', 'DeliveryPartner'].includes(req.user.role);
 
         if (isCashMethod && !isStaff && req.body.paymentStatus !== 'CASH_COLLECTED') {
-            return res.status(400).json({ 
-                message: 'Cash on Delivery orders cannot be marked as paid online. Payment will be collected upon delivery or at the counter.' 
+            return res.status(400).json({
+                message: 'Cash on Delivery orders cannot be marked as paid online. Payment will be collected upon delivery or at the counter.'
             });
         }
 
         order.isPaid = true;
         order.paidAt = Date.now();
-        
+
         // IMPORTANT: Never mutate order.status during payment processing!
         // Kitchen workflow status is managed exclusively via updateOrderStatus.
-        
+
         if (paymentMethod) order.paymentMethod = paymentMethod;
         if (taxPrice !== undefined) order.taxPrice = taxPrice;
         if (totalPrice !== undefined) order.totalPrice = totalPrice;
@@ -990,8 +1004,8 @@ export const updateOrderToPaid = async (req, res) => {
             try {
                 const mongoose = await import('mongoose');
                 const Table = mongoose.model('Table');
-                const table = await Table.findOne({ 
-                    tableNumber: order.tableNumber, 
+                const table = await Table.findOne({
+                    tableNumber: order.tableNumber,
                     restaurantId: order.restaurantId,
                     branchId: order.branchId
                 });
@@ -1037,8 +1051,8 @@ export const mergeOrders = async (req, res) => {
         targetOrder.orderItems.push(...sourceOrder.orderItems);
         targetOrder.totalPrice += sourceOrder.totalPrice;
         targetOrder.taxPrice += sourceOrder.taxPrice;
-        targetOrder.notes = targetOrder.notes 
-            ? `${targetOrder.notes}\nMerged from table ${sourceOrder.tableNumber || 'Any'}` 
+        targetOrder.notes = targetOrder.notes
+            ? `${targetOrder.notes}\nMerged from table ${sourceOrder.tableNumber || 'Any'}`
             : `Merged from table ${sourceOrder.tableNumber || 'Any'}`;
 
         await targetOrder.save();

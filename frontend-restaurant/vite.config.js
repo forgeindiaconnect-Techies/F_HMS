@@ -9,7 +9,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const apiUrl = env.VITE_API_URL || 'https://backend-ochre-five-29.vercel.app';
+  const apiUrl = mode === 'development'
+    ? (env.VITE_API_URL && env.VITE_API_URL.includes('5000') ? env.VITE_API_URL : 'http://localhost:5000/api')
+    : (env.VITE_API_URL || 'https://backend-ochre-five-29.vercel.app');
   const customerUrl = env.VITE_CUSTOMER_URL || '';
 
   return {
@@ -27,7 +29,15 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 5173,
       strictPort: false,
-      host: true
+      host: true,
+      proxy: {
+        '/api': {
+          target: 'http://localhost:5000',
+          changeOrigin: true,
+          secure: false,
+          ws: true
+        }
+      }
     },
     define: {
       'import.meta.env.VITE_API_URL': JSON.stringify(apiUrl),

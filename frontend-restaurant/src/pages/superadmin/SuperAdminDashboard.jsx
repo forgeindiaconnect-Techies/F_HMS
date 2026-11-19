@@ -51,26 +51,48 @@ const SuperAdminDashboard = () => {
 
     const fetchDashboardData = async (isRetry = false) => {
         if (!isRetry) setLoading(true);
-        const capTimer = setTimeout(() => setLoading(false), 5000);
+        const capTimer = setTimeout(() => setLoading(false), 15000);
         try {
-            const token = localStorage.getItem('token') || (() => {
+            const rawToken = localStorage.getItem('token') || (() => {
                 try {
                     return JSON.parse(localStorage.getItem('restosys_staff_user') || '{}')?.token;
                 } catch { return null; }
             })();
+            const cleanToken = rawToken ? String(rawToken).replace(/^Bearer\s+/i, '').trim() : null;
             const reqConfig = {
                 timeout: 35000,
-                headers: token ? { Authorization: `Bearer ${token}` } : {}
+                ...(cleanToken ? { headers: { Authorization: `Bearer ${cleanToken}` } } : {})
             };
 
             const [statsRes, restsRes, verifsRes, inquiriesRes, ticketsRes, notifsRes, demosRes] = await Promise.all([
-                api.get('/super-admin/stats', reqConfig).catch(() => ({ data: null })),
-                api.get('/super-admin/restaurants', reqConfig).catch(() => ({ data: [] })),
-                api.get('/restaurants/verification/all', reqConfig).catch(() => ({ data: [] })),
-                api.get('/inquiries/admin', reqConfig).catch(() => ({ data: [] })),
-                api.get('/super-admin/tickets', reqConfig).catch(() => ({ data: [] })),
-                api.get('/super-admin/notifications', reqConfig).catch(() => ({ data: [] })),
-                api.get('/billing-demos/admin', reqConfig).catch(() => ({ data: { data: [] } }))
+                api.get('/super-admin/stats', reqConfig).catch(err => {
+                    console.warn('[SuperAdmin] Failed to fetch /stats:', err?.response?.status, err?.response?.data || err.message);
+                    return { data: null };
+                }),
+                api.get('/super-admin/restaurants', reqConfig).catch(err => {
+                    console.warn('[SuperAdmin] Failed to fetch /restaurants:', err?.response?.status, err?.response?.data || err.message);
+                    return { data: [] };
+                }),
+                api.get('/restaurants/verification/all', reqConfig).catch(err => {
+                    console.warn('[SuperAdmin] Failed to fetch /verifications:', err?.response?.status, err?.response?.data || err.message);
+                    return { data: [] };
+                }),
+                api.get('/inquiries/admin', reqConfig).catch(err => {
+                    console.warn('[SuperAdmin] Failed to fetch /inquiries:', err?.response?.status, err?.response?.data || err.message);
+                    return { data: [] };
+                }),
+                api.get('/super-admin/tickets', reqConfig).catch(err => {
+                    console.warn('[SuperAdmin] Failed to fetch /tickets:', err?.response?.status, err?.response?.data || err.message);
+                    return { data: [] };
+                }),
+                api.get('/super-admin/notifications', reqConfig).catch(err => {
+                    console.warn('[SuperAdmin] Failed to fetch /notifications:', err?.response?.status, err?.response?.data || err.message);
+                    return { data: [] };
+                }),
+                api.get('/billing-demos/admin', reqConfig).catch(err => {
+                    console.warn('[SuperAdmin] Failed to fetch /billing-demos:', err?.response?.status, err?.response?.data || err.message);
+                    return { data: { data: [] } };
+                })
             ]);
             
             const rData = Array.isArray(restsRes.data) ? restsRes.data : [];

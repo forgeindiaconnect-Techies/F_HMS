@@ -190,6 +190,10 @@ const StaffShiftClockWidget = ({ userRole = 'Staff', userName = 'Staff Member', 
         } catch (e) {
             console.error('Error clocking out via API:', e);
         }
+        try {
+            localStorage.removeItem('waiter_shift_clocked_in');
+            window.dispatchEvent(new CustomEvent('staff-clock-out'));
+        } catch (_) {}
         const newState = {
             ...shiftState,
             status: 'ClockedOut',

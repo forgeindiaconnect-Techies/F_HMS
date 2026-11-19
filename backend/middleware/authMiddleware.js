@@ -9,8 +9,12 @@ import { checkSubscriptionAccess } from './subscriptionMiddleware.js';
 const getJwtSecret = () => process.env.JWT_SECRET || 'supersecretjwtkey123';
 
 const extractRequestToken = (req) => {
-    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-        return req.headers.authorization.split(' ')[1];
+    if (req.headers.authorization) {
+        const parts = req.headers.authorization.trim().split(/\s+/);
+        const token = parts[parts.length - 1];
+        if (token && token.toLowerCase() !== 'bearer' && token.length > 20) {
+            return token;
+        }
     }
     if (req.cookies) {
         return req.cookies.jwt || req.cookies.jwt_staff || req.cookies.jwt_customer || null;

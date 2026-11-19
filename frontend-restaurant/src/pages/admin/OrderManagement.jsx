@@ -6,20 +6,20 @@ import { createReconnectingWebSocket } from '../../utils/wsClient';
 import toast from 'react-hot-toast';
 
 const getStatusColor = (status) => {
-    switch(status) {
+    switch (status) {
         case 'Pending':
-        case 'Accepted':           return 'bg-blue-100 text-blue-700 border-blue-200';
-        case 'Preparing':          return 'bg-orange-100 text-orange-700 border-orange-200';
+        case 'Accepted': return 'bg-blue-100 text-blue-700 border-blue-200';
+        case 'Preparing': return 'bg-orange-100 text-orange-700 border-orange-200';
         case 'Ready':
         case 'Ready for Pickup':
         case 'Ready for Dispatch': return 'bg-green-100 text-green-700 border-green-200';
         case 'Out for Delivery':
         case 'Served':
         case 'Picked Up':
-        case 'Billing Requested':  return 'bg-purple-100 text-purple-700 border-purple-200';
+        case 'Billing Requested': return 'bg-purple-100 text-purple-700 border-purple-200';
         case 'Delivered':
-        case 'Completed':          return 'bg-gray-100 text-gray-600 border-gray-200';
-        default:                   return 'bg-gray-100 text-gray-700 border-gray-200';
+        case 'Completed': return 'bg-gray-100 text-gray-600 border-gray-200';
+        default: return 'bg-gray-100 text-gray-700 border-gray-200';
     }
 };
 
@@ -111,7 +111,7 @@ const OrderDetailModal = ({ order, onClose, onAdvance, onPickup }) => {
 /* ── Kanban Card ────────────────────────────────────────────────── */
 const OrderCard = ({ order, onView }) => {
     return (
-        <div 
+        <div
             onClick={() => onView(order)}
             className="relative bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 hover:shadow-md transition-all group cursor-pointer"
         >
@@ -178,7 +178,7 @@ const OrderManagement = () => {
             setOrders(active);
             try {
                 sessionStorage.setItem('restosys_admin_orders_cache', JSON.stringify(active));
-            } catch (_) {}
+            } catch (_) { }
         } catch (error) {
             console.error('Failed to fetch orders', error);
             toast.error('Failed to load orders');
@@ -243,9 +243,9 @@ const OrderManagement = () => {
     const getColumn = (statuses) => filteredOrders.filter(o => statuses.includes(o.status));
 
     const columns = [
-        { key: 'Pending',          statuses: ['Pending', 'Accepted'], label: 'New Orders',      color: 'bg-blue-50/50 dark:bg-blue-950/20 border-blue-100 dark:border-blue-900/30',   headerColor: 'text-blue-800 dark:text-blue-300',   countBg: 'bg-blue-200 dark:bg-blue-900 text-blue-800 dark:text-blue-200' },
-        { key: 'Preparing',        statuses: ['Preparing'], label: 'Preparing',        color: 'bg-orange-50/30 dark:bg-orange-950/20 border-orange-100/50 dark:border-orange-900/30', headerColor: 'text-orange-800 dark:text-orange-300', countBg: 'bg-orange-200 dark:bg-orange-900 text-orange-800 dark:text-orange-200' },
-        { key: 'Ready',            statuses: ['Ready', 'Ready for Pickup', 'Ready for Dispatch'], label: 'Ready',            color: 'bg-green-50/30 dark:bg-green-950/20 border-green-100/50 dark:border-green-900/30',   headerColor: 'text-green-800 dark:text-green-300',   countBg: 'bg-green-200 dark:bg-green-900 text-green-800 dark:text-green-200' },
+        { key: 'Pending', statuses: ['Pending', 'Accepted'], label: 'New Orders', color: 'bg-blue-50/50 dark:bg-blue-950/20 border-blue-100 dark:border-blue-900/30', headerColor: 'text-blue-800 dark:text-blue-300', countBg: 'bg-blue-200 dark:bg-blue-900 text-blue-800 dark:text-blue-200' },
+        { key: 'Preparing', statuses: ['Preparing'], label: 'Preparing', color: 'bg-orange-50/30 dark:bg-orange-950/20 border-orange-100/50 dark:border-orange-900/30', headerColor: 'text-orange-800 dark:text-orange-300', countBg: 'bg-orange-200 dark:bg-orange-900 text-orange-800 dark:text-orange-200' },
+        { key: 'Ready', statuses: ['Ready', 'Ready for Pickup', 'Ready for Dispatch'], label: 'Ready', color: 'bg-green-50/30 dark:bg-green-950/20 border-green-100/50 dark:border-green-900/30', headerColor: 'text-green-800 dark:text-green-300', countBg: 'bg-green-200 dark:bg-green-900 text-green-800 dark:text-green-200' },
         { key: 'Out for Delivery', statuses: ['Out for Delivery', 'Served', 'Picked Up', 'Billing Requested'], label: 'Serving / Out for Delivery', color: 'bg-purple-50/30 dark:bg-purple-950/20 border-purple-100/50 dark:border-purple-900/30', headerColor: 'text-purple-800 dark:text-purple-300', countBg: 'bg-purple-200 dark:bg-purple-900 text-purple-800 dark:text-purple-200' },
     ];
 

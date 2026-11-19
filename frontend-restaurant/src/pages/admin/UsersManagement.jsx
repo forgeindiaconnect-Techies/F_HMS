@@ -47,7 +47,7 @@ const UsersManagement = () => {
         isOpen: false,
         title: '',
         message: '',
-        onConfirm: () => {},
+        onConfirm: () => { },
         isDestructive: true
     });
 
@@ -62,7 +62,7 @@ const UsersManagement = () => {
             try {
                 sessionStorage.setItem('restosys_admin_users_cache', JSON.stringify(usersRes.data || []));
                 sessionStorage.setItem('restosys_branches_cache', JSON.stringify(branchesRes.data || []));
-            } catch {}
+            } catch { }
         } catch (error) {
             console.error('Failed to fetch data', error);
         } finally {
@@ -113,18 +113,18 @@ const UsersManagement = () => {
     };
 
     const filteredUsers = users.filter(u => {
-        const matchesSearch = !searchQuery || 
-                              u.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                              u.email?.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesSearch = !searchQuery ||
+            u.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            u.email?.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesRole = roleFilter === 'All Roles' || u.role === roleFilter;
         return matchesSearch && matchesRole;
     });
 
     return (
         <div className="space-y-6 relative">
-            <ConfirmModal 
-                {...confirmModal} 
-                onClose={() => setConfirmModal({...confirmModal, isOpen: false})} 
+            <ConfirmModal
+                {...confirmModal}
+                onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
             />
             {/* Header */}
             <div className="flex justify-between items-center">
@@ -132,7 +132,7 @@ const UsersManagement = () => {
                     <h2 className="text-2xl font-bold text-gray-800" style={{ fontFamily: 'Poppins, sans-serif' }}>Staff & Users</h2>
                     <p className="text-gray-500 text-sm mt-1">Manage employee access, roles, and assignments.</p>
                 </div>
-                <button 
+                <button
                     onClick={() => setIsModalOpen(true)}
                     className="bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-xl font-medium transition-colors flex items-center gap-2 text-sm shadow-sm"
                 >
@@ -144,16 +144,16 @@ const UsersManagement = () => {
             <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-wrap gap-4 justify-between items-center">
                 <div className="relative w-full md:w-80">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-                    <input 
-                        type="text" 
-                        placeholder="Search by name or email..." 
+                    <input
+                        type="text"
+                        placeholder="Search by name or email..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all"
                     />
                 </div>
                 <div className="flex gap-3">
-                    <select 
+                    <select
                         value={roleFilter}
                         onChange={(e) => setRoleFilter(e.target.value)}
                         className="bg-gray-50 border border-gray-200 text-gray-600 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-green-500"
@@ -181,14 +181,14 @@ const UsersManagement = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     {filteredUsers.map(u => (
                         <div key={u._id} className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow relative group">
-                            <button 
+                            <button
                                 onClick={() => handleDelete(u._id)}
                                 className="absolute top-4 right-4 text-gray-300 hover:text-red-500 transition-opacity"
                                 title="Delete User"
                             >
                                 <Trash2 size={20} />
                             </button>
-                            
+
                             <div className="flex items-center gap-4 mb-5">
                                 <div className="w-14 h-14 rounded-full bg-gradient-to-br from-green-100 to-green-200 border-2 border-white shadow-sm flex items-center justify-center text-green-700 font-bold text-xl uppercase">
                                     {u.name.charAt(0)}
@@ -237,33 +237,33 @@ const UsersManagement = () => {
                         <form onSubmit={handleSubmit} className="p-6 space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                                <input 
-                                    type="text" 
+                                <input
+                                    type="text"
                                     required
                                     value={formData.name}
-                                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                     className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all"
                                     placeholder="e.g. John Admin"
                                 />
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                                <input 
-                                    type="email" 
+                                <input
+                                    type="email"
                                     required
                                     value={formData.email}
-                                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                     className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all"
                                     placeholder="john@foodnest.com"
                                 />
                             </div>
-                            
+
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-                                    <select 
+                                    <select
                                         value={formData.role}
-                                        onChange={(e) => setFormData({...formData, role: e.target.value})}
+                                        onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                                         className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all"
                                     >
                                         <option value="RestaurantAdmin">Admin</option>
@@ -275,9 +275,9 @@ const UsersManagement = () => {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Assigned Branch</label>
-                                    <select 
+                                    <select
                                         value={formData.branchId}
-                                        onChange={(e) => setFormData({...formData, branchId: e.target.value})}
+                                        onChange={(e) => setFormData({ ...formData, branchId: e.target.value })}
                                         className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all"
                                     >
                                         <option value="">All Branches</option>
@@ -287,17 +287,17 @@ const UsersManagement = () => {
                                     </select>
                                 </div>
                             </div>
-                            
+
                             <div className="pt-4 flex gap-3">
-                                <button 
-                                    type="button" 
+                                <button
+                                    type="button"
                                     onClick={() => setIsModalOpen(false)}
                                     className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-colors text-sm"
                                 >
                                     Cancel
                                 </button>
-                                <button 
-                                    type="submit" 
+                                <button
+                                    type="submit"
                                     className="flex-1 py-2.5 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-sm shadow-green-600/20 transition-colors text-sm"
                                 >
                                     Send Invite

@@ -16,7 +16,7 @@ const CustomerAuthPage = () => {
     useEffect(() => {
         document.documentElement.classList.remove('dark');
     }, []);
-    
+
     // Determine initial mode from path or URL params
     const initialMode = location.pathname.includes('register') ? 'register' : 'login';
     const [mode, setMode] = useState(initialMode); // 'login' | 'register'
@@ -35,7 +35,7 @@ const CustomerAuthPage = () => {
     const [forgotEmail, setForgotEmail] = useState('');
     const [forgotLoading, setForgotLoading] = useState(false);
     const [forgotSuccess, setForgotSuccess] = useState(false);
-    
+
     const { login, register: registerUser } = useCustomerAuth();
 
     const { register, handleSubmit, watch, setValue, formState: { errors }, reset } = useForm();
@@ -52,7 +52,7 @@ const CustomerAuthPage = () => {
     const onSubmit = async (data) => {
         setLoading(true);
         setAuthError('');
-        
+
         let result;
         if (mode === 'login') {
             result = await login(data.email, data.password);
@@ -66,7 +66,7 @@ const CustomerAuthPage = () => {
         } else {
             result = await registerUser(data.name, data.email, data.password, 'Customer', data.phoneNumber);
         }
-        
+
         setLoading(false);
 
         if (result.success) {
@@ -140,12 +140,12 @@ const CustomerAuthPage = () => {
 
             {/* Glass Card */}
             <div className="relative z-10 w-full max-w-md bg-white rounded-[2rem] shadow-2xl overflow-hidden border border-white/20">
-                
+
                 {/* Branding Header */}
                 <div className="bg-gradient-to-br from-orange-500 to-orange-600 p-8 text-center relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-x-1/2 -translate-y-1/2"></div>
                     <div className="absolute bottom-0 right-0 w-40 h-40 bg-orange-900/20 rounded-full blur-2xl translate-x-1/3 translate-y-1/3"></div>
-                    
+
                     <Link to="/" className="absolute top-4 right-4 text-white/80 hover:text-white bg-black/10 hover:bg-black/20 p-2 rounded-full transition-all z-20">
                         <X size={20} />
                     </Link>
@@ -168,7 +168,7 @@ const CustomerAuthPage = () => {
                 <div className="p-8 bg-white auth-form-container">
                     {/* Tabs: Login and Sign Up */}
                     <div className="flex bg-gray-100/80 p-1.5 rounded-2xl mb-6 relative">
-                        <div 
+                        <div
                             className={`absolute inset-y-1.5 w-[calc(50%-6px)] bg-white rounded-xl shadow-sm transition-all duration-300 ease-out ${mode === 'login' ? 'left-1.5' : 'left-[calc(50%+3px)]'}`}
                         ></div>
                         <button
@@ -243,7 +243,7 @@ const CustomerAuthPage = () => {
                                     <input
                                         type="tel"
                                         placeholder="Mobile Number (10 digits)"
-                                        {...register('phoneNumber', { 
+                                        {...register('phoneNumber', {
                                             required: 'Mobile number is required',
                                             pattern: { value: /^[0-9]{10}$/, message: 'Phone number must be exactly 10 digits' }
                                         })}
@@ -277,7 +277,7 @@ const CustomerAuthPage = () => {
                                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                 </button>
                             </div>
-                                {errors.password && <p className="text-red-500 text-xs mt-1.5 ml-1 font-medium">{errors.password.message}</p>}
+                            {errors.password && <p className="text-red-500 text-xs mt-1.5 ml-1 font-medium">{errors.password.message}</p>}
                         </div>
 
                         {/* Confirm Password - Register only */}
@@ -290,7 +290,7 @@ const CustomerAuthPage = () => {
                                     <input
                                         type={showConfirm ? 'text' : 'password'}
                                         placeholder="Confirm Password"
-                                        {...register('confirmPassword', { 
+                                        {...register('confirmPassword', {
                                             required: 'Please confirm password',
                                             validate: val => val === watch('password') || 'Passwords do not match'
                                         })}
@@ -312,13 +312,12 @@ const CustomerAuthPage = () => {
                         {mode === 'login' && (
                             <div className="flex items-center justify-between pt-1 pb-2">
                                 <label className="flex items-center gap-2 cursor-pointer group select-none">
-                                    <div 
+                                    <div
                                         onClick={() => setRememberMe(!rememberMe)}
-                                        className={`w-4 h-4 rounded border flex items-center justify-center transition-all cursor-pointer ${
-                                            rememberMe 
-                                                ? 'bg-orange-500 border-orange-500 text-white shadow-sm' 
-                                                : 'bg-white border-gray-300 hover:border-gray-400'
-                                        }`}
+                                        className={`w-4 h-4 rounded border flex items-center justify-center transition-all cursor-pointer ${rememberMe
+                                            ? 'bg-orange-500 border-orange-500 text-white shadow-sm'
+                                            : 'bg-white border-gray-300 hover:border-gray-400'
+                                            }`}
                                     >
                                         {rememberMe && (
                                             <svg className="w-3 h-3 text-white pointer-events-none stroke-[3.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -326,7 +325,7 @@ const CustomerAuthPage = () => {
                                             </svg>
                                         )}
                                     </div>
-                                    <span 
+                                    <span
                                         onClick={() => setRememberMe(!rememberMe)}
                                         className="text-sm font-medium text-gray-600 group-hover:text-gray-900 transition-colors cursor-pointer"
                                     >
@@ -334,7 +333,7 @@ const CustomerAuthPage = () => {
                                     </span>
                                 </label>
                                 <button
-                                    type="button" 
+                                    type="button"
                                     onClick={openForgotPasswordModal}
                                     className="text-sm font-bold text-orange-600 hover:text-orange-500 transition-colors cursor-pointer"
                                 >
@@ -371,11 +370,11 @@ const CustomerAuthPage = () => {
 
             {/* Forgot Password Modal */}
             {isForgotModalOpen && (
-                <div 
+                <div
                     className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200"
                     onClick={closeForgotPasswordModal}
                 >
-                    <div 
+                    <div
                         className="bg-white rounded-3xl shadow-2xl border border-gray-100 w-full max-w-md p-6 sm:p-7 relative overflow-hidden"
                         onClick={(e) => e.stopPropagation()}
                     >

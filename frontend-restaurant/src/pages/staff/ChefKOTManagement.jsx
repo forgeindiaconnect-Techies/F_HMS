@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { 
     Receipt, Clock, CheckCircle2, Flame, Printer, Search, RefreshCw, 
     Filter, AlertCircle, ChefHat, Sparkles, Utensils, Coffee, Pizza, 
@@ -32,6 +32,15 @@ const STATUS_OPTIONS = [
 
 const ChefKOTManagement = () => {
     const { api, user, restaurant } = useAuth();
+
+    const isKdsOnlyKitchen = (restaurant?.kitchenMode === 'KDS_ONLY' ||
+        restaurant?.restaurantConfig?.orderKitchen?.kitchenMode === 'KDS_ONLY' ||
+        restaurant?.restaurantConfig?.orderKitchen?.kotEnabled === false) &&
+        restaurant?.restaurantConfig?.orderKitchen?.kdsEnabled !== false;
+
+    if (isKdsOnlyKitchen) {
+        return <Navigate to="/chef" replace />;
+    }
     const [kots, setKots] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
