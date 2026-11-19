@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { Capacitor } from '@capacitor/core';
 
-export const PROD_API_URL = 'https://f-hms-mb86.onrender.com/api';
+export const PROD_API_URL = 'https://backend-ochre-five-29.vercel.app/api';
 
 /**
  * Checks whether the current runtime is a local development environment:

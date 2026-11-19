@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export const PROD_API_URL = 'https://f-hms-mb86.onrender.com/api';
+export const PROD_API_URL = 'https://backend-ochre-five-29.vercel.app/api';
 
 /**
  * Checks whether the current runtime is a local development environment:
@@ -58,7 +58,7 @@ export const getApiUrl = () => {
                         localStorage.removeItem('foodnest_api_url');
                     }
                 }
-            } catch (_) {}
+            } catch (_) { }
         }
 
         if (typeof window !== 'undefined' && window.location && window.location.hostname && window.location.hostname !== '0.0.0.0') {
@@ -105,13 +105,13 @@ api.interceptors.request.use(
             try {
                 const staffUser = JSON.parse(localStorage.getItem('restosys_staff_user'));
                 if (staffUser?.token) token = staffUser.token;
-            } catch (e) {}
+            } catch (e) { }
         }
         if (!token) {
             try {
                 const custUser = JSON.parse(localStorage.getItem('restosys_customer_user'));
                 if (custUser?.token) token = custUser.token;
-            } catch (e) {}
+            } catch (e) { }
         }
 
         if (token) {
