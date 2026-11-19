@@ -5,6 +5,11 @@ services:
     rootDir: backend
     buildCommand: npm install && npm run build
     startCommand: node dist/server.cjs
+    healthCheckPath: /api/health
     envVars:
       - key: NODE_VERSION
         value: 20.18.0
+      - key: NODE_ENV
+        value: production
+      - key: FRONTEND_URL
+        value: frontend-restaurant-alpha.vercel.app

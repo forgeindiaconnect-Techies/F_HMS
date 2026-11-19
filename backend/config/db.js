@@ -10,7 +10,7 @@ const connectDB = async () => {
         return cachedPromise;
     }
 
-    const fallbackUri = 'mongodb+srv://ruthralekhaantigraviity_db_user:bPtyhG4yQzSPcGgR@cluster0.3vd0qmf.mongodb.net/?appName=Cluster0';
+    const fallbackUri = 'mongodb+srv://ruthralekhaantigraviity_db_user:bPtyhG4yQzSPcGgR@cluster0.3vd0qmf.mongodb.net/test?appName=Cluster0';
     const uri = process.env.MONGO_URI || fallbackUri;
 
     cachedPromise = (async () => {

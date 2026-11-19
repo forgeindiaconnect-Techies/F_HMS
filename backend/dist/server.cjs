@@ -127846,7 +127846,7 @@ var connectDB = async () => {
   if (cachedPromise) {
     return cachedPromise;
   }
-  const fallbackUri = "mongodb+srv://ruthralekhaantigraviity_db_user:bPtyhG4yQzSPcGgR@cluster0.3vd0qmf.mongodb.net/?appName=Cluster0";
+  const fallbackUri = "mongodb+srv://ruthralekhaantigraviity_db_user:bPtyhG4yQzSPcGgR@cluster0.3vd0qmf.mongodb.net/test?appName=Cluster0";
   const uri = process.env.MONGO_URI || fallbackUri;
   cachedPromise = (async () => {
     let retries = process.env.VERCEL ? 2 : 5;
